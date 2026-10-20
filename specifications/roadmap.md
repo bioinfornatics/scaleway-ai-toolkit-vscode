@@ -74,3 +74,19 @@ acceptance remains explicit follow-up, not claimed from adapter/host alone.
 discover catalog/build playground. Full visual/theme/keyboard acceptance remains
 open. .3.24.1 delivers default-project chooser and guarded creation design;
 .3.24 full production/creation scope remains open, no cloud writes authorized.
+
+
+## Model availability → deployment → use — stakeholder clarification 2026-10-21
+
+The user observes rendered model cards and expects dedicated models to be
+deployable, not merely described. Version 0.0.20 separates Serverless public
+offers, dedicated catalog models and existing deployments in native navigation.
+Catalog-ready is not deployed; deployed is not necessarily ready/reachable.
+Reuse .5.1 source/console findings rather than restarting generic discovery.
+The next implementation slice is a dedicated deployment preparation wizard with
+offline tests, followed by reviewed allocation and endpoint use. Exact model UUID,
+node compatibility/quantization, stock/quota, dedicated hourly price, EULA,
+project/fr-par, network and spend cap must be explicit before creation.
+No automatic allocation, license acceptance or retry after an ambiguous POST.
+The stakeholder requests the feature, not an unspecified billable allocation.
+Production acceptance and real-inference authorization remain separate.

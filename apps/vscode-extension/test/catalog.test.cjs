@@ -168,3 +168,12 @@ test('card click sends identity; details render text, focus and return to trigge
   assert.equal(get('model-details').hidden, true);
   assert.equal(focused, button);
 });
+
+test('navigation explicitly separates deployable dedicated catalog and existing resources', () => {
+  const source = fs.readFileSync('src/extension.ts', 'utf8');
+  assert.ok(source.includes('Serverless · offres disponibles'));
+  assert.ok(source.includes('Dédiés · modèles à déployer'));
+  assert.ok(source.includes('Dédiés · déploiements existants'));
+  assert.ok(source.includes("children: realModelNodes('dedicated-catalog')"));
+  assert.ok(source.includes("children: realModelNodes('dedicated')"));
+});

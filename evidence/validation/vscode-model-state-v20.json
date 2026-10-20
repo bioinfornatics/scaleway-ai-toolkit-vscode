@@ -1,0 +1,15 @@
+{
+  "version": "0.0.20",
+  "biome": "passed without diagnostics",
+  "typescript": "strict build passed",
+  "tests": 46,
+  "navigation": [
+    "Serverless \u00b7 offres disponibles",
+    "D\u00e9di\u00e9s \u00b7 mod\u00e8les \u00e0 d\u00e9ployer",
+    "D\u00e9di\u00e9s \u00b7 d\u00e9ploiements existants"
+  ],
+  "deployment_creation": "not implemented in this slice; dedicated wizard tracked under .5.1",
+  "cloud_writes": 0,
+  "visual_QA": "not_run",
+  "sha256": "76838df472adb7e41b80cc009e860b506e8cf82ecaebd0a9a2e527a7fb112cdc"
+}

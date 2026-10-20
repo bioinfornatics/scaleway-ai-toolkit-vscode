@@ -113,14 +113,21 @@ export function activate(context: vscode.ExtensionContext): void {
         },
         {
           id: 'serverless',
-          label: 'Serverless · catalogue',
+          label: 'Serverless · offres disponibles',
           command: 'scalewayAI.openCatalog',
           description: connection.serverlessState,
           children: realModelNodes('serverless'),
         },
         {
+          id: 'dedicated-catalog',
+          label: 'Dédiés · modèles à déployer',
+          command: 'scalewayAI.openCatalog',
+          description: connection.dedicatedCatalogState,
+          children: realModelNodes('dedicated-catalog'),
+        },
+        {
           id: 'dedicated',
-          label: 'Déploiements dédiés',
+          label: 'Dédiés · déploiements existants',
           command: 'scalewayAI.loadModels',
           description: connection.dedicatedState,
           children: realModelNodes('dedicated'),

@@ -18,10 +18,11 @@ export function catalogDetails(
       kind === 'serverless'
         ? 'Source : catalogue commercial public Scaleway · variantes regroupées par produit'
         : 'Source : catalogue de modèles dédiés Scaleway · fr-par',
-    scope: kind === 'serverless' ? 'Offre publique · fr-par' : scope,
+    scope:
+      kind === 'serverless' ? 'Serverless · offre publique · fr-par' : scope,
     limits:
       kind === 'serverless'
         ? 'Accès inférence non vérifié. Prix, capacités et identifiant d’invocation non établis par cette source. Le playground actuel est uniquement une démonstration hors ligne, pas un test de ce modèle.'
-        : 'Modèle à déployer, pas un déploiement existant. Le déploiement et le test d’inférence ne sont pas disponibles dans cette preview.',
+        : 'Modèle disponible au catalogue dédié, pas un déploiement existant. Le déploiement et le test d’inférence ne sont pas disponibles dans cette preview.',
   };
 }

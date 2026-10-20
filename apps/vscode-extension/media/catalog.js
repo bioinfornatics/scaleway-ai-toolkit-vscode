@@ -27,8 +27,8 @@
       const note = document.createElement('p');
       note.textContent =
         kind === 'public'
-          ? 'Offre publique · accès inférence non vérifié'
-          : 'Modèle à déployer · aucun déploiement créé';
+          ? 'Serverless · offre disponible, pas un déploiement dédié'
+          : 'Dédié · modèle à déployer, pas une ressource déployée';
       card.append(note);
       const details = document.createElement('button');
       details.type = 'button';
