@@ -71,3 +71,21 @@ project selection. Labels/services such as Classic, Foundry project and Ask Copi
 are not automatic equivalents. Expose only implemented, verified slice capabilities;
 no empty advanced menus or fake feature parity. Model and agent playgrounds remain
 separate actions within the same extension. Dependency sequencing remains in Beads.
+
+## Stakeholder reminder and delivery alignment — 23:44–23:46
+
+The stakeholder explicitly supplies the inventory again: My Resources / Set
+Foundry Project, Models, Agents, Tools, Knowledge, Evaluations, Recent (Create in
+Code With Template; Design an Agent with Builder), Local Resources, Classic;
+Developer Tools / Discover (Model Catalog, Tool Catalog), Build (Create Agent,
+Agent Inspector, Deploy to Microsoft Foundry, Hosted Agent Playground, Model
+Playground, Model Conversion, Fine-tuning), Monitor; Help And Feedback.
+Project selection exposes Switch project and Create project with default assignment.
+This is stakeholder-reported reference, not independently verified installed Azure UI.
+
+[Delivery roadmap](roadmap.md) maps implemented Scaleway actions and future stages.
+Beads .3.22 prioritizes currently invisible installed model catalog, reusing
+existing .3.3/.3.6 API observations; .3.23 aligns native resources vs discovery
+vs build and Local Resources; .3.24 defines Switch/default-project selector and
+separately guarded Create project. No empty advanced actions or write authorization
+from a menu label. Public/help/offline access and silent explicit bounded GET remain.

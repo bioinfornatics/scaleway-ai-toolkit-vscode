@@ -19,6 +19,10 @@ The offline demo requires no credentials or Python. Real discovery is opt-in:
 Mes ressources -> Projet -> Se connecter à Scaleway in the browser, then scoped project selection and dedicated deployments.
 JWT persists via VS Code SecretStorage; organization/project preferences are user-bound; Serverless public offering catalog is available; inference JWT access remains unverified and disabled. No inference or resource writes.
 
+## Delivery roadmap
+
+[Current Foundry-aligned roadmap](specifications/roadmap.md): first diagnose and fix the user-reported invisible installed catalog (.3.22), then align resources/discover/build navigation (.3.23) and project selection (.3.24). Existing API findings in .3.3/.3.6 are retained; successful public-adapter discovery does not prove the installed catalog journey. Beads owns live task status.
+
 ## Product authority
 
 - [Product vision](PRODUCT.md#vision): users, value, scope, evidence and decision ownership.

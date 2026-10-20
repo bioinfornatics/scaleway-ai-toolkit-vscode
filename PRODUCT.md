@@ -28,7 +28,7 @@ The extension is a deterministic development workbench, not a mandatory coding c
 ## Capabilities and staged scope
 
 Phase 0: verify API contracts, selected Strands Python/Scaleway compatibility, security boundaries, developer value and hosting constraints.
-Phase 1/MVP: secure connection, model catalog, streaming playground, saved experiments, Python/TypeScript export and read-only dedicated deployment browsing.
+Phase 1/MVP: secure user browser connection, usable model catalog, streaming playground, saved experiments, Python/TypeScript export and read-only dedicated deployment browsing. Current incremental delivery order and acceptance boundaries: [roadmap](specifications/roadmap.md). User-reported invisible installed catalog takes priority over further menu expansion.
 Phase 2: portable agent specification, one Strands Python SDK-backed local HTTP runtime, user-approved MCP tools, inspector and evaluations. SDK selection accepted by stakeholder; compatibility and safety unverified.
 Phase 3: dedicated model deployment and containerized agent application hosting, hosted playground, status/logs, trace integration and cleanup.
 Phase 4: retrieval backends, additional runtimes/providers and fine-tuning only after demand and feasibility are verified.
