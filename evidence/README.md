@@ -27,6 +27,9 @@ Store public source material and synthetic/sanitized records only. Never commit 
 - [Bounded actual Strands transport smoke](validation/strands-live-smoke-v1.json).
 - [Capability matrix v2](capabilities/serverless-matrix-v2.json).
 - [SDK offline transport cases](compatibility/test_strands_transport_offline.py).
+- [Hosting public source manifest](documentation/hosting-sources-v1.json) and
+  [synthetic loopback HTTP results](validation/hosting-local-v1.json): first .1.6
+  slice only, no hosted runtime or production security acceptance.
 
 These update historical no-live statements; old source snapshots and matrix v1 are
 not rewritten. Validation tooling's not_run list describes its offline check scope,

@@ -14,6 +14,7 @@ A community extension concept for discovering, testing, building, evaluating and
 - [Threat model](specifications/security/threat-model.md), [authorization policy](specifications/security/authorization-policy.md) and [security case specifications](specifications/security/security-test-cases.md).
 - [Serverless research](specifications/providers/scaleway/serverless.md), [dedicated API research](specifications/providers/scaleway/dedicated.md) and [proposed comparative protocol](specifications/validation/developer-scenario.md).
 - [Offline verification results](evidence/validation/offline-discovery.json) and [acceptance review](evidence/reviews/discovery-review.md).
+- [Runtime hosting limits: public documentation and local HTTP tests](specifications/providers/scaleway/hosting.md); cloud streaming/auth/durable sessions remain unverified.
 - [Selected agent SDK: Strands Python](specifications/decisions/0001-strands-agent-sdk.md): accepted SDK choice, not tested integration or build approval.
 - [G1 discovery decision](.gates/01-brief-to-ideation.md): experiment, not validated value or build approval.
 

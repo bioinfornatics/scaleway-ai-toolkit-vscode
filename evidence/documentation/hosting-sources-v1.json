@@ -1,0 +1,99 @@
+{
+  "record_id": "hosting-public-review-20261020",
+  "issue": "scaleway_ai_vscode-jgh.1.6",
+  "revision": "d3f08c7b3d7b60a982572ca6ce5e18b91b1ce811",
+  "method": "Public HTTPS documentation downloads; no credentials or account calls",
+  "approval": "Current request: documentation and local tests only; no deployment or spend",
+  "records": [
+    {
+      "source_path": "pages/serverless-containers/reference-content/containers-limitations.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/d3f08c7b3d7b60a982572ca6ce5e18b91b1ce811/pages/serverless-containers/reference-content/containers-limitations.mdx",
+      "public_url": "https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-limitations/",
+      "snapshot_path": "evidence/documentation/hosting-reference-content_containers-limitations.mdx",
+      "sha256": "9b70cedaf92c13c08cd30b9ba1f929abe723f4eab0e3bb9bd24fb2eb6400e147",
+      "retrieved_at": "2026-10-20T19:52:43.158717+00:00",
+      "http_status": 200
+    },
+    {
+      "source_path": "pages/serverless-containers/reference-content/containers-concurrency.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/d3f08c7b3d7b60a982572ca6ce5e18b91b1ce811/pages/serverless-containers/reference-content/containers-concurrency.mdx",
+      "public_url": "https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-concurrency/",
+      "snapshot_path": "evidence/documentation/hosting-reference-content_containers-concurrency.mdx",
+      "sha256": "692e0ff648273909402648e3bf25d8f9292a236e5cb3bb03218a2f1ac3136649",
+      "retrieved_at": "2026-10-20T19:52:43.465201+00:00",
+      "http_status": 200
+    },
+    {
+      "source_path": "pages/serverless-containers/reference-content/containers-autoscaling.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/d3f08c7b3d7b60a982572ca6ce5e18b91b1ce811/pages/serverless-containers/reference-content/containers-autoscaling.mdx",
+      "public_url": "https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-autoscaling/",
+      "snapshot_path": "evidence/documentation/hosting-reference-content_containers-autoscaling.mdx",
+      "sha256": "b5ae17e75d6fe6b6a5c70393095e218bd28a5e756e7763fc05a5775eecd9bd18",
+      "retrieved_at": "2026-10-20T19:52:43.772319+00:00",
+      "http_status": 200
+    },
+    {
+      "source_path": "pages/serverless-containers/reference-content/request-headers.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/d3f08c7b3d7b60a982572ca6ce5e18b91b1ce811/pages/serverless-containers/reference-content/request-headers.mdx",
+      "public_url": "https://www.scaleway.com/en/docs/serverless-containers/reference-content/request-headers/",
+      "snapshot_path": "evidence/documentation/hosting-reference-content_request-headers.mdx",
+      "sha256": "fa8d04b00776e6ac91f148ace08ce6189b5b8954f4256925788528305211a8e6",
+      "retrieved_at": "2026-10-20T19:52:44.079812+00:00",
+      "http_status": 200
+    },
+    {
+      "source_path": "pages/serverless-containers/reference-content/containers-private-networks.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/d3f08c7b3d7b60a982572ca6ce5e18b91b1ce811/pages/serverless-containers/reference-content/containers-private-networks.mdx",
+      "public_url": "https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-private-networks/",
+      "snapshot_path": "evidence/documentation/hosting-reference-content_containers-private-networks.mdx",
+      "sha256": "fc8a41bbbeb92166ddc1eeafec7e637880e33e1dde5b59252ba3c0e362a44b73",
+      "retrieved_at": "2026-10-20T19:52:44.364236+00:00",
+      "http_status": 200
+    },
+    {
+      "source_path": "pages/serverless-containers/reference-content/port-parameter-variable.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/d3f08c7b3d7b60a982572ca6ce5e18b91b1ce811/pages/serverless-containers/reference-content/port-parameter-variable.mdx",
+      "public_url": "https://www.scaleway.com/en/docs/serverless-containers/reference-content/port-parameter-variable/",
+      "snapshot_path": "evidence/documentation/hosting-reference-content_port-parameter-variable.mdx",
+      "sha256": "ae653ca8dac510467c2e093f3fb05de1261fe3e079f3ed6f319eab2d54971c68",
+      "retrieved_at": "2026-10-20T19:52:44.693909+00:00",
+      "http_status": 200
+    },
+    {
+      "source_path": "pages/serverless-containers/how-to/secure-a-container.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/d3f08c7b3d7b60a982572ca6ce5e18b91b1ce811/pages/serverless-containers/how-to/secure-a-container.mdx",
+      "public_url": "https://www.scaleway.com/en/docs/serverless-containers/how-to/secure-a-container/",
+      "snapshot_path": "evidence/documentation/hosting-how-to_secure-a-container.mdx",
+      "sha256": "afaeddc76b7820f73145ca388cda1ca79e3909d5ce2ab908f285bfeaf12e373f",
+      "retrieved_at": "2026-10-20T19:52:45.001239+00:00",
+      "http_status": 200
+    },
+    {
+      "source_path": "pages/serverless-containers/how-to/migrate-jwt-to-iam-authentication.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/d3f08c7b3d7b60a982572ca6ce5e18b91b1ce811/pages/serverless-containers/how-to/migrate-jwt-to-iam-authentication.mdx",
+      "public_url": "https://www.scaleway.com/en/docs/serverless-containers/how-to/migrate-jwt-to-iam-authentication/",
+      "snapshot_path": "evidence/documentation/hosting-how-to_migrate-jwt-to-iam-authentication.mdx",
+      "sha256": "699199902990b92915e9b35c9622c22d3359d9f478a222bb1d4f95ec2a7351d4",
+      "retrieved_at": "2026-10-20T19:52:45.308464+00:00",
+      "http_status": 200
+    },
+    {
+      "source_path": "pages/serverless-containers/faq.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/d3f08c7b3d7b60a982572ca6ce5e18b91b1ce811/pages/serverless-containers/faq.mdx",
+      "public_url": "https://www.scaleway.com/en/docs/serverless-containers/faq/",
+      "snapshot_path": "evidence/documentation/hosting-faq.mdx",
+      "sha256": "84d61e2623e10ac6d19cae73f30175ccc14a8b2a7216d9a8476d69626f908c76",
+      "retrieved_at": "2026-10-20T19:52:45.928666+00:00",
+      "http_status": 200
+    },
+    {
+      "source_path": "pages/serverless-containers/concepts.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/d3f08c7b3d7b60a982572ca6ce5e18b91b1ce811/pages/serverless-containers/concepts.mdx",
+      "public_url": "https://www.scaleway.com/en/docs/serverless-containers/concepts/",
+      "snapshot_path": "evidence/documentation/hosting-concepts.mdx",
+      "sha256": "c8f84668da8177c3740f069ced52608a02b0237c5f6bc4e7dc3e31b05f8662c1",
+      "retrieved_at": "2026-10-20T19:52:46.230851+00:00",
+      "http_status": 200
+    }
+  ]
+}

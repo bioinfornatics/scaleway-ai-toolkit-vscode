@@ -1,0 +1,52 @@
+{
+  "record_id": "hosting-local-v1",
+  "issue": "scaleway_ai_vscode-jgh.1.6.1",
+  "verified_at": "2026-10-20T19:57:52.428154+00:00",
+  "method": "Real loopback HTTP against test-only synthetic stdlib probe",
+  "approval": "Current request: docs/local tests; commit allowed, no push",
+  "command": "python3 tooling/validate_hosting.py --record",
+  "status": "passed",
+  "tests_run": 12,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "environment": {
+    "python": "3.14.8",
+    "os": "Linux",
+    "machine": "x86_64",
+    "third_party_dependencies": []
+  },
+  "input_sha256": {
+    "tests/hosting/local_probe.py": "b2dbd06f5b57c79c6fb02e7c5e93f7e034008c2eebfd27b1bde76ed3258dd6c5",
+    "tests/hosting/test_local_hosting.py": "d6b645d1a02ec1e3a1b3402c20939df1166d1962d1f05e9e6390475e308580d0",
+    "tooling/validate_hosting.py": "16f31c9c7d9b085c967e94703acf2706c71a41a48559fe453383d2c353770eea",
+    "evidence/documentation/hosting-sources-v1.json": "ee95ae4f321bb8bd29710db7f2082df8ba73e7b3100401f2fd2b24a579cdc350",
+    "specifications/providers/scaleway/hosting.md": "192984365695900bf3527d9e12022759696ec67a702626f68dda03624f041595"
+  },
+  "local_profile": {
+    "bind": "127.0.0.1:OS-assigned",
+    "stream_duration_seconds": [
+      0.3,
+      0.4,
+      1,
+      2
+    ],
+    "heartbeat_seconds": 0.025,
+    "max_active_streams_tested": 2,
+    "stream_io_timeout_seconds": 0.5,
+    "session_store": "shared in-process fake"
+  },
+  "not_run": [
+    "Scaleway ingress SSE buffering/idle cutoff/header forwarding",
+    "10s/60min cloud timeout boundaries and scale-to-zero",
+    "80-request capacity or multi-replica global budget enforcement",
+    "TLS/IAM/tenant issuer/provider secret broker",
+    "External durable sessions/ledger/crash recovery/retention",
+    "Strands full Agent loop, image build/size/RSS/cold start",
+    "Public/private inference/store egress, cancellation/billing reconciliation",
+    "Cloud provisioning/deletion/cleanup"
+  ],
+  "provider_requests": 0,
+  "cloud_resources_created": 0,
+  "limitations": "Synthetic probe, not runtime v1 or production security acceptance."
+}

@@ -16,4 +16,6 @@ Beads .1.2/.1.3 are closed for scoped discovery acceptance. See
 and [bounded Strands smoke](../../../evidence/validation/strands-live-smoke-v1.json).
 Source reviews/v1 matrices remain historical. Production safety, minimum IAM,
 authoritative quota joins, private endpoints and deployment lifecycle are not certified.
-.1.5 is the next ready implementation-contract task; later gates remain in Beads.
+.1.5 contracts are accepted. [Hosting assessment](hosting.md) now records pinned
+public limits and a synthetic loopback HTTP probe under .1.6.1; actual cloud SSE,
+IAM, durable sessions and deployment remain unverified and gated in Beads.
