@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "scaleway_ai_vscode",
+  "project_id": "401d5dba-c93a-4f84-ac97-b260f6e19fd7"
+}
