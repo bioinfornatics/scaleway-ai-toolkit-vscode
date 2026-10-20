@@ -1,0 +1,930 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "enum": [
+            "1.0.0"
+          ]
+        },
+        "direction": {
+          "enum": [
+            "webview_to_host"
+          ]
+        },
+        "request_id": {
+          "$ref": "#/definitions/id"
+        },
+        "view_instance_id": {
+          "$ref": "#/definitions/id"
+        },
+        "view_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "action": {
+          "enum": [
+            "select_model"
+          ]
+        },
+        "selection_ref": {
+          "$ref": "#/definitions/id"
+        },
+        "content_revision": {
+          "$ref": "#/definitions/digest"
+        }
+      },
+      "required": [
+        "contract_version",
+        "direction",
+        "request_id",
+        "view_instance_id",
+        "view_revision",
+        "action",
+        "selection_ref",
+        "content_revision"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "enum": [
+            "1.0.0"
+          ]
+        },
+        "direction": {
+          "enum": [
+            "webview_to_host"
+          ]
+        },
+        "request_id": {
+          "$ref": "#/definitions/id"
+        },
+        "view_instance_id": {
+          "$ref": "#/definitions/id"
+        },
+        "view_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "action": {
+          "enum": [
+            "start_model_experiment"
+          ]
+        },
+        "selection_ref": {
+          "$ref": "#/definitions/id"
+        },
+        "content_revision": {
+          "$ref": "#/definitions/digest"
+        }
+      },
+      "required": [
+        "contract_version",
+        "direction",
+        "request_id",
+        "view_instance_id",
+        "view_revision",
+        "action",
+        "selection_ref",
+        "content_revision"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "enum": [
+            "1.0.0"
+          ]
+        },
+        "direction": {
+          "enum": [
+            "webview_to_host"
+          ]
+        },
+        "request_id": {
+          "$ref": "#/definitions/id"
+        },
+        "view_instance_id": {
+          "$ref": "#/definitions/id"
+        },
+        "view_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "action": {
+          "enum": [
+            "cancel_model_experiment"
+          ]
+        },
+        "selection_ref": {
+          "$ref": "#/definitions/id"
+        },
+        "content_revision": {
+          "$ref": "#/definitions/digest"
+        }
+      },
+      "required": [
+        "contract_version",
+        "direction",
+        "request_id",
+        "view_instance_id",
+        "view_revision",
+        "action",
+        "selection_ref",
+        "content_revision"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "enum": [
+            "1.0.0"
+          ]
+        },
+        "direction": {
+          "enum": [
+            "webview_to_host"
+          ]
+        },
+        "request_id": {
+          "$ref": "#/definitions/id"
+        },
+        "view_instance_id": {
+          "$ref": "#/definitions/id"
+        },
+        "view_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "action": {
+          "enum": [
+            "save_experiment"
+          ]
+        },
+        "selection_ref": {
+          "$ref": "#/definitions/id"
+        },
+        "content_revision": {
+          "$ref": "#/definitions/digest"
+        }
+      },
+      "required": [
+        "contract_version",
+        "direction",
+        "request_id",
+        "view_instance_id",
+        "view_revision",
+        "action",
+        "selection_ref",
+        "content_revision"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "enum": [
+            "1.0.0"
+          ]
+        },
+        "direction": {
+          "enum": [
+            "webview_to_host"
+          ]
+        },
+        "request_id": {
+          "$ref": "#/definitions/id"
+        },
+        "view_instance_id": {
+          "$ref": "#/definitions/id"
+        },
+        "view_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "action": {
+          "enum": [
+            "export_experiment"
+          ]
+        },
+        "selection_ref": {
+          "$ref": "#/definitions/id"
+        },
+        "content_revision": {
+          "$ref": "#/definitions/digest"
+        }
+      },
+      "required": [
+        "contract_version",
+        "direction",
+        "request_id",
+        "view_instance_id",
+        "view_revision",
+        "action",
+        "selection_ref",
+        "content_revision"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "enum": [
+            "1.0.0"
+          ]
+        },
+        "direction": {
+          "enum": [
+            "webview_to_host"
+          ]
+        },
+        "request_id": {
+          "$ref": "#/definitions/id"
+        },
+        "view_instance_id": {
+          "$ref": "#/definitions/id"
+        },
+        "view_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "action": {
+          "enum": [
+            "open_agent_editor"
+          ]
+        },
+        "selection_ref": {
+          "$ref": "#/definitions/id"
+        },
+        "content_revision": {
+          "$ref": "#/definitions/digest"
+        }
+      },
+      "required": [
+        "contract_version",
+        "direction",
+        "request_id",
+        "view_instance_id",
+        "view_revision",
+        "action",
+        "selection_ref",
+        "content_revision"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "enum": [
+            "1.0.0"
+          ]
+        },
+        "direction": {
+          "enum": [
+            "webview_to_host"
+          ]
+        },
+        "request_id": {
+          "$ref": "#/definitions/id"
+        },
+        "view_instance_id": {
+          "$ref": "#/definitions/id"
+        },
+        "view_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "action": {
+          "enum": [
+            "start_agent"
+          ]
+        },
+        "selection_ref": {
+          "$ref": "#/definitions/id"
+        },
+        "content_revision": {
+          "$ref": "#/definitions/digest"
+        }
+      },
+      "required": [
+        "contract_version",
+        "direction",
+        "request_id",
+        "view_instance_id",
+        "view_revision",
+        "action",
+        "selection_ref",
+        "content_revision"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "enum": [
+            "1.0.0"
+          ]
+        },
+        "direction": {
+          "enum": [
+            "webview_to_host"
+          ]
+        },
+        "request_id": {
+          "$ref": "#/definitions/id"
+        },
+        "view_instance_id": {
+          "$ref": "#/definitions/id"
+        },
+        "view_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "action": {
+          "enum": [
+            "cancel_agent"
+          ]
+        },
+        "selection_ref": {
+          "$ref": "#/definitions/id"
+        },
+        "content_revision": {
+          "$ref": "#/definitions/digest"
+        }
+      },
+      "required": [
+        "contract_version",
+        "direction",
+        "request_id",
+        "view_instance_id",
+        "view_revision",
+        "action",
+        "selection_ref",
+        "content_revision"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "enum": [
+            "1.0.0"
+          ]
+        },
+        "direction": {
+          "enum": [
+            "host_to_webview"
+          ]
+        },
+        "request_id": {
+          "$ref": "#/definitions/id"
+        },
+        "view_instance_id": {
+          "$ref": "#/definitions/id"
+        },
+        "view_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "action": {
+          "enum": [
+            "error"
+          ]
+        },
+        "error": {
+          "$ref": "#/definitions/error"
+        }
+      },
+      "required": [
+        "contract_version",
+        "direction",
+        "request_id",
+        "view_instance_id",
+        "view_revision",
+        "action",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "enum": [
+            "1.0.0"
+          ]
+        },
+        "direction": {
+          "enum": [
+            "host_to_webview"
+          ]
+        },
+        "request_id": {
+          "$ref": "#/definitions/id"
+        },
+        "view_instance_id": {
+          "$ref": "#/definitions/id"
+        },
+        "view_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "action": {
+          "enum": [
+            "state_changed"
+          ]
+        },
+        "state_ref": {
+          "$ref": "#/definitions/id"
+        },
+        "scope_revision": {
+          "$ref": "#/definitions/digest"
+        }
+      },
+      "required": [
+        "contract_version",
+        "direction",
+        "request_id",
+        "view_instance_id",
+        "view_revision",
+        "action",
+        "state_ref",
+        "scope_revision"
+      ],
+      "additionalProperties": false
+    }
+  ],
+  "definitions": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "scope": {
+      "type": "object",
+      "properties": {
+        "connection_ref": {
+          "$ref": "#/definitions/id"
+        },
+        "credential_generation": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "organization_ref": {
+          "$ref": "#/definitions/id"
+        },
+        "project_ref": {
+          "$ref": "#/definitions/id"
+        },
+        "region": {
+          "enum": [
+            "fr-par"
+          ]
+        },
+        "scope_revision": {
+          "$ref": "#/definitions/digest"
+        }
+      },
+      "required": [
+        "connection_ref",
+        "credential_generation",
+        "organization_ref",
+        "project_ref",
+        "region",
+        "scope_revision"
+      ],
+      "additionalProperties": false
+    },
+    "model": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "enum": [
+                "serverless"
+              ]
+            },
+            "provider": {
+              "enum": [
+                "scaleway"
+              ]
+            },
+            "model_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "scope": {
+              "$ref": "#/definitions/scope"
+            },
+            "endpoint_ref": {
+              "$ref": "#/definitions/id"
+            },
+            "capability_revision": {
+              "$ref": "#/definitions/digest"
+            }
+          },
+          "required": [
+            "kind",
+            "provider",
+            "model_id",
+            "scope",
+            "endpoint_ref",
+            "capability_revision"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "enum": [
+                "dedicated"
+              ]
+            },
+            "provider": {
+              "enum": [
+                "scaleway"
+              ]
+            },
+            "catalog_model_ref": {
+              "$ref": "#/definitions/id"
+            },
+            "deployment_ref": {
+              "$ref": "#/definitions/id"
+            },
+            "endpoint_ref": {
+              "$ref": "#/definitions/id"
+            },
+            "inference_model_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "scope": {
+              "$ref": "#/definitions/scope"
+            },
+            "capability_revision": {
+              "$ref": "#/definitions/digest"
+            }
+          },
+          "required": [
+            "kind",
+            "provider",
+            "catalog_model_ref",
+            "deployment_ref",
+            "endpoint_ref",
+            "inference_model_id",
+            "scope",
+            "capability_revision"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "max_output_tokens": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32768
+        },
+        "temperature": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "top_p": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": [
+        "max_output_tokens"
+      ],
+      "additionalProperties": false
+    },
+    "budget": {
+      "type": "object",
+      "properties": {
+        "max_physical_sends": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "max_steps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "max_input_tokens": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "max_output_tokens": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "max_concurrency": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32
+        },
+        "max_duration_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600000
+        },
+        "currency": {
+          "enum": [
+            "EUR"
+          ]
+        },
+        "max_spend_microunits": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000000
+        }
+      },
+      "required": [
+        "max_physical_sends",
+        "max_steps",
+        "max_input_tokens",
+        "max_output_tokens",
+        "max_concurrency",
+        "max_duration_ms",
+        "currency",
+        "max_spend_microunits"
+      ],
+      "additionalProperties": false
+    },
+    "error": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "enum": [
+            "unsupported_version",
+            "invalid_request",
+            "unauthorized",
+            "forbidden",
+            "scope_mismatch",
+            "stale_revision",
+            "capability_unknown",
+            "budget_exceeded",
+            "revoked",
+            "deadline_exceeded",
+            "usage_unknown",
+            "remote_outcome_unknown",
+            "validation_exhausted",
+            "provider_error",
+            "replay_unavailable",
+            "idempotency_conflict",
+            "unsupported_feature"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "retry_disposition": {
+          "enum": [
+            "never",
+            "review_required",
+            "proven_not_sent_only"
+          ]
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "retry_disposition"
+      ],
+      "additionalProperties": false
+    },
+    "usage": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "status": {
+              "enum": [
+                "known"
+              ]
+            },
+            "input_tokens": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            "output_tokens": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            "total_tokens": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            "spend_microunits": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            "semantics": {
+              "enum": [
+                "attempt_total"
+              ]
+            }
+          },
+          "required": [
+            "status",
+            "input_tokens",
+            "output_tokens",
+            "total_tokens",
+            "spend_microunits",
+            "semantics"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "status": {
+              "enum": [
+                "unknown"
+              ]
+            },
+            "reason": {
+              "enum": [
+                "missing",
+                "malformed",
+                "interrupted",
+                "unverified"
+              ]
+            },
+            "reservation_retained": {
+              "enum": [
+                true
+              ]
+            }
+          },
+          "required": [
+            "status",
+            "reason",
+            "reservation_retained"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "binding": {
+      "type": "object",
+      "properties": {
+        "run_id": {
+          "$ref": "#/definitions/id"
+        },
+        "scope": {
+          "$ref": "#/definitions/scope"
+        },
+        "spec_revision": {
+          "$ref": "#/definitions/digest"
+        },
+        "prompt_revision": {
+          "$ref": "#/definitions/digest"
+        },
+        "data_revision": {
+          "$ref": "#/definitions/digest"
+        },
+        "model_revision": {
+          "$ref": "#/definitions/digest"
+        },
+        "runtime_instance_id": {
+          "$ref": "#/definitions/id"
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        }
+      },
+      "required": [
+        "run_id",
+        "scope",
+        "spec_revision",
+        "prompt_revision",
+        "data_revision",
+        "model_revision",
+        "runtime_instance_id",
+        "epoch"
+      ],
+      "additionalProperties": false
+    },
+    "output": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "enum": [
+                "text"
+              ]
+            }
+          },
+          "required": [
+            "mode"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "enum": [
+                "prompt_json_local_validation"
+              ]
+            },
+            "schema_ref": {
+              "$ref": "#/definitions/id"
+            },
+            "schema_revision": {
+              "$ref": "#/definitions/digest"
+            },
+            "max_retries": {
+              "enum": [
+                5
+              ]
+            },
+            "max_physical_sends": {
+              "enum": [
+                6
+              ]
+            }
+          },
+          "required": [
+            "mode",
+            "schema_ref",
+            "schema_revision",
+            "max_retries",
+            "max_physical_sends"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "tool": {
+      "type": "object",
+      "properties": {
+        "tool_ref": {
+          "$ref": "#/definitions/id"
+        },
+        "schema_revision": {
+          "$ref": "#/definitions/digest"
+        },
+        "config_revision": {
+          "$ref": "#/definitions/digest"
+        }
+      },
+      "required": [
+        "tool_ref",
+        "schema_revision",
+        "config_revision"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

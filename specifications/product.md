@@ -53,3 +53,28 @@ MVP ends at exported runnable model example and read-only dedicated resources. I
 ## Required verification evidence
 
 Record unit/integration coverage, fixture versus live-test provenance, model capability versions, error/recovery cases, secret scanning, visual-source approvals where applicable and runtime/deployment evidence. Real account tests require an authorized account and budget; absent access is a blocker, not a passed test. UI approval and prototype QA cannot prove user value or production authorization.
+
+
+### Stakeholder clarification — 2026-10-20
+
+Agent creation, editing and execution are advanced phase 2 functions, not an MVP
+prerequisite. Foundry Toolkit is a workflow reference, not an assumed exact feature
+inventory. The model-only MVP must work without installing or starting the Strands
+Python agent runtime; Python code export does not imply a Python runtime dependency
+for the extension itself. Prepare versioned advanced contracts in .1.5, but do not
+add agent onboarding, mandatory agent configuration or agent placeholders to the
+basic model journey. Advanced authoring/execution remains separately approved.
+
+## Stakeholder functional reference
+
+See [Foundry Toolkit capability mapping](functional-reference-foundry.md) for official stakeholder references, observed features, Scaleway equivalents and deferred scope. Reproduce developer outcomes, not proprietary implementation or Azure service contracts.
+
+## Accepted delivery sequence — 2026-10-20
+
+Stakeholder confirms: model MVP -> dedicated model deployment (.5.1) -> advanced
+local agents (.4.1 onward) -> optional hosted application. Keep existing IDs/phase
+labels as historical grouping; the dependency graph carries the approved order.
+Serverless remains usable without dedicated deployment. No writes/spend implied.
+
+Contracts: [ADR0004](decisions/0004-runtime-contracts.md),
+[runtime protocol](runtime-protocol.md), [schemas/examples](../contracts/README.md).

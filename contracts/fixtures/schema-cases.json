@@ -1,0 +1,808 @@
+[
+  {
+    "name": "agent-serverless",
+    "contract": "agent-spec",
+    "valid": true,
+    "value": {
+      "contract_version": "1.0.0",
+      "agent_id": "fixture-agent",
+      "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "name": "Synthetic example",
+      "instructions": "Use only approved synthetic inputs.",
+      "model": {
+        "kind": "serverless",
+        "provider": "scaleway",
+        "model_id": "mistral-small-3.2-24b-instruct-2506",
+        "scope": {
+          "connection_ref": "fixture-connection",
+          "credential_generation": 1,
+          "organization_ref": "fixture-org",
+          "project_ref": "fixture-project",
+          "region": "fr-par",
+          "scope_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "endpoint_ref": "fixture-endpoint",
+        "capability_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "parameters": {
+        "max_output_tokens": 128,
+        "temperature": 0
+      },
+      "tools": [],
+      "output": {
+        "mode": "prompt_json_local_validation",
+        "schema_ref": "fixture-output-schema",
+        "schema_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "max_retries": 5,
+        "max_physical_sends": 6
+      },
+      "requested_budget": {
+        "max_physical_sends": 6,
+        "max_steps": 3,
+        "max_input_tokens": 4096,
+        "max_output_tokens": 768,
+        "max_concurrency": 1,
+        "max_duration_ms": 300000,
+        "currency": "EUR",
+        "max_spend_microunits": 10000
+      },
+      "runtime": {
+        "engine": "strands-python",
+        "profile": "scaleway-chat-v1"
+      }
+    }
+  },
+  {
+    "name": "agent-dedicated",
+    "contract": "agent-spec",
+    "valid": true,
+    "value": {
+      "contract_version": "1.0.0",
+      "agent_id": "fixture-agent",
+      "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "name": "Synthetic example",
+      "instructions": "Use only approved synthetic inputs.",
+      "model": {
+        "kind": "dedicated",
+        "provider": "scaleway",
+        "catalog_model_ref": "fixture-catalog",
+        "deployment_ref": "fixture-deployment",
+        "endpoint_ref": "fixture-private-endpoint",
+        "inference_model_id": "fixture-serving-model",
+        "scope": {
+          "connection_ref": "fixture-connection",
+          "credential_generation": 1,
+          "organization_ref": "fixture-org",
+          "project_ref": "fixture-project",
+          "region": "fr-par",
+          "scope_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "capability_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "parameters": {
+        "max_output_tokens": 128,
+        "temperature": 0
+      },
+      "tools": [],
+      "output": {
+        "mode": "prompt_json_local_validation",
+        "schema_ref": "fixture-output-schema",
+        "schema_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "max_retries": 5,
+        "max_physical_sends": 6
+      },
+      "requested_budget": {
+        "max_physical_sends": 6,
+        "max_steps": 3,
+        "max_input_tokens": 4096,
+        "max_output_tokens": 768,
+        "max_concurrency": 1,
+        "max_duration_ms": 300000,
+        "currency": "EUR",
+        "max_spend_microunits": 10000
+      },
+      "runtime": {
+        "engine": "strands-python",
+        "profile": "scaleway-chat-v1"
+      }
+    }
+  },
+  {
+    "name": "agent-reject-contract_version",
+    "contract": "agent-spec",
+    "valid": false,
+    "value": {
+      "contract_version": "2.0.0",
+      "agent_id": "fixture-agent",
+      "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "name": "Synthetic example",
+      "instructions": "Use only approved synthetic inputs.",
+      "model": {
+        "kind": "serverless",
+        "provider": "scaleway",
+        "model_id": "mistral-small-3.2-24b-instruct-2506",
+        "scope": {
+          "connection_ref": "fixture-connection",
+          "credential_generation": 1,
+          "organization_ref": "fixture-org",
+          "project_ref": "fixture-project",
+          "region": "fr-par",
+          "scope_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "endpoint_ref": "fixture-endpoint",
+        "capability_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "parameters": {
+        "max_output_tokens": 128,
+        "temperature": 0
+      },
+      "tools": [],
+      "output": {
+        "mode": "prompt_json_local_validation",
+        "schema_ref": "fixture-output-schema",
+        "schema_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "max_retries": 5,
+        "max_physical_sends": 6
+      },
+      "requested_budget": {
+        "max_physical_sends": 6,
+        "max_steps": 3,
+        "max_input_tokens": 4096,
+        "max_output_tokens": 768,
+        "max_concurrency": 1,
+        "max_duration_ms": 300000,
+        "currency": "EUR",
+        "max_spend_microunits": 10000
+      },
+      "runtime": {
+        "engine": "strands-python",
+        "profile": "scaleway-chat-v1"
+      }
+    }
+  },
+  {
+    "name": "agent-reject-secret_key",
+    "contract": "agent-spec",
+    "valid": false,
+    "value": {
+      "contract_version": "1.0.0",
+      "agent_id": "fixture-agent",
+      "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "name": "Synthetic example",
+      "instructions": "Use only approved synthetic inputs.",
+      "model": {
+        "kind": "serverless",
+        "provider": "scaleway",
+        "model_id": "mistral-small-3.2-24b-instruct-2506",
+        "scope": {
+          "connection_ref": "fixture-connection",
+          "credential_generation": 1,
+          "organization_ref": "fixture-org",
+          "project_ref": "fixture-project",
+          "region": "fr-par",
+          "scope_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "endpoint_ref": "fixture-endpoint",
+        "capability_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "parameters": {
+        "max_output_tokens": 128,
+        "temperature": 0
+      },
+      "tools": [],
+      "output": {
+        "mode": "prompt_json_local_validation",
+        "schema_ref": "fixture-output-schema",
+        "schema_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "max_retries": 5,
+        "max_physical_sends": 6
+      },
+      "requested_budget": {
+        "max_physical_sends": 6,
+        "max_steps": 3,
+        "max_input_tokens": 4096,
+        "max_output_tokens": 768,
+        "max_concurrency": 1,
+        "max_duration_ms": 300000,
+        "currency": "EUR",
+        "max_spend_microunits": 10000
+      },
+      "runtime": {
+        "engine": "strands-python",
+        "profile": "scaleway-chat-v1"
+      },
+      "secret_key": "synthetic-secret"
+    }
+  },
+  {
+    "name": "reject-seven-attempts",
+    "contract": "agent-spec",
+    "valid": false,
+    "value": {
+      "contract_version": "1.0.0",
+      "agent_id": "fixture-agent",
+      "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "name": "Synthetic example",
+      "instructions": "Use only approved synthetic inputs.",
+      "model": {
+        "kind": "serverless",
+        "provider": "scaleway",
+        "model_id": "mistral-small-3.2-24b-instruct-2506",
+        "scope": {
+          "connection_ref": "fixture-connection",
+          "credential_generation": 1,
+          "organization_ref": "fixture-org",
+          "project_ref": "fixture-project",
+          "region": "fr-par",
+          "scope_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "endpoint_ref": "fixture-endpoint",
+        "capability_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "parameters": {
+        "max_output_tokens": 128,
+        "temperature": 0
+      },
+      "tools": [],
+      "output": {
+        "mode": "prompt_json_local_validation",
+        "schema_ref": "fixture-output-schema",
+        "schema_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "max_retries": 6,
+        "max_physical_sends": 6
+      },
+      "requested_budget": {
+        "max_physical_sends": 6,
+        "max_steps": 3,
+        "max_input_tokens": 4096,
+        "max_output_tokens": 768,
+        "max_concurrency": 1,
+        "max_duration_ms": 300000,
+        "currency": "EUR",
+        "max_spend_microunits": 10000
+      },
+      "runtime": {
+        "engine": "strands-python",
+        "profile": "scaleway-chat-v1"
+      }
+    }
+  },
+  {
+    "name": "reject-zero-spend-budget",
+    "contract": "agent-spec",
+    "valid": false,
+    "value": {
+      "contract_version": "1.0.0",
+      "agent_id": "fixture-agent",
+      "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "name": "Synthetic example",
+      "instructions": "Use only approved synthetic inputs.",
+      "model": {
+        "kind": "serverless",
+        "provider": "scaleway",
+        "model_id": "mistral-small-3.2-24b-instruct-2506",
+        "scope": {
+          "connection_ref": "fixture-connection",
+          "credential_generation": 1,
+          "organization_ref": "fixture-org",
+          "project_ref": "fixture-project",
+          "region": "fr-par",
+          "scope_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "endpoint_ref": "fixture-endpoint",
+        "capability_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "parameters": {
+        "max_output_tokens": 128,
+        "temperature": 0
+      },
+      "tools": [],
+      "output": {
+        "mode": "prompt_json_local_validation",
+        "schema_ref": "fixture-output-schema",
+        "schema_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "max_retries": 5,
+        "max_physical_sends": 6
+      },
+      "requested_budget": {
+        "max_physical_sends": 6,
+        "max_steps": 3,
+        "max_input_tokens": 4096,
+        "max_output_tokens": 768,
+        "max_concurrency": 1,
+        "max_duration_ms": 300000,
+        "currency": "EUR",
+        "max_spend_microunits": 0
+      },
+      "runtime": {
+        "engine": "strands-python",
+        "profile": "scaleway-chat-v1"
+      }
+    }
+  },
+  {
+    "name": "launch",
+    "contract": "runtime-http",
+    "valid": true,
+    "value": {
+      "operation": "launch",
+      "contract_version": "1.0.0",
+      "request_id": "fixture-request",
+      "idempotency_key": "fixture-idempotency",
+      "agent_spec": {
+        "contract_version": "1.0.0",
+        "agent_id": "fixture-agent",
+        "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "name": "Synthetic example",
+        "instructions": "Use only approved synthetic inputs.",
+        "model": {
+          "kind": "serverless",
+          "provider": "scaleway",
+          "model_id": "mistral-small-3.2-24b-instruct-2506",
+          "scope": {
+            "connection_ref": "fixture-connection",
+            "credential_generation": 1,
+            "organization_ref": "fixture-org",
+            "project_ref": "fixture-project",
+            "region": "fr-par",
+            "scope_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          },
+          "endpoint_ref": "fixture-endpoint",
+          "capability_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "parameters": {
+          "max_output_tokens": 128,
+          "temperature": 0
+        },
+        "tools": [],
+        "output": {
+          "mode": "prompt_json_local_validation",
+          "schema_ref": "fixture-output-schema",
+          "schema_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "max_retries": 5,
+          "max_physical_sends": 6
+        },
+        "requested_budget": {
+          "max_physical_sends": 6,
+          "max_steps": 3,
+          "max_input_tokens": 4096,
+          "max_output_tokens": 768,
+          "max_concurrency": 1,
+          "max_duration_ms": 300000,
+          "currency": "EUR",
+          "max_spend_microunits": 10000
+        },
+        "runtime": {
+          "engine": "strands-python",
+          "profile": "scaleway-chat-v1"
+        }
+      },
+      "input": "Synthetic task",
+      "input_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "mandate": {
+        "mandate_ref": "fixture-mandate",
+        "epoch": 1,
+        "expires_at_unix_ms": 1900000000000,
+        "scope": {
+          "connection_ref": "fixture-connection",
+          "credential_generation": 1,
+          "organization_ref": "fixture-org",
+          "project_ref": "fixture-project",
+          "region": "fr-par",
+          "scope_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "spec_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "data_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "model_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "tool_set_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "budget": {
+          "max_physical_sends": 6,
+          "max_steps": 3,
+          "max_input_tokens": 4096,
+          "max_output_tokens": 768,
+          "max_concurrency": 1,
+          "max_duration_ms": 300000,
+          "currency": "EUR",
+          "max_spend_microunits": 10000
+        }
+      }
+    }
+  },
+  {
+    "name": "get_run",
+    "contract": "runtime-http",
+    "valid": true,
+    "value": {
+      "operation": "get_run",
+      "contract_version": "1.0.0",
+      "request_id": "fixture-request",
+      "binding": {
+        "run_id": "fixture-run",
+        "scope": {
+          "connection_ref": "fixture-connection",
+          "credential_generation": 1,
+          "organization_ref": "fixture-org",
+          "project_ref": "fixture-project",
+          "region": "fr-par",
+          "scope_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "spec_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "prompt_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "data_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "model_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "runtime_instance_id": "fixture-runtime",
+        "epoch": 1
+      }
+    }
+  },
+  {
+    "name": "cancel",
+    "contract": "runtime-http",
+    "valid": true,
+    "value": {
+      "operation": "cancel",
+      "contract_version": "1.0.0",
+      "request_id": "fixture-request",
+      "binding": {
+        "run_id": "fixture-run",
+        "scope": {
+          "connection_ref": "fixture-connection",
+          "credential_generation": 1,
+          "organization_ref": "fixture-org",
+          "project_ref": "fixture-project",
+          "region": "fr-par",
+          "scope_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "spec_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "prompt_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "data_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "model_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "runtime_instance_id": "fixture-runtime",
+        "epoch": 1
+      }
+    }
+  },
+  {
+    "name": "replay",
+    "contract": "runtime-http",
+    "valid": true,
+    "value": {
+      "operation": "events",
+      "contract_version": "1.0.0",
+      "request_id": "fixture-request",
+      "binding": {
+        "run_id": "fixture-run",
+        "scope": {
+          "connection_ref": "fixture-connection",
+          "credential_generation": 1,
+          "organization_ref": "fixture-org",
+          "project_ref": "fixture-project",
+          "region": "fr-par",
+          "scope_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "spec_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "prompt_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "data_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "model_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "runtime_instance_id": "fixture-runtime",
+        "epoch": 1
+      },
+      "after_sequence": 2
+    }
+  },
+  {
+    "name": "reject-workspace-approval",
+    "contract": "runtime-http",
+    "valid": false,
+    "value": {
+      "operation": "launch",
+      "contract_version": "1.0.0",
+      "request_id": "fixture-request",
+      "idempotency_key": "fixture-idempotency",
+      "agent_spec": {
+        "contract_version": "1.0.0",
+        "agent_id": "fixture-agent",
+        "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "name": "Synthetic example",
+        "instructions": "Use only approved synthetic inputs.",
+        "model": {
+          "kind": "serverless",
+          "provider": "scaleway",
+          "model_id": "mistral-small-3.2-24b-instruct-2506",
+          "scope": {
+            "connection_ref": "fixture-connection",
+            "credential_generation": 1,
+            "organization_ref": "fixture-org",
+            "project_ref": "fixture-project",
+            "region": "fr-par",
+            "scope_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          },
+          "endpoint_ref": "fixture-endpoint",
+          "capability_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "parameters": {
+          "max_output_tokens": 128,
+          "temperature": 0
+        },
+        "tools": [],
+        "output": {
+          "mode": "prompt_json_local_validation",
+          "schema_ref": "fixture-output-schema",
+          "schema_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "max_retries": 5,
+          "max_physical_sends": 6
+        },
+        "requested_budget": {
+          "max_physical_sends": 6,
+          "max_steps": 3,
+          "max_input_tokens": 4096,
+          "max_output_tokens": 768,
+          "max_concurrency": 1,
+          "max_duration_ms": 300000,
+          "currency": "EUR",
+          "max_spend_microunits": 10000
+        },
+        "runtime": {
+          "engine": "strands-python",
+          "profile": "scaleway-chat-v1"
+        }
+      },
+      "input": "Synthetic task",
+      "input_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "mandate": {
+        "mandate_ref": "fixture-mandate",
+        "epoch": 1,
+        "expires_at_unix_ms": 1900000000000,
+        "scope": {
+          "connection_ref": "fixture-connection",
+          "credential_generation": 1,
+          "organization_ref": "fixture-org",
+          "project_ref": "fixture-project",
+          "region": "fr-par",
+          "scope_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "spec_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "data_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "model_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "tool_set_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "budget": {
+          "max_physical_sends": 6,
+          "max_steps": 3,
+          "max_input_tokens": 4096,
+          "max_output_tokens": 768,
+          "max_concurrency": 1,
+          "max_duration_ms": 300000,
+          "currency": "EUR",
+          "max_spend_microunits": 10000
+        },
+        "approved": true
+      }
+    }
+  },
+  {
+    "name": "started",
+    "contract": "runtime-events",
+    "valid": true,
+    "value": {
+      "contract_version": "1.0.0",
+      "event_id": "fixture-event-1",
+      "binding": {
+        "run_id": "fixture-run",
+        "scope": {
+          "connection_ref": "fixture-connection",
+          "credential_generation": 1,
+          "organization_ref": "fixture-org",
+          "project_ref": "fixture-project",
+          "region": "fr-par",
+          "scope_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "spec_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "prompt_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "data_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "model_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "runtime_instance_id": "fixture-runtime",
+        "epoch": 1
+      },
+      "sequence": 1,
+      "origin": "runtime",
+      "sdk_version": "1.61.1",
+      "type": "run.started",
+      "data": {
+        "state": "running"
+      }
+    }
+  },
+  {
+    "name": "usage-unknown",
+    "contract": "runtime-events",
+    "valid": true,
+    "value": {
+      "contract_version": "1.0.0",
+      "event_id": "fixture-event-1",
+      "binding": {
+        "run_id": "fixture-run",
+        "scope": {
+          "connection_ref": "fixture-connection",
+          "credential_generation": 1,
+          "organization_ref": "fixture-org",
+          "project_ref": "fixture-project",
+          "region": "fr-par",
+          "scope_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "spec_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "prompt_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "data_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "model_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "runtime_instance_id": "fixture-runtime",
+        "epoch": 1
+      },
+      "sequence": 1,
+      "origin": "runtime",
+      "sdk_version": "1.61.1",
+      "type": "usage.updated",
+      "data": {
+        "attempt_id": "fixture-attempt",
+        "usage": {
+          "status": "unknown",
+          "reason": "missing",
+          "reservation_retained": true
+        }
+      }
+    }
+  },
+  {
+    "name": "terminal",
+    "contract": "runtime-events",
+    "valid": true,
+    "value": {
+      "contract_version": "1.0.0",
+      "event_id": "fixture-event-1",
+      "binding": {
+        "run_id": "fixture-run",
+        "scope": {
+          "connection_ref": "fixture-connection",
+          "credential_generation": 1,
+          "organization_ref": "fixture-org",
+          "project_ref": "fixture-project",
+          "region": "fr-par",
+          "scope_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "spec_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "prompt_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "data_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "model_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "runtime_instance_id": "fixture-runtime",
+        "epoch": 1
+      },
+      "sequence": 1,
+      "origin": "runtime",
+      "sdk_version": "1.61.1",
+      "type": "run.terminal",
+      "data": {
+        "state": "succeeded",
+        "output_status": "complete",
+        "remote_outcome": "completed",
+        "usage_status": "known",
+        "physical_send_count": 1,
+        "reconciliation_required": false
+      }
+    }
+  },
+  {
+    "name": "reject-unknown-refund",
+    "contract": "runtime-events",
+    "valid": false,
+    "value": {
+      "contract_version": "1.0.0",
+      "event_id": "fixture-event-1",
+      "binding": {
+        "run_id": "fixture-run",
+        "scope": {
+          "connection_ref": "fixture-connection",
+          "credential_generation": 1,
+          "organization_ref": "fixture-org",
+          "project_ref": "fixture-project",
+          "region": "fr-par",
+          "scope_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "spec_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "prompt_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "data_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "model_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "runtime_instance_id": "fixture-runtime",
+        "epoch": 1
+      },
+      "sequence": 1,
+      "origin": "runtime",
+      "sdk_version": "1.61.1",
+      "type": "usage.updated",
+      "data": {
+        "attempt_id": "fixture-attempt",
+        "usage": {
+          "status": "unknown",
+          "reason": "missing",
+          "reservation_retained": false
+        }
+      }
+    }
+  },
+  {
+    "name": "reject-sequence-zero",
+    "contract": "runtime-events",
+    "valid": false,
+    "value": {
+      "contract_version": "1.0.0",
+      "event_id": "fixture-event-1",
+      "binding": {
+        "run_id": "fixture-run",
+        "scope": {
+          "connection_ref": "fixture-connection",
+          "credential_generation": 1,
+          "organization_ref": "fixture-org",
+          "project_ref": "fixture-project",
+          "region": "fr-par",
+          "scope_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "spec_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "prompt_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "data_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "model_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "runtime_instance_id": "fixture-runtime",
+        "epoch": 1
+      },
+      "sequence": 0,
+      "origin": "runtime",
+      "sdk_version": "1.61.1",
+      "type": "run.started",
+      "data": {
+        "state": "running"
+      }
+    }
+  },
+  {
+    "name": "ipc-model",
+    "contract": "webview-ipc",
+    "valid": true,
+    "value": {
+      "contract_version": "1.0.0",
+      "direction": "webview_to_host",
+      "request_id": "fixture-request",
+      "view_instance_id": "fixture-view",
+      "view_revision": 1,
+      "action": "start_model_experiment",
+      "selection_ref": "fixture-selection",
+      "content_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  },
+  {
+    "name": "ipc-no-authority",
+    "contract": "webview-ipc",
+    "valid": false,
+    "value": {
+      "contract_version": "1.0.0",
+      "direction": "webview_to_host",
+      "request_id": "fixture-request",
+      "view_instance_id": "fixture-view",
+      "view_revision": 1,
+      "action": "start_model_experiment",
+      "selection_ref": "fixture-selection",
+      "content_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "mandate_ref": "forged"
+    }
+  },
+  {
+    "name": "ipc-no-shell",
+    "contract": "webview-ipc",
+    "valid": false,
+    "value": {
+      "contract_version": "1.0.0",
+      "direction": "webview_to_host",
+      "request_id": "fixture-request",
+      "view_instance_id": "fixture-view",
+      "view_revision": 1,
+      "action": "run_shell",
+      "selection_ref": "fixture-selection",
+      "content_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  }
+]

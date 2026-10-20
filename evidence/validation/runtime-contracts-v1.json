@@ -1,0 +1,125 @@
+{
+  "date": "2026-10-20",
+  "method": "offline_contract_shape_and_full_stream_sequence_checks",
+  "status": "passed",
+  "shared_cases": 25,
+  "languages": [
+    "Python/jsonschema4.26.0",
+    "TypeScript5.9.3/Ajv8.17.1"
+  ],
+  "schemas": {
+    "contracts/webview-ipc/v1/schema.json": "46d90a2b04767c710cda0578dd5bbe036321b182e31fc61b548ba96e4a0e0fa1",
+    "contracts/runtime-events/v1/schema.json": "e5dd96092eb4eab1809756d4e493062d2a897480d245f4f17294a283d579e6c6",
+    "contracts/runtime-http/v1/schema.json": "5a545aa8f3fd621c4fa1cb76ca053376e7d5768393601622693f56789070ff17",
+    "contracts/agent-spec/v1/schema.json": "e0a46a265371c0afc931598928fd78e77e8236d6586061cb71676d6a6281a816"
+  },
+  "results": [
+    {
+      "name": "agent-serverless",
+      "valid": true
+    },
+    {
+      "name": "agent-dedicated",
+      "valid": true
+    },
+    {
+      "name": "agent-reject-contract_version",
+      "valid": false
+    },
+    {
+      "name": "agent-reject-secret_key",
+      "valid": false
+    },
+    {
+      "name": "reject-seven-attempts",
+      "valid": false
+    },
+    {
+      "name": "reject-zero-spend-budget",
+      "valid": false
+    },
+    {
+      "name": "launch",
+      "valid": true
+    },
+    {
+      "name": "get_run",
+      "valid": true
+    },
+    {
+      "name": "cancel",
+      "valid": true
+    },
+    {
+      "name": "replay",
+      "valid": true
+    },
+    {
+      "name": "reject-workspace-approval",
+      "valid": false
+    },
+    {
+      "name": "started",
+      "valid": true
+    },
+    {
+      "name": "usage-unknown",
+      "valid": true
+    },
+    {
+      "name": "terminal",
+      "valid": true
+    },
+    {
+      "name": "reject-unknown-refund",
+      "valid": false
+    },
+    {
+      "name": "reject-sequence-zero",
+      "valid": false
+    },
+    {
+      "name": "ipc-model",
+      "valid": true
+    },
+    {
+      "name": "ipc-no-authority",
+      "valid": false
+    },
+    {
+      "name": "ipc-no-shell",
+      "valid": false
+    },
+    {
+      "name": "complete",
+      "valid": true
+    },
+    {
+      "name": "partial-cancel",
+      "valid": true
+    },
+    {
+      "name": "false-success",
+      "valid": false
+    },
+    {
+      "name": "late-event",
+      "valid": false
+    },
+    {
+      "name": "duplicate-sequence",
+      "valid": false
+    },
+    {
+      "name": "foreign-scope",
+      "valid": false
+    }
+  ],
+  "limitations": [
+    "No server/secret broker/ledger/issuer implementation tested",
+    "No full protocol semantic/replay/digest/idempotency proof",
+    "No complete Agent Builder IPC or codegen",
+    "No live cloud calls in this task",
+    "ADR field-level stakeholder review pending"
+  ]
+}

@@ -40,3 +40,10 @@ Selection authorizes planning/specification updates only, not implementation, in
 - https://github.com/microsoft/agent-framework
 - https://github.com/google-research/harness2
 - https://github.com/google-research/harness2/blob/main/docs/SETUP.md
+
+## Contract decision refinement — 2026-10-20
+
+[ADR0004](0004-runtime-contracts.md) now records versioned portable/runtime/IPC
+contracts, tested SDK/runtime profile and exact authority boundaries. Three real
+OpenAIModel smoke cases and five SDK mocks establish narrow transport evidence,
+not full Agent/runtime/security compatibility. Earlier no-live wording is historical.

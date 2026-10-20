@@ -55,3 +55,28 @@ Strands Python is selected for agent creation/execution against Scaleway serverl
 Create agent means portable project/spec; run means local Strands HTTP wrapper; deploy means host that application on validated compute. Catalog models, dedicated deployments and local/hosted applications remain distinct. No native Scaleway CreateAgent/thread/session service or agent SDK has been established in inspected sources; this is not proof of permanent absence.
 
 Verify tool/stream/structured-output/usage contracts, pre-effect hooks, revocation/cancellation, dependency packaging, external session storage and redacted events. Microsoft 365 Agents SDK supplies channel integration; Microsoft Agent Framework orchestration. Harness² is research harness optimization, not an officially supported Google product; defer it instead of using it as baseline runtime. Detailed decision/sources: [ADR 0001](decisions/0001-strands-agent-sdk.md).
+
+
+## Model-first and advanced runtime boundary
+
+Stakeholder-confirmed 2026-10-20: the phase 1 model workflow uses extension-host
+TypeScript provider adapters for connection, discovery, playground and read-only
+control-plane operations; it does not route through or require the Python agent
+runtime. Webviews communicate only with the extension host. Generated Python
+examples are standalone outputs, not a mandatory extension dependency.
+
+Phase 2 advanced agent creation/execution introduces the separate authenticated
+HTTP/SSE Strands runtime client and portable agent contract. Shared event concepts
+may be reused, but no Strands-specific objects leak into basic UI/core contracts.
+Agent runtime launch and tools remain explicit approved actions, never triggered
+by model browsing. .1.5 specifies this boundary, not an earlier agent UI release.
+
+## Accepted delivery sequence — 2026-10-20
+
+Stakeholder confirms: model MVP -> dedicated model deployment (.5.1) -> advanced
+local agents (.4.1 onward) -> optional hosted application. Keep existing IDs/phase
+labels as historical grouping; the dependency graph carries the approved order.
+Serverless remains usable without dedicated deployment. No writes/spend implied.
+
+Contracts: [ADR0004](decisions/0004-runtime-contracts.md),
+[runtime protocol](runtime-protocol.md), [schemas/examples](../contracts/README.md).
