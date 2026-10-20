@@ -634,3 +634,112 @@ test('deployment detail only uses known selected-project identities and rejects 
     s.restore();
   }
 });
+
+test('project creation requires final confirmation and saves only validated default', async () => {
+  const s = setup();
+  const creation = require('../dist/projectCreation');
+  const original = creation.createProject;
+  const projectId = '33333333-3333-3333-3333-333333333333';
+  try {
+    await s.connection.ensureProject();
+    s.vscode.window.showInputBox = async () => 'New project';
+    let writes = 0;
+    creation.createProject = async (intent, jwt) => {
+      writes++;
+      assert.equal(intent.confirmed, true);
+      assert.equal(intent.organizationId, org);
+      assert.equal(jwt, token);
+      return { id: projectId, name: 'New project', organizationId: org };
+    };
+    s.vscode.window.showInformationMessage = async () => undefined;
+    assert.equal(await s.connection.createProject(), false);
+    assert.equal(writes, 0);
+    assert.equal(s.connection.project.id, id);
+    s.vscode.window.showInformationMessage = async (
+      _message,
+      _options,
+      action,
+    ) => action;
+    assert.equal(await s.connection.createProject(), true);
+    assert.equal(writes, 1);
+    assert.equal(s.connection.project.id, projectId);
+    assert.equal(
+      s.state.get(`scalewayAI.preferences.v1.${org}`).project.id,
+      projectId,
+    );
+    assert.ok(!JSON.stringify([...s.state]).includes(token));
+  } finally {
+    creation.createProject = original;
+    s.connection.dispose();
+    s.restore();
+  }
+});
+test('unknown creation outcome and stale success preserve old default and never retry', async () => {
+  const s = setup();
+  const creation = require('../dist/projectCreation');
+  const original = creation.createProject;
+  try {
+    await s.connection.ensureProject();
+    const previous = s.state.get(`scalewayAI.preferences.v1.${org}`);
+    s.vscode.window.showInputBox = async () => 'New project';
+    let writes = 0;
+    creation.createProject = async () => {
+      writes++;
+      throw new provider.ReadError('creation_outcome_unknown');
+    };
+    assert.equal(await s.connection.createProject(), false);
+    assert.equal(writes, 1);
+    assert.equal(s.connection.project.id, id);
+    assert.deepEqual(s.state.get(`scalewayAI.preferences.v1.${org}`), previous);
+    creation.createProject = async () => {
+      await s.connection.disconnect();
+      return { id: org, name: 'New project', organizationId: org };
+    };
+    assert.equal(await s.connection.createProject(), false);
+    assert.equal(s.connection.project, undefined);
+    assert.equal(s.state.get(`scalewayAI.preferences.v1.${org}`), undefined);
+  } finally {
+    creation.createProject = original;
+    s.connection.dispose();
+    s.restore();
+  }
+});
+
+test('trust revoked during created-project preference write restores previous default', async () => {
+  const s = setup();
+  const creation = require('../dist/projectCreation');
+  const previousCreate = creation.createProject;
+  try {
+    await s.connection.ensureProject();
+    const previousPreferences = s.state.get(`scalewayAI.preferences.v1.${org}`);
+    s.vscode.window.showInputBox = async () => 'New project';
+    creation.createProject = async () => ({
+      id: org,
+      name: 'New project',
+      organizationId: org,
+    });
+    const update = s.context.globalState.update;
+    let invalidated = false;
+    s.context.globalState.update = async (key, value) => {
+      await update(key, value);
+      if (
+        !invalidated &&
+        key === `scalewayAI.preferences.v1.${org}` &&
+        value?.project?.name === 'New project'
+      ) {
+        invalidated = true;
+        s.vscode.workspace.isTrusted = false;
+      }
+    };
+    assert.equal(await s.connection.createProject(), false);
+    assert.equal(s.connection.project.id, id);
+    assert.deepEqual(
+      s.state.get(`scalewayAI.preferences.v1.${org}`),
+      previousPreferences,
+    );
+  } finally {
+    creation.createProject = previousCreate;
+    s.connection.dispose();
+    s.restore();
+  }
+});

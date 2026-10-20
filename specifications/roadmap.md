@@ -115,3 +115,10 @@ exports, plus reviewed vsce4 tooling (audit zero). Version 0.0.24 strengthens th
 installed catalog test: actual webview JS/DOM reports 17 rendered active public
 cards from33 raw offers, no account authentication. This closes the missing renderer
 proof, not visual/theme/keyboard or user-specific service worker root cause.
+
+
+Version 0.0.25 implements guarded project creation (.3.24.2): named organization,
+explicit final name/effect confirmation, one fixed POST, no retries, validated
+success-only default and uncertain-outcome handling. Agent cloud writes remain0;
+actual provider JWT/IAM acceptance not_run. This adds executable code behind a
+user-confirmed action, not a blanket resource/spend mandate.

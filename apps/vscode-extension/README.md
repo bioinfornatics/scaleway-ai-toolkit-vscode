@@ -1,4 +1,4 @@
-# Scaleway AI Toolkit — Preview 0.0.24
+# Scaleway AI Toolkit — Preview 0.0.25
 
 Experimental community VS Code extension; no Scaleway affiliation. **User browser
 login without API keys**, scoped read-only projects/dedicated deployments and a
@@ -6,7 +6,7 @@ separate **offline synthetic** playground. No real inference or cloud writes.
 
 ## Install and try
 
-    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.24.vsix --force
+    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.25.vsix --force
 
 Reload Window, then **Scaleway AI: Open Offline Preview** (legacy command name).
 
@@ -161,7 +161,7 @@ Scaleway; local experimental identification only, not endorsement. Publication
 requires separate brand review. ai-PULSE event branding not used. Asset provenance:
 evidence/documentation/scaleway-icon-preview-v1.json.
 
-## Preview 0.0.24 navigation and catalog visibility fix
+## Preview 0.0.25 navigation and catalog visibility fix
 
 Resources now separate **Projet Scaleway**, **Modèles**, **Récents**, and
 **Ressources locales** (synthetic demo). Developer tools separate **Découvrir**
@@ -177,7 +177,7 @@ and do not wait for pending SecretStorage. Untrusted workspace displays an expli
 explanation; approve the workspace for HTTP. Dedicated errors do not hide public
 offers. No credentials or provider endpoint input in the catalog webview.
 
-Packaged extension host catalog command (0.0.14 and final0.0.24) verified live public
+Packaged extension host catalog command (0.0.14 and final0.0.25) verified live public
 33 offerings in isolated trusted test workspace. This is stronger than standalone
 adapter testing, but it does not prove screenshot card rendering, keyboard/theme
 review or actual-account dedicated acceptance; those checks remain outstanding.
@@ -279,3 +279,18 @@ expérience synthétique ; ils ne sont pas des appels au modèle Scaleway réel.
 Exécution indépendante : python3 experiment.py ou
 node --experimental-strip-types experiment.ts (Node >=22.6). L’outillage utilise
 vsce4.0.0 (Node >=22), épinglé après revue : audit npm zéro vulnérabilité à cette date.
+
+### Créer un projet depuis le sélecteur
+
+Définir le projet → Créer un projet liste vos organisations par nom, recueille le
+nom puis demande une confirmation finale explicite avec organisation et effet.
+Cette confirmation seule déclenche un POST /account/v3/projects (délai10s, aucune
+redirection ni nouvelle tentative). L’action crée uniquement le projet, pas un GPU,
+modèle, endpoint, réseau ou clé. Elle exige une session utilisateur valide et un
+workspace approuvé. La permission IAM est contrôlée par Scaleway.
+
+Seule une réponse vérifiée (UUID/nom/organisation) devient le défaut. Sur transport
+ambigu, erreur serveur ou réponse invalide, l’ancien défaut est conservé : relisez
+les projets avec Changer de projet avant de recréer. Annuler après l’envoi ne peut
+pas annuler l’effet cloud ; un résultat inconnu n’est pas un échec garanti.
+L’agent n’a pas exécuté de création réelle. La conformance IAM/JWT/live reste à tester.

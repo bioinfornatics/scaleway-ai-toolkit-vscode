@@ -13,3 +13,17 @@ Only a successful response with validated returned project id/name/organization 
 Authentication expiry, logout, project switch and trust revocation must invalidate pending results. Any returned mismatch is rejected, not adopted. Tests must cover duplicate/ambiguous outcomes, IAM denial, cancellation before/after send, expired JWT, stale result/default assignment and absence of secrets. User confirmation of one creation does not authorize deletion, further resource creation or inference.
 
 Beads .3.24 owns full selector/creation scope and production prerequisites; .3.24.1 owns the implemented chooser plus this creation design subset. No cloud writes have been performed.
+
+
+## Implemented creation slice — 0.0.25
+
+The previously unavailable creation action is now wired to a fixed-origin,
+fixed-path, single POST transport after final native confirmation. Source:
+evidence/schemas/projects-go-account_sdk.go CreateProjectRequest/CreateProject;
+body name/organization_id/description. User-token control header reuses the pinned
+SDK JWT mapping. No default provider organization/name, retries, redirects or IAM
+escalation. Unknown outcomes preserve the previous project. Trust/session invalidation
+during preference writes rolls back local defaults; no automatic cloud deletion.
+Transport and controller tests cover malformed/foreign response, denial/server error,
+after-send abort, final-confirmation cancellation and stale defaults. No live creation
+has been executed; parent .3.24 retains production/IAM/design acceptance.

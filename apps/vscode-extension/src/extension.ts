@@ -402,16 +402,21 @@ export function activate(context: vscode.ExtensionContext): void {
           description: 'Choisir le projet Scaleway par défaut',
           id: 'switch',
         },
+        {
+          label: 'Créer un projet',
+          description: 'Confirmation finale requise · devient le défaut',
+          id: 'create',
+        },
       ],
       {
         title: 'Projet Scaleway par défaut',
         placeHolder: connection.project
-          ? connection.project.name +
-            ' · création de projet non disponible dans cette preview'
-          : 'Choisir un projet existant · création non disponible',
+          ? `${connection.project.name} · projet par défaut`
+          : 'Choisir un projet existant ou en créer un',
       },
     );
     if (choice?.id === 'switch') await connection.switchProject();
+    if (choice?.id === 'create') await connection.createProject();
   });
   register('scalewayAI.switchProject', () => connection.switchProject());
   register('scalewayAI.loadModels', () => connection.loadModels());

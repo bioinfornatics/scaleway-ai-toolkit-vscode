@@ -2,6 +2,7 @@ import { Buffer } from 'node:buffer';
 import * as vscode from 'vscode';
 import { browserLogin, parseSession, type UserSession } from './browserLogin';
 import { deploymentWizard } from './deploymentWizard';
+import { createProject } from './projectCreation';
 import {
   getDeployment,
   type ListedModel,
@@ -387,6 +388,119 @@ export class Connection implements vscode.Disposable {
       await this.report(error);
     } finally {
       this.busy = false;
+      this.changed();
+    }
+  }
+  async createProject(): Promise<boolean> {
+    await this.ready;
+    if (this.busy || !vscode.workspace.isTrusted || vscode.env.remoteName)
+      return false;
+    if (!this.connected) await this.login();
+    if (!this.connected || this.busy || !vscode.workspace.isTrusted)
+      return false;
+    const session = this.session;
+    if (!session) return false;
+    this.busy = true;
+    const generation = this.generation;
+    const abort = new AbortController();
+    this.abort = abort;
+    const current = () =>
+      generation === this.generation &&
+      !this.disposed &&
+      !abort.signal.aborted &&
+      this.session === session &&
+      this.connected &&
+      vscode.workspace.isTrusted;
+    let created: Project | undefined;
+    try {
+      const organizations = await listOrganizations(
+        session.userId,
+        this.token(),
+        abort.signal,
+      );
+      if (!current()) return false;
+      const pick = await vscode.window.showQuickPick(
+        organizations
+          .filter((organization) => !organization.locked)
+          .map((organization) => ({
+            label: organization.name,
+            description: organization.id,
+            organization,
+          })),
+        { title: 'Organisation du nouveau projet Scaleway' },
+      );
+      if (!pick || !current()) return false;
+      const name = await vscode.window.showInputBox({
+        title: 'Nom du nouveau projet Scaleway',
+        prompt:
+          'Création d’un projet uniquement ; aucun modèle, GPU ou endpoint créé.',
+        validateInput: (value) =>
+          text(value)
+            ? undefined
+            : 'Nom requis, maximum256 caractères, sans contrôles.',
+      });
+      if (!name || !text(name) || !current()) return false;
+      const confirmation = await vscode.window.showInformationMessage(
+        `Créer le projet « ${name} » dans « ${pick.organization.name} » (${pick.organization.id}) et en faire le projet par défaut ? Un POST, aucun retry automatique. Aucune autre ressource créée.`,
+        { modal: true },
+        'Créer ce projet',
+      );
+      if (confirmation !== 'Créer ce projet' || !current()) return false;
+      created = await createProject(
+        { organizationId: pick.organization.id, name, confirmed: true },
+        this.token(),
+        abort.signal,
+      );
+      if (!current()) {
+        await vscode.window.showWarningMessage(
+          'Le projet peut avoir été créé ; la session a changé. Aucun défaut enregistré, aucune nouvelle tentative.',
+        );
+        return false;
+      }
+      const previousPreferences = this.context.globalState.get<unknown>(
+        preferenceKey(session.userId),
+      );
+      // Persist validated success before changing in-memory scope; restore previous preferences
+      // if trust/session invalidates during the asynchronous state update (no late resurrection).
+      await this.write(async () => {
+        if (!current()) return;
+        await this.context.globalState.update(preferenceKey(session.userId), {
+          organizationId: created?.organizationId,
+          organizationName: pick.organization.name,
+          project: created,
+        });
+        if (!current())
+          await this.context.globalState.update(
+            preferenceKey(session.userId),
+            this.session === session ? previousPreferences : undefined,
+          );
+      });
+      if (!current()) return false;
+      this.clear();
+      this.metadata = {
+        name: 'Utilisateur connecté',
+        organizationId: created.organizationId,
+        organizationName: pick.organization.name,
+      };
+      this.project = created;
+      return true;
+    } catch (error) {
+      if (
+        error instanceof ReadError &&
+        error.code === 'creation_outcome_unknown'
+      ) {
+        await vscode.window.showWarningMessage(
+          'Résultat de création inconnu : le projet peut exister. Aucun retry et ancien défaut conservé. Utilisez Changer de projet pour relire la liste avant toute nouvelle tentative.',
+        );
+      } else if (created) {
+        await vscode.window.showWarningMessage(
+          'Projet créé mais préférence locale non enregistrée. Ancien défaut conservé ; sélectionnez le projet existant, ne relancez pas la création.',
+        );
+      } else if (current()) await this.report(error);
+      return false;
+    } finally {
+      this.busy = false;
+      if (this.abort === abort) this.abort = undefined;
       this.changed();
     }
   }
