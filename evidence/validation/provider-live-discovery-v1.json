@@ -1,0 +1,1917 @@
+{
+  "record_id": "provider-live-discovery-20261020-v1",
+  "method": "authorized_live_GET_sanitized_summaries",
+  "records": [
+    {
+      "timestamp": "2026-10-20T20:55:34+0200",
+      "physical_GET_requests": 4,
+      "elapsed_seconds": 1.68,
+      "inference_requests": 0,
+      "writes": 0,
+      "automatic_retries": 0,
+      "redirects_followed": 0,
+      "results": [
+        {
+          "check": "dedicated_models",
+          "path": "/inference/v1/regions/fr-par/models",
+          "page": 1,
+          "page_size": 100,
+          "http_status": 200,
+          "response_sha256": "8707646b2cbbe186ea66039bdca393acac7790c0c4bb398db3ff64253dd812a7",
+          "top_level_fields": [
+            "models",
+            "total_count"
+          ],
+          "returned_count": 58,
+          "item_fields": [
+            "created_at",
+            "description",
+            "has_eula",
+            "id",
+            "name",
+            "nodes_support",
+            "parameter_size_bits",
+            "project_id",
+            "region",
+            "size_bytes",
+            "status",
+            "tags",
+            "updated_at"
+          ],
+          "total_count": 58,
+          "pagination_complete": true,
+          "statuses": [
+            "ready"
+          ],
+          "scope_counts": {
+            "test_project": 0,
+            "zero_sentinel": 58,
+            "other_or_absent": 0
+          },
+          "result": "GET succeeded; no inference conformance claim"
+        },
+        {
+          "check": "dedicated_deployments",
+          "path": "/inference/v1/regions/fr-par/deployments",
+          "page": 1,
+          "page_size": 100,
+          "http_status": 200,
+          "response_sha256": "d0eaad6bd363c676dc8813da2909862b21788e8874947dc91004785b474fd4da",
+          "top_level_fields": [
+            "deployments",
+            "total_count"
+          ],
+          "returned_count": 0,
+          "item_fields": [],
+          "total_count": 0,
+          "pagination_complete": true,
+          "result": "GET succeeded; no inference conformance claim"
+        },
+        {
+          "check": "node_types",
+          "path": "/inference/v1/regions/fr-par/node-types",
+          "page": 1,
+          "page_size": 100,
+          "http_status": 200,
+          "response_sha256": "462f8a172b25bbe167d005738eeaf07b25514b2f03e4a98101e5962ed91d3d2b",
+          "top_level_fields": [
+            "node_types",
+            "total_count"
+          ],
+          "returned_count": 7,
+          "item_fields": [
+            "beta",
+            "created_at",
+            "description",
+            "disabled",
+            "gpus",
+            "memory",
+            "name",
+            "region",
+            "stock_status",
+            "updated_at",
+            "vcpus",
+            "vram"
+          ],
+          "total_count": 7,
+          "pagination_complete": true,
+          "result": "GET succeeded; no inference conformance claim"
+        },
+        {
+          "check": "organization_quotas",
+          "path": "/iam/v1alpha1/quota",
+          "page": 1,
+          "page_size": 100,
+          "http_status": 200,
+          "response_sha256": "71e86fafe269818f516271b3928ff9d201ae3fb107f4e58add246ca9a808a7ac",
+          "top_level_fields": [
+            "quota",
+            "total_count"
+          ],
+          "returned_count": 100,
+          "item_fields": [
+            "description",
+            "limit",
+            "limits",
+            "locality_type",
+            "name",
+            "pretty_name",
+            "srn",
+            "unit"
+          ],
+          "total_count": 568,
+          "pagination_complete": false,
+          "result": "GET succeeded; no inference conformance claim"
+        }
+      ],
+      "limitations": "One page per endpoint only. Hashes describe received bodies, not archived raw evidence. No minimum-IAM proof, serverless/tools/stream/usage test or spend authorization. Quotas unrelated to inference may be present on first organization page; none of their values retained."
+    },
+    {
+      "timestamp": "2026-10-20T20:57:02+0200",
+      "additional_GETs": 6,
+      "aggregate_GETs_including_prior_batch": 10,
+      "elapsed_seconds_this_batch": 2.25,
+      "ordering": "name_asc",
+      "pages": [
+        {
+          "page": 1,
+          "http_status": 200,
+          "count": 100,
+          "total_count": 568,
+          "sha256": "71e86fafe269818f516271b3928ff9d201ae3fb107f4e58add246ca9a808a7ac"
+        },
+        {
+          "page": 2,
+          "http_status": 200,
+          "count": 100,
+          "total_count": 568,
+          "sha256": "533914cdae1af2b50345297dd349b2e665646019137a138f7237aea3fbdc03f6"
+        },
+        {
+          "page": 3,
+          "http_status": 200,
+          "count": 100,
+          "total_count": 568,
+          "sha256": "975b80379e8d67792a48cb48f9e533b51231a324fb9415f0b5db77166805173a"
+        },
+        {
+          "page": 4,
+          "http_status": 200,
+          "count": 100,
+          "total_count": 568,
+          "sha256": "9915c4bda4f4d629427c52657710c1983c25d8cb157f822d20970811ea7e1fd6"
+        },
+        {
+          "page": 5,
+          "http_status": 200,
+          "count": 100,
+          "total_count": 568,
+          "sha256": "7580c7ef6ae2b642d4044059154826841282712607db1b26b2afacab0a9e1d65"
+        },
+        {
+          "page": 6,
+          "http_status": 200,
+          "count": 68,
+          "total_count": 568,
+          "sha256": "b8feaf1cbf6226596f01001089b213b4268180a8a24f9217b8e31e97a1491fe0"
+        }
+      ],
+      "received_count": 568,
+      "pagination_complete": true,
+      "matching_quota_entries": [
+        {
+          "name": "gapi_bge_multilingual_gemma2_rpm",
+          "pretty_name": "Requests per minute on BGE Multilingual Gemma 2",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_bge_multilingual_gemma2_tpm",
+          "pretty_name": "Tokens per minute on BGE Multilingual Gemma 2",
+          "limit": 400000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 400000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_deepseek_r1_distill_llama_70b_rpm",
+          "pretty_name": "Requests per minute on Deepseek R1 Distill llama 3.3 70B",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_deepseek_r1_distill_llama_70b_tpm",
+          "pretty_name": "Tokens per minute on Deepseek R1 Distill llama 3.3 70B",
+          "limit": 200000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 200000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_deepseek_r1_distill_llama_8b_rpm",
+          "pretty_name": "Requests per minute on Deepseek R1 Distill llama 3.1 8B",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_deepseek_r1_distill_llama_8b_tpm",
+          "pretty_name": "Tokens per minute on Deepseek R1 Distill llama 3.1 8B",
+          "limit": 200000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 200000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_deepseek_r1_rpm",
+          "pretty_name": "Requests per minute on Deepseek R1",
+          "limit": 10,
+          "limits": [
+            {
+              "global": true,
+              "limit": 10
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_deepseek_r1_tpm",
+          "pretty_name": "Tokens per minute on Deepseek R1",
+          "limit": 2000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 2000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_deepseek_v4_1_flash_rpm",
+          "pretty_name": "Requests per minute on DeepSeek V4.1 Flash",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_deepseek_v4_1_flash_tpm",
+          "pretty_name": "Tokens per minute on DeepSeek V4.1 Flash",
+          "limit": 5000000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 5000000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_deepseek_v4_flash_rpm",
+          "pretty_name": "Requests per minute on Deepseek V4 Flash",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_deepseek_v4_flash_tpm",
+          "pretty_name": "Tokens per minute on Deepseek V4 Flash",
+          "limit": 5000000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 5000000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_devstral_2_123b_instruct_2512_rpm",
+          "pretty_name": "Requests per minute on Devstral-2-123B-Instruct-2512",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_devstral_2_123b_instruct_2512_tpm",
+          "pretty_name": "Tokens per minute on Devstral-2-123B-Instruct-2512",
+          "limit": 2000000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 2000000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_devstral_small_2505_rpm",
+          "pretty_name": "Requests per minute on Devstral Small 2505",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_devstral_small_2505_tpm",
+          "pretty_name": "Tokens per minute on Devstral Small 2505",
+          "limit": 400000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 400000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_gemma_4_26b_a4b_it_rpm",
+          "pretty_name": "Requests per minute on Gemma 4 26B A4B it",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_gemma_4_26b_a4b_it_tpm",
+          "pretty_name": "Tokens per minute on Gemma 4 26B A4B it",
+          "limit": 2000000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 2000000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_glm_5_2_rpm",
+          "pretty_name": "Requests per minute on GLM 5.2",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_glm_5_2_tpm",
+          "pretty_name": "Tokens per minute on GLM 5.2",
+          "limit": 1000000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 1000000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_glm_5_3_rpm",
+          "pretty_name": "Requests per minute on GLM 5.3",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_glm_5_3_tpm",
+          "pretty_name": "Tokens per minute on GLM 5.3",
+          "limit": 2000000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 2000000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_gpt_oss_120b_rpm",
+          "pretty_name": "Requests per minute on GPT OSS 120b",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_gpt_oss_120b_tpm",
+          "pretty_name": "Tokens per minute on GPT OSS 120b",
+          "limit": 1000000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 1000000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_holo2_30b_a3b_rpm",
+          "pretty_name": "Requests per minute on Holo2-30B-A3B",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_holo2_30b_a3b_tpm",
+          "pretty_name": "Tokens per minute on Holo2-30B-A3B",
+          "limit": 400000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 400000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_lightonocr_3_0_8b_rpm",
+          "pretty_name": "Requests per minute on LightOnOcr 3 0.8B",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_lightonocr_3_0_8b_tpm",
+          "pretty_name": "Tokens per minute on LightOnOcr 3 0.8B",
+          "limit": 1000000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 1000000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_llama_3_1_70b_instruct_rpm",
+          "pretty_name": "Requests per minute on Llama 3.1 70b Instruct",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_llama_3_1_70b_instruct_tpm",
+          "pretty_name": "Tokens per minute on Llama 3.1 70b Instruct",
+          "limit": 200000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 200000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_llama_3_1_8b_instruct_rpm",
+          "pretty_name": "Requests per minute on Llama 3.1 8b Instruct",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_llama_3_1_8b_instruct_tpm",
+          "pretty_name": "Tokens per minute on Llama 3.1 8b Instruct",
+          "limit": 200000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 200000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_llama_3_3_70b_instruct_rpm",
+          "pretty_name": "Requests per minute on Llama 3.3 70b Instruct",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_llama_3_3_70b_instruct_tpm",
+          "pretty_name": "Tokens per minute on Llama 3.3 70b Instruct",
+          "limit": 400000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 400000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_mistral_medium_3_5_128b_rpm",
+          "pretty_name": "Requests per minute on Mistral Medium 3.5 128B",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_mistral_medium_3_5_128b_tpm",
+          "pretty_name": "Tokens per minute on Mistral Medium 3.5 128B",
+          "limit": 1000000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 1000000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_mistral_nemo_instruct_2407_rpm",
+          "pretty_name": "Requests per minute on Mistral Nemo Instruct",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_mistral_nemo_instruct_2407_tpm",
+          "pretty_name": "Tokens per minute on Mistral Nemo Instruct",
+          "limit": 400000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 400000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_mistral_ocr_2512_rpm",
+          "pretty_name": "Requests per minute on Mistral-OCR-2512",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_mistral_ocr_2512_tpm",
+          "pretty_name": "Tokens per minute on Mistral-OCR-2512",
+          "limit": 1000000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 1000000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_mistral_small_3_2_24b_instruct_2506_rpm",
+          "pretty_name": "Requests per minute on Mistral small 3.2 24b Instruct 2506",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_mistral_small_3_2_24b_instruct_2506_tpm",
+          "pretty_name": "Tokens per minute on Mistral small 3.2 24b Instruct 2506",
+          "limit": 2000000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 2000000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_pixtral_12b_2409_rpm",
+          "pretty_name": "Requests per minute on Pixtral 12b 2409",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_pixtral_12b_2409_tpm",
+          "pretty_name": "Tokens per minute on Pixtral 12b 2409",
+          "limit": 200000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 200000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_qwen_2_5_32b_instruct_rpm",
+          "pretty_name": "Requests per minute on Qwen2.5 Coder 32b Instruct",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_qwen_2_5_32b_instruct_tpm",
+          "pretty_name": "Tokens per minute on Qwen2.5 Coder 32b Instruct",
+          "limit": 200000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 200000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_qwen3_235b_a22b_instruct_2507_rpm",
+          "pretty_name": "Requests per minute on Qwen 3 235B A22B Instruct 2507",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_qwen3_235b_a22b_instruct_2507_tpm",
+          "pretty_name": "Tokens per minute on Qwen 3 235B A22B Instruct 2507",
+          "limit": 1000000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 1000000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_qwen3_5_397b_a17b_rpm",
+          "pretty_name": "Requests per minute on Qwen3-5-397B-A17B",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_qwen3_5_397b_a17b_tpm",
+          "pretty_name": "Tokens per minute on Qwen3-5-397B-A17B",
+          "limit": 2000000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 2000000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_qwen3_6_35b_a3b_rpm",
+          "pretty_name": "Requests per minute on Qwen3.6 35B A3B",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_qwen3_6_35b_a3b_tpm",
+          "pretty_name": "Tokens per minute on Qwen3.6 35B A3B",
+          "limit": 2000000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 2000000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_qwen3_8_27b_rpm",
+          "pretty_name": "Requests per minute on Qwen3.8 27B",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_qwen3_8_27b_tpm",
+          "pretty_name": "Tokens per minute on Qwen3.8 27B",
+          "limit": 5000000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 5000000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_qwen3_coder_30b_a3b_instruct_rpm",
+          "pretty_name": "Requests per minute on Qwen3 Coder 30b a3b Instruct",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_qwen3_coder_30b_a3b_instruct_tpm",
+          "pretty_name": "Tokens per minute on Qwen3 Coder 30b a3b Instruct",
+          "limit": 400000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 400000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_qwen3_embedding_8b_rpm",
+          "pretty_name": "Requests per minute on Qwen 3 Embedding 8B",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_qwen3_embedding_8b_tpm",
+          "pretty_name": "Tokens per minute on Qwen 3 Embedding 8B",
+          "limit": 1000000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 1000000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_voxtral_small_24b_2507_rpm",
+          "pretty_name": "Requests per minute on Voxtral-Small-24B-2507",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_voxtral_small_24b_2507_spm",
+          "pretty_name": "Seconds per minute on Voxtral-Small-24B-2507",
+          "limit": 3600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 3600
+            }
+          ],
+          "unit": "Seconds",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_voxtral_small_24b_2507_tpm",
+          "pretty_name": "Tokens per minute on Voxtral-Small-24B-2507",
+          "limit": 400000,
+          "limits": [
+            {
+              "global": true,
+              "limit": 400000
+            }
+          ],
+          "unit": "Tokens",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_whisper_large_v3_rpm",
+          "pretty_name": "Requests per minute on Whisper Large v3",
+          "limit": 600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 600
+            }
+          ],
+          "unit": "Requests",
+          "locality_type": "global"
+        },
+        {
+          "name": "gapi_whisper_large_v3_spm",
+          "pretty_name": "Seconds per minute on Whisper Large v3",
+          "limit": 3600,
+          "limits": [
+            {
+              "global": true,
+              "limit": 3600
+            }
+          ],
+          "unit": "Seconds",
+          "locality_type": "global"
+        },
+        {
+          "name": "ifr_custom_models",
+          "pretty_name": "Custom inference models",
+          "limit": 100,
+          "limits": [
+            {
+              "region": "fr-par",
+              "limit": 100
+            },
+            {
+              "region": "it-mil",
+              "limit": 100
+            },
+            {
+              "region": "nl-ams",
+              "limit": 100
+            },
+            {
+              "region": "pl-waw",
+              "limit": 100
+            },
+            {
+              "region": "se-sto",
+              "limit": 100
+            }
+          ],
+          "unit": "Model",
+          "locality_type": "region"
+        },
+        {
+          "name": "ifr_node_type_b300_sxm_8_288g",
+          "pretty_name": "Dedicated inference deployments using B300-SXM-8-288G nodes",
+          "limit": 2,
+          "limits": [
+            {
+              "region": "fr-par",
+              "limit": 2
+            },
+            {
+              "region": "it-mil",
+              "limit": 2
+            },
+            {
+              "region": "nl-ams",
+              "limit": 2
+            },
+            {
+              "region": "pl-waw",
+              "limit": 2
+            },
+            {
+              "region": "se-sto",
+              "limit": 2
+            }
+          ],
+          "unit": "Node",
+          "locality_type": "region"
+        },
+        {
+          "name": "ifr_node_type_h100_1_80g",
+          "pretty_name": "Dedicated inference deployments using H100-1-80G nodes",
+          "limit": 5,
+          "limits": [
+            {
+              "region": "fr-par",
+              "limit": 5
+            },
+            {
+              "region": "it-mil",
+              "limit": 5
+            },
+            {
+              "region": "nl-ams",
+              "limit": 5
+            },
+            {
+              "region": "pl-waw",
+              "limit": 5
+            },
+            {
+              "region": "se-sto",
+              "limit": 5
+            }
+          ],
+          "unit": "Nodes",
+          "locality_type": "region"
+        },
+        {
+          "name": "ifr_node_type_h100_2_80g",
+          "pretty_name": "Dedicated inference deployments using H100-2-80G nodes",
+          "limit": 5,
+          "limits": [
+            {
+              "region": "fr-par",
+              "limit": 5
+            },
+            {
+              "region": "it-mil",
+              "limit": 5
+            },
+            {
+              "region": "nl-ams",
+              "limit": 5
+            },
+            {
+              "region": "pl-waw",
+              "limit": 5
+            },
+            {
+              "region": "se-sto",
+              "limit": 5
+            }
+          ],
+          "unit": "Nodes",
+          "locality_type": "region"
+        },
+        {
+          "name": "ifr_node_type_h100_sxm_2_80g",
+          "pretty_name": "Dedicated inference deployments using H100-SXM-2-80G nodes",
+          "limit": 5,
+          "limits": [
+            {
+              "region": "fr-par",
+              "limit": 5
+            },
+            {
+              "region": "it-mil",
+              "limit": 5
+            },
+            {
+              "region": "nl-ams",
+              "limit": 5
+            },
+            {
+              "region": "pl-waw",
+              "limit": 5
+            },
+            {
+              "region": "se-sto",
+              "limit": 5
+            }
+          ],
+          "unit": "Node",
+          "locality_type": "region"
+        },
+        {
+          "name": "ifr_node_type_h100_sxm_4_80g",
+          "pretty_name": "Dedicated inference deployments using H100-SXM-4-80G nodes",
+          "limit": 5,
+          "limits": [
+            {
+              "region": "fr-par",
+              "limit": 5
+            },
+            {
+              "region": "it-mil",
+              "limit": 5
+            },
+            {
+              "region": "nl-ams",
+              "limit": 5
+            },
+            {
+              "region": "pl-waw",
+              "limit": 5
+            },
+            {
+              "region": "se-sto",
+              "limit": 5
+            }
+          ],
+          "unit": "Node",
+          "locality_type": "region"
+        },
+        {
+          "name": "ifr_node_type_h100_sxm_8_80g",
+          "pretty_name": "Dedicated inference deployments using H100-SXM-8-80G nodes",
+          "limit": 5,
+          "limits": [
+            {
+              "region": "fr-par",
+              "limit": 5
+            },
+            {
+              "region": "it-mil",
+              "limit": 5
+            },
+            {
+              "region": "nl-ams",
+              "limit": 5
+            },
+            {
+              "region": "pl-waw",
+              "limit": 5
+            },
+            {
+              "region": "se-sto",
+              "limit": 5
+            }
+          ],
+          "unit": "Node",
+          "locality_type": "region"
+        },
+        {
+          "name": "ifr_node_type_l40s_1_48g",
+          "pretty_name": "Dedicated inference deployments using L40S_1_48G nodes",
+          "limit": 10,
+          "limits": [
+            {
+              "region": "fr-par",
+              "limit": 10
+            },
+            {
+              "region": "it-mil",
+              "limit": 10
+            },
+            {
+              "region": "nl-ams",
+              "limit": 10
+            },
+            {
+              "region": "pl-waw",
+              "limit": 10
+            },
+            {
+              "region": "se-sto",
+              "limit": 10
+            }
+          ],
+          "unit": "nodes",
+          "locality_type": "region"
+        },
+        {
+          "name": "ifr_node_type_l4_1_24g",
+          "pretty_name": "Dedicated inference deployments using L4_1_24G nodes",
+          "limit": 10,
+          "limits": [
+            {
+              "region": "fr-par",
+              "limit": 10
+            },
+            {
+              "region": "it-mil",
+              "limit": 10
+            },
+            {
+              "region": "nl-ams",
+              "limit": 10
+            },
+            {
+              "region": "pl-waw",
+              "limit": 10
+            },
+            {
+              "region": "se-sto",
+              "limit": 10
+            }
+          ],
+          "unit": "nodes",
+          "locality_type": "region"
+        }
+      ],
+      "limitations": "Selection heuristic based on technical name/label; not a verified quota-to-model mapping. Organization quotas are not usage, remaining balance, stock or spend budget. No minimum-IAM, streaming or inference proof. Page 1 refetched with stable requested ordering; no snapshot isolation guarantee. Raw responses not archived; hashes only. No SRNs/secrets retained."
+    },
+    {
+      "timestamp": "2026-10-20T20:58:33+0200",
+      "endpoint": "https://api.scaleway.ai/v1/models",
+      "additional_GETs": 1,
+      "aggregate_GETs": 11,
+      "inference_requests": 0,
+      "writes": 0,
+      "redirects_followed": 0,
+      "retries": 0,
+      "http_status": 200,
+      "sha256": "6dc9336f8076afe2d54d30dc22eaa3261d6d95dc01fbb8b6546c252f2faaea9b",
+      "top_level_fields": [
+        "data",
+        "object"
+      ],
+      "returned_count": 17,
+      "item_fields": [
+        "created",
+        "id",
+        "object",
+        "owned_by"
+      ],
+      "pagination_fields": {},
+      "models": [
+        {
+          "model_id": "llama-3.3-70b-instruct",
+          "candidate_quotas": [
+            {
+              "quota_name": "gapi_llama_3_3_70b_instruct_rpm",
+              "limit": 600,
+              "unit": "Requests"
+            },
+            {
+              "quota_name": "gapi_llama_3_3_70b_instruct_tpm",
+              "limit": 400000,
+              "unit": "Tokens"
+            }
+          ],
+          "mapping_verified": false
+        },
+        {
+          "model_id": "bge-multilingual-gemma2",
+          "candidate_quotas": [
+            {
+              "quota_name": "gapi_bge_multilingual_gemma2_rpm",
+              "limit": 600,
+              "unit": "Requests"
+            },
+            {
+              "quota_name": "gapi_bge_multilingual_gemma2_tpm",
+              "limit": 400000,
+              "unit": "Tokens"
+            }
+          ],
+          "mapping_verified": false
+        },
+        {
+          "model_id": "qwen3-235b-a22b-instruct-2507",
+          "candidate_quotas": [
+            {
+              "quota_name": "gapi_qwen3_235b_a22b_instruct_2507_rpm",
+              "limit": 600,
+              "unit": "Requests"
+            },
+            {
+              "quota_name": "gapi_qwen3_235b_a22b_instruct_2507_tpm",
+              "limit": 1000000,
+              "unit": "Tokens"
+            }
+          ],
+          "mapping_verified": false
+        },
+        {
+          "model_id": "mistral-small-3.2-24b-instruct-2506",
+          "candidate_quotas": [
+            {
+              "quota_name": "gapi_mistral_small_3_2_24b_instruct_2506_rpm",
+              "limit": 600,
+              "unit": "Requests"
+            },
+            {
+              "quota_name": "gapi_mistral_small_3_2_24b_instruct_2506_tpm",
+              "limit": 2000000,
+              "unit": "Tokens"
+            }
+          ],
+          "mapping_verified": false
+        },
+        {
+          "model_id": "gpt-oss-120b",
+          "candidate_quotas": [
+            {
+              "quota_name": "gapi_gpt_oss_120b_rpm",
+              "limit": 600,
+              "unit": "Requests"
+            },
+            {
+              "quota_name": "gapi_gpt_oss_120b_tpm",
+              "limit": 1000000,
+              "unit": "Tokens"
+            }
+          ],
+          "mapping_verified": false
+        },
+        {
+          "model_id": "whisper-large-v3",
+          "candidate_quotas": [
+            {
+              "quota_name": "gapi_whisper_large_v3_rpm",
+              "limit": 600,
+              "unit": "Requests"
+            },
+            {
+              "quota_name": "gapi_whisper_large_v3_spm",
+              "limit": 3600,
+              "unit": "Seconds"
+            }
+          ],
+          "mapping_verified": false
+        },
+        {
+          "model_id": "qwen3-embedding-8b",
+          "candidate_quotas": [
+            {
+              "quota_name": "gapi_qwen3_embedding_8b_rpm",
+              "limit": 600,
+              "unit": "Requests"
+            },
+            {
+              "quota_name": "gapi_qwen3_embedding_8b_tpm",
+              "limit": 1000000,
+              "unit": "Tokens"
+            }
+          ],
+          "mapping_verified": false
+        },
+        {
+          "model_id": "qwen3.5-397b-a17b",
+          "candidate_quotas": [
+            {
+              "quota_name": "gapi_qwen3_5_397b_a17b_rpm",
+              "limit": 600,
+              "unit": "Requests"
+            },
+            {
+              "quota_name": "gapi_qwen3_5_397b_a17b_tpm",
+              "limit": 2000000,
+              "unit": "Tokens"
+            }
+          ],
+          "mapping_verified": false
+        },
+        {
+          "model_id": "gemma-4-26b-a4b-it",
+          "candidate_quotas": [
+            {
+              "quota_name": "gapi_gemma_4_26b_a4b_it_rpm",
+              "limit": 600,
+              "unit": "Requests"
+            },
+            {
+              "quota_name": "gapi_gemma_4_26b_a4b_it_tpm",
+              "limit": 2000000,
+              "unit": "Tokens"
+            }
+          ],
+          "mapping_verified": false
+        },
+        {
+          "model_id": "qwen3.6-35b-a3b",
+          "candidate_quotas": [
+            {
+              "quota_name": "gapi_qwen3_6_35b_a3b_rpm",
+              "limit": 600,
+              "unit": "Requests"
+            },
+            {
+              "quota_name": "gapi_qwen3_6_35b_a3b_tpm",
+              "limit": 2000000,
+              "unit": "Tokens"
+            }
+          ],
+          "mapping_verified": false
+        },
+        {
+          "model_id": "mistral-medium-3.5-128b",
+          "candidate_quotas": [
+            {
+              "quota_name": "gapi_mistral_medium_3_5_128b_rpm",
+              "limit": 600,
+              "unit": "Requests"
+            },
+            {
+              "quota_name": "gapi_mistral_medium_3_5_128b_tpm",
+              "limit": 1000000,
+              "unit": "Tokens"
+            }
+          ],
+          "mapping_verified": false
+        },
+        {
+          "model_id": "glm-5.2",
+          "candidate_quotas": [
+            {
+              "quota_name": "gapi_glm_5_2_rpm",
+              "limit": 600,
+              "unit": "Requests"
+            },
+            {
+              "quota_name": "gapi_glm_5_2_tpm",
+              "limit": 1000000,
+              "unit": "Tokens"
+            }
+          ],
+          "mapping_verified": false
+        },
+        {
+          "model_id": "glm-5.3",
+          "candidate_quotas": [
+            {
+              "quota_name": "gapi_glm_5_3_rpm",
+              "limit": 600,
+              "unit": "Requests"
+            },
+            {
+              "quota_name": "gapi_glm_5_3_tpm",
+              "limit": 2000000,
+              "unit": "Tokens"
+            }
+          ],
+          "mapping_verified": false
+        },
+        {
+          "model_id": "deepseek-v4-flash-0731",
+          "candidate_quotas": [],
+          "mapping_verified": false
+        },
+        {
+          "model_id": "qwen3.8-27b",
+          "candidate_quotas": [
+            {
+              "quota_name": "gapi_qwen3_8_27b_rpm",
+              "limit": 600,
+              "unit": "Requests"
+            },
+            {
+              "quota_name": "gapi_qwen3_8_27b_tpm",
+              "limit": 5000000,
+              "unit": "Tokens"
+            }
+          ],
+          "mapping_verified": false
+        },
+        {
+          "model_id": "lightonocr-3-0.8b",
+          "candidate_quotas": [
+            {
+              "quota_name": "gapi_lightonocr_3_0_8b_rpm",
+              "limit": 600,
+              "unit": "Requests"
+            },
+            {
+              "quota_name": "gapi_lightonocr_3_0_8b_tpm",
+              "limit": 1000000,
+              "unit": "Tokens"
+            }
+          ],
+          "mapping_verified": false
+        },
+        {
+          "model_id": "deepseek-v4.1-flash",
+          "candidate_quotas": [
+            {
+              "quota_name": "gapi_deepseek_v4_1_flash_rpm",
+              "limit": 600,
+              "unit": "Requests"
+            },
+            {
+              "quota_name": "gapi_deepseek_v4_1_flash_tpm",
+              "limit": 5000000,
+              "unit": "Tokens"
+            }
+          ],
+          "mapping_verified": false
+        }
+      ],
+      "result": "Authenticated model discovery succeeded; no inference/capability conformance claim.",
+      "limitations": "Authentication scope of this serverless endpoint not independently established; configured project does not prove server-side project isolation. Name normalization gives candidates only, not an authoritative mapping. No price/lifecycle/stream/tools/usage validation. Raw body not archived; hash only. Pagination completeness not asserted without contract."
+    },
+    {
+      "timestamp": "2026-10-20T21:13:14+0200",
+      "GETs_this_window": 4,
+      "GETs_all_windows": 15,
+      "elapsed_seconds": 1.84,
+      "inference": 0,
+      "writes": 0,
+      "results": [
+        {
+          "check": "project",
+          "path": "/account/v3/projects/<project_id>",
+          "http_status": 200,
+          "sha256": "94fe48f4442ee0693de6a079cab8144a80ed98b0d60fc314dad11f2dc5f1c106",
+          "top_level_fields": [
+            "created_at",
+            "description",
+            "id",
+            "name",
+            "organization_id",
+            "qualification",
+            "srn",
+            "status",
+            "updated_at"
+          ],
+          "project_id_matches": true,
+          "organization_id_matches": true
+        },
+        {
+          "check": "nodes",
+          "path": "/inference/v1/regions/fr-par/node-types",
+          "http_status": 200,
+          "sha256": "462f8a172b25bbe167d005738eeaf07b25514b2f03e4a98101e5962ed91d3d2b",
+          "top_level_fields": [
+            "node_types",
+            "total_count"
+          ],
+          "returned_count": 7,
+          "total_count": 7,
+          "pagination_complete": true,
+          "inventory": [
+            {
+              "name": "L4",
+              "stock_status": "unknown_stock",
+              "disabled": false,
+              "beta": false,
+              "region": "fr-par"
+            },
+            {
+              "name": "L40S",
+              "stock_status": "unknown_stock",
+              "disabled": false,
+              "beta": false,
+              "region": "fr-par"
+            },
+            {
+              "name": "H100",
+              "stock_status": "available",
+              "disabled": false,
+              "beta": false,
+              "region": "fr-par"
+            },
+            {
+              "name": "H100-2",
+              "stock_status": "out_of_stock",
+              "disabled": false,
+              "beta": false,
+              "region": "fr-par"
+            },
+            {
+              "name": "H100-SXM-2",
+              "stock_status": "available",
+              "disabled": false,
+              "beta": false,
+              "region": "fr-par"
+            },
+            {
+              "name": "H100-SXM-4",
+              "stock_status": "low_stock",
+              "disabled": false,
+              "beta": false,
+              "region": "fr-par"
+            },
+            {
+              "name": "H100-SXM-8",
+              "stock_status": "unknown_stock",
+              "disabled": false,
+              "beta": false,
+              "region": "fr-par"
+            }
+          ]
+        },
+        {
+          "check": "models",
+          "path": "/inference/v1/regions/fr-par/models",
+          "http_status": 200,
+          "sha256": "8707646b2cbbe186ea66039bdca393acac7790c0c4bb398db3ff64253dd812a7",
+          "top_level_fields": [
+            "models",
+            "total_count"
+          ],
+          "returned_count": 58,
+          "total_count": 58,
+          "pagination_complete": true
+        },
+        {
+          "check": "commercial",
+          "path": "/product-catalog/v2alpha1/catalog",
+          "http_status": 200,
+          "sha256": "655e7cf375fb811f7f74297ebe0d82cc03089fa8aeeffe48aed29d5926c4e3aa",
+          "top_level_fields": [
+            "apache_kafka",
+            "apple_silicon_ranges",
+            "block_storage",
+            "cockpit",
+            "dedibox_ranges",
+            "domains",
+            "elastic_metal_ranges",
+            "file_storage",
+            "generative_apis",
+            "instance_local_ssd_snapshot",
+            "instance_local_ssd_storage",
+            "instance_ranges",
+            "iot_hub",
+            "key_manager",
+            "kubernetes",
+            "load_balancer",
+            "machine_images",
+            "managed_inference",
+            "managed_mongodb",
+            "managed_redis_database",
+            "managed_relational_database",
+            "object_storage",
+            "open_search",
+            "secret_manager",
+            "serverless_containers",
+            "serverless_functions",
+            "serverless_jobs",
+            "serverless_sql_database"
+          ],
+          "model_count": 31,
+          "lifecycle_counts": {
+            "end_of_life": 14,
+            "general_availability": 8,
+            "preview": 9
+          },
+          "selected_mistral": [
+            {
+              "api_id": "mistral-small-3.2-24b-instruct-2506",
+              "status": "general_availability",
+              "supported_apis": [
+                "/v1/chat/completions"
+              ],
+              "tool_calling_supported": true,
+              "reasoning": false,
+              "regions": [
+                {
+                  "region": "fr-par",
+                  "input_token_price": {
+                    "sku": "",
+                    "per_million_tokens": {
+                      "sku": "/ai/generative_apis/consumption/mistral_small_3_2_24b_instruct_2506_input/fr-par",
+                      "value": {
+                        "currency_code": "EUR",
+                        "units": 0,
+                        "nanos": 150000000
+                      },
+                      "is_approximation": false
+                    },
+                    "per_million_tokens_batch": {
+                      "sku": "/ai/generative_apis/consumption/mistral_small_3_2_24b_instruct_2506_input_batch/fr-par",
+                      "value": {
+                        "currency_code": "EUR",
+                        "units": 0,
+                        "nanos": 75000000
+                      },
+                      "is_approximation": false
+                    }
+                  },
+                  "output_token_price": {
+                    "sku": "",
+                    "per_million_tokens": {
+                      "sku": "/ai/generative_apis/consumption/mistral_small_3_2_24b_instruct_2506_output/fr-par",
+                      "value": {
+                        "currency_code": "EUR",
+                        "units": 0,
+                        "nanos": 350000000
+                      },
+                      "is_approximation": false
+                    },
+                    "per_million_tokens_batch": {
+                      "sku": "/ai/generative_apis/consumption/mistral_small_3_2_24b_instruct_2506_output_batch/fr-par",
+                      "value": {
+                        "currency_code": "EUR",
+                        "units": 0,
+                        "nanos": 175000000
+                      },
+                      "is_approximation": false
+                    }
+                  },
+                  "input_cached_token_price": null,
+                  "input_audio_price": null
+                }
+              ],
+              "license_url": "https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md",
+              "context_window": 128000,
+              "max_output_tokens": 32768
+            }
+          ]
+        }
+      ],
+      "selected_dedicated_compatibility": [
+        {
+          "name": "mistral/mistral-small-3.2-24b-instruct-2506:fp8",
+          "status": "ready",
+          "has_eula": false,
+          "parameter_size_bits": 8,
+          "nodes_support": [
+            {
+              "nodes": [
+                {
+                  "node_type_name": "L4",
+                  "quantizations": [
+                    {
+                      "quantization_bits": 8,
+                      "allowed": false,
+                      "max_context_size": 0
+                    }
+                  ]
+                },
+                {
+                  "node_type_name": "L40S",
+                  "quantizations": [
+                    {
+                      "quantization_bits": 8,
+                      "allowed": false,
+                      "max_context_size": 0
+                    }
+                  ]
+                },
+                {
+                  "node_type_name": "H100",
+                  "quantizations": [
+                    {
+                      "quantization_bits": 8,
+                      "allowed": true,
+                      "max_context_size": 131072
+                    }
+                  ]
+                },
+                {
+                  "node_type_name": "H100-2",
+                  "quantizations": [
+                    {
+                      "quantization_bits": 8,
+                      "allowed": true,
+                      "max_context_size": 131072
+                    }
+                  ]
+                },
+                {
+                  "node_type_name": "H100-SXM-2",
+                  "quantizations": [
+                    {
+                      "quantization_bits": 8,
+                      "allowed": true,
+                      "max_context_size": 131072
+                    }
+                  ]
+                },
+                {
+                  "node_type_name": "H100-SXM-4",
+                  "quantizations": [
+                    {
+                      "quantization_bits": 8,
+                      "allowed": true,
+                      "max_context_size": 131072
+                    }
+                  ]
+                },
+                {
+                  "node_type_name": "H100-SXM-8",
+                  "quantizations": [
+                    {
+                      "quantization_bits": 8,
+                      "allowed": true,
+                      "max_context_size": 131072
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "previously_observed_fr_par_quotas": [
+        {
+          "name": "ifr_custom_models",
+          "unit": "Model",
+          "fr_par_limits": [
+            100
+          ]
+        },
+        {
+          "name": "ifr_node_type_b300_sxm_8_288g",
+          "unit": "Node",
+          "fr_par_limits": [
+            2
+          ]
+        },
+        {
+          "name": "ifr_node_type_h100_1_80g",
+          "unit": "Nodes",
+          "fr_par_limits": [
+            5
+          ]
+        },
+        {
+          "name": "ifr_node_type_h100_2_80g",
+          "unit": "Nodes",
+          "fr_par_limits": [
+            5
+          ]
+        },
+        {
+          "name": "ifr_node_type_h100_sxm_2_80g",
+          "unit": "Node",
+          "fr_par_limits": [
+            5
+          ]
+        },
+        {
+          "name": "ifr_node_type_h100_sxm_4_80g",
+          "unit": "Node",
+          "fr_par_limits": [
+            5
+          ]
+        },
+        {
+          "name": "ifr_node_type_h100_sxm_8_80g",
+          "unit": "Node",
+          "fr_par_limits": [
+            5
+          ]
+        },
+        {
+          "name": "ifr_node_type_l40s_1_48g",
+          "unit": "nodes",
+          "fr_par_limits": [
+            10
+          ]
+        },
+        {
+          "name": "ifr_node_type_l4_1_24g",
+          "unit": "nodes",
+          "fr_par_limits": [
+            10
+          ]
+        }
+      ],
+      "limitations": "Raw responses not archived; hashes only. Quota/node mapping needs explicit verified association, not guessed suffix conversion. IAM minimum rights not established by successful reads. No endpoint/private/lifecycle/Strands or inference tests. Stock is time-sensitive and does not guarantee provisioning."
+    }
+  ],
+  "limitations": "No raw payload archive; hashes alone cannot reproduce responses. Quota mapping not authoritative. Scoped historical evidence only."
+}

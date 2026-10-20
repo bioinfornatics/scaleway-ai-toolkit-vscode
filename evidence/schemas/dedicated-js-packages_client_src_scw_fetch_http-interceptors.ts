@@ -1,0 +1,101 @@
+/**
+ * HTTP interceptors for request/response logging.
+ *
+ * Note: This file uses interface call signatures instead of shorthand function types
+ * to maintain clear, documented public API signatures that are more readable in IDE
+ * tooltips and generated documentation.
+ */
+
+import type { RequestInterceptor, ResponseInterceptor } from '../../internal/interceptors/types.js'
+import { getLogger } from '../../internal/logger'
+import { LevelResolver, shouldLog } from '../../internal/logger/level-resolver.js'
+import { dumpRequest, dumpResponse } from './http-dumper.js'
+
+/**
+ * Mapper of an header entry.
+ *
+ * @internal
+ */
+type HeaderEntryMapper = (entry: [string, string]) => [string, string]
+
+/**
+ * HTTP Request with obfuscated secrets.
+ *
+ * @internal
+ */
+class ObfuscatedRequest extends Request {
+  private readonly obfuscate: HeaderEntryMapper
+
+  public constructor(request: Request, obfuscate: HeaderEntryMapper) {
+    super(request.clone())
+    this.obfuscate = obfuscate
+  }
+
+  public get headers() {
+    return new Headers(Array.from(super.clone().headers, this.obfuscate))
+  }
+
+  public clone(): ObfuscatedRequest {
+    return new ObfuscatedRequest(super.clone(), this.obfuscate)
+  }
+}
+
+/**
+ * Creates an interceptor to obfuscate the requests.
+ *
+ * @param obfuscate - The Header entries obfuscator mapper
+ * @returns The obfuscated Request
+ *
+ * @internal
+ */
+export const obfuscateInterceptor =
+  (obfuscate: HeaderEntryMapper): RequestInterceptor =>
+  ({ request }) =>
+    new ObfuscatedRequest(request, obfuscate)
+
+const identity: RequestInterceptor = ({ request }: { request: Request }) => request
+
+/**
+ * Creates an interceptor to log the requests.
+ *
+ * @param identifier - The request identifier
+ * @param obfuscate - The obfuscation interceptor
+ * @returns The interceptor
+ *
+ * @internal
+ */
+export const logRequest =
+  (identifier: string, obfuscate: RequestInterceptor = identity): RequestInterceptor =>
+  async ({ request }) => {
+    if (shouldLog(LevelResolver[getLogger().logLevel], 'debug')) {
+      getLogger().debug(
+        `--------------- Scaleway SDK REQUEST ${identifier} ---------------
+${await dumpRequest(await obfuscate({ request }))}
+---------------------------------------------------------`,
+      )
+    }
+
+    return request
+  }
+
+/**
+ * Creates an interceptor to log the responses.
+ *
+ * @param identifier - The request identifier
+ * @returns The interceptor
+ *
+ * @internal
+ */
+export const logResponse =
+  (identifier: string): ResponseInterceptor =>
+  async ({ response }) => {
+    if (shouldLog(LevelResolver[getLogger().logLevel], 'debug')) {
+      getLogger().debug(
+        `--------------- Scaleway SDK RESPONSE ${identifier} ---------------
+${await dumpResponse(response)}
+---------------------------------------------------------`,
+      )
+    }
+
+    return response
+  }

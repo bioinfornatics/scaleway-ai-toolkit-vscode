@@ -1,0 +1,3221 @@
+{
+  "matrix_version": "1.0.0",
+  "issue": "scaleway_ai_vscode-jgh.1.2",
+  "created_at": "2026-10-20T15:02:06.548326+00:00",
+  "status_vocabulary": [
+    "supported",
+    "unsupported",
+    "unknown"
+  ],
+  "interpretation": "Status applies only to evidence method and scope, never implies live availability; Partial maps to unknown with source label retained.",
+  "source_manifest": "evidence/documentation/serverless-sources-v1.json",
+  "default_unlisted_status": "unknown",
+  "invalidation": [
+    "Connection/credential identity or revision, organization/project scope, endpoint/base path, transport API, model identifier or serving revision changes invalidate dependent live evidence.",
+    "Documentation/schema/SDK/OpenAI dependency revision changes require re-review and fixtures.",
+    "Lifecycle/redirect notices, permissions/quota changes, inconsistent discovery or malformed streams stale affected observations.",
+    "Historical snapshots remain historical. TTL alone is not proof of validity.",
+    "Provider can redirect retired model strings: same identifier does not guarantee same weights."
+  ],
+  "endpoint_capabilities": {
+    "list_models": {
+      "status": "supported",
+      "method": "documentation_review",
+      "source": "scw-models:13-23",
+      "live_status": "unknown"
+    },
+    "bearer_auth": {
+      "status": "supported",
+      "method": "documentation_review",
+      "source": "scw-auth:13-31",
+      "live_status": "unknown"
+    },
+    "chat_stream": {
+      "status": "supported",
+      "method": "documentation_review",
+      "source": "scw-chat:64-77",
+      "live_status": "unknown"
+    },
+    "stream_options_include_usage": {
+      "status": "unknown",
+      "method": "documentation_review",
+      "source": "scw-chat lists stream_options without detailed option schema"
+    },
+    "provider_cancel_rollback_or_billing_stop": {
+      "status": "unknown",
+      "method": "documentation_review"
+    },
+    "managed_agent_threads_sessions": {
+      "status": "unknown",
+      "method": "documentation_review"
+    },
+    "responses_server_side_conversation_state": {
+      "status": "unsupported",
+      "method": "documentation_review",
+      "source": "serverless-schema-projection-v1.json schema_info description"
+    },
+    "selectable_serverless_region": {
+      "status": "unknown",
+      "method": "documentation_review",
+      "source": "Projection says Paris, but no selectable region request contract established"
+    }
+  },
+  "parameter_policy": {
+    "supported_documented": [
+      "messages",
+      "model",
+      "temperature",
+      "top_p",
+      "max_tokens",
+      "stream",
+      "stream_options",
+      "presence_penalty",
+      "response_format",
+      "logprobs",
+      "stop",
+      "seed",
+      "tools",
+      "tool_choice"
+    ],
+    "unsupported_documented": [
+      "frequency_penalty",
+      "n",
+      "top_logprobs",
+      "logit_bias",
+      "user"
+    ],
+    "additional_unsupported_developer_reference": [
+      "audio",
+      "metadata",
+      "modalities",
+      "prediction",
+      "prompt_cache_key",
+      "safety_identifier",
+      "service_tier",
+      "stream_options.include_obfuscation",
+      "store",
+      "system_fingerprint",
+      "web_search_options"
+    ],
+    "unknown_examples": [
+      "max_completion_tokens",
+      "parallel_tool_calls",
+      "stream_options.include_usage"
+    ],
+    "source": "scw-chat:55-85 and serverless-schema-projection-v1.json",
+    "rule": "Validate endpoint/model/API allowlist before dispatch; Strands params is not a provider-aware filter; incomplete overlapping docs are not parity proof."
+  },
+  "models": [
+    {
+      "model_documentation_name": "glm-5.3",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          21,
+          21
+        ],
+        "attribute_section_lines": [
+          546,
+          560
+        ],
+        "anchor": "glm-53",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "glm-5.2",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          22,
+          22
+        ],
+        "attribute_section_lines": [
+          561,
+          577
+        ],
+        "anchor": "glm-52",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "deepseek-v4.1-flash",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          23,
+          23
+        ],
+        "attribute_section_lines": [
+          578,
+          594
+        ],
+        "anchor": "deepseek-v41-flash",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "deepseek-v4-flash-0731",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          24,
+          24
+        ],
+        "attribute_section_lines": [
+          595,
+          611
+        ],
+        "anchor": "deepseek-v4-flash-0731",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "deepseek-r1-distill-llama-70b",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "[EOL](#end-of-life-eol-models)",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          25,
+          25
+        ],
+        "attribute_section_lines": [
+          612,
+          633
+        ],
+        "anchor": "deepseek-r1-distill-llama-70b",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "deepseek-r1-distill-llama-8b",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "No",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          26,
+          26
+        ],
+        "attribute_section_lines": [
+          634,
+          651
+        ],
+        "anchor": "deepseek-r1-distill-llama-8b",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "qwen3.8-27b",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          27,
+          27
+        ],
+        "attribute_section_lines": [
+          105,
+          120
+        ],
+        "anchor": "qwen38-27b",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "qwen3.6-35b-a3b",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          28,
+          28
+        ],
+        "attribute_section_lines": [
+          121,
+          147
+        ],
+        "anchor": "qwen36-35b-a3b",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "qwen3.5-397b-a17b",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          29,
+          29
+        ],
+        "attribute_section_lines": [
+          148,
+          174
+        ],
+        "anchor": "qwen35-397b-a17b",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "qwen3.5-35b-a3b",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "No",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          30,
+          30
+        ],
+        "attribute_section_lines": [
+          175,
+          192
+        ],
+        "anchor": "qwen35-35b-a3b",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "qwen3.5-122b-a10b",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "No",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          31,
+          31
+        ],
+        "attribute_section_lines": [
+          193,
+          210
+        ],
+        "anchor": "qwen35-122b-a10b",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "qwen3-235b-a22b-instruct-2507",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          32,
+          32
+        ],
+        "attribute_section_lines": [
+          652,
+          673
+        ],
+        "anchor": "qwen3-235b-a22b-instruct-2507",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "qwen3-235b-a22b-thinking-2507",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "No",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          33,
+          33
+        ],
+        "attribute_section_lines": [
+          674,
+          689
+        ],
+        "anchor": "qwen3-235b-a22b-thinking-2507",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "qwen3-embedding-8b",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "unsupported",
+          "documented_value": "No",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "unsupported",
+          "documented_value": "No",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          34,
+          34
+        ],
+        "attribute_section_lines": [
+          1038,
+          1057
+        ],
+        "anchor": "qwen3-embedding-8b",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "qwen3-coder-30b-a3b-instruct",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          35,
+          35
+        ],
+        "attribute_section_lines": [
+          941,
+          962
+        ],
+        "anchor": "qwen3-coder-30b-a3b-instruct",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "qwen2.5-coder-32b-instruct",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "[EOL](#end-of-life-eol-models)",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "unsupported",
+          "documented_value": "No",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          36,
+          36
+        ],
+        "attribute_section_lines": [
+          963,
+          982
+        ],
+        "anchor": "qwen25-coder-32b-instruct",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "gemma-4-31b-it",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "No",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          37,
+          37
+        ],
+        "attribute_section_lines": [
+          211,
+          237
+        ],
+        "anchor": "gemma-4-31b-it",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "gemma-4-26b-a4b-it",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          38,
+          38
+        ],
+        "attribute_section_lines": [
+          265,
+          293
+        ],
+        "anchor": "gemma-4-26b-a4b-it",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "gemma-3-27b-it",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "unknown",
+          "documented_value": "Partial",
+          "limitations": [
+            "Partial is not reliable general support"
+          ]
+        },
+        "parallel_tool_calling": {
+          "status": "unsupported",
+          "documented_value": "No",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          39,
+          39
+        ],
+        "attribute_section_lines": [
+          238,
+          264
+        ],
+        "anchor": "gemma-3-27b-it",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "gpt-oss-120b",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "unsupported",
+          "documented_value": "Generic Yes; prose excludes Chat Completions tool calling",
+          "limitations": [
+            "Responses support does not prove selected OpenAIModel Chat Completions compatibility"
+          ]
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          40,
+          40
+        ],
+        "attribute_section_lines": [
+          690,
+          712
+        ],
+        "anchor": "gpt-oss-120b",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "gpt-oss-20b",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "No",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          41,
+          41
+        ],
+        "attribute_section_lines": [
+          713,
+          728
+        ],
+        "anchor": "gpt-oss-20b",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "whisper-large-v3",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "unknown",
+          "documented_value": "-",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "unknown",
+          "documented_value": "-",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "unknown",
+          "documented_value": "-",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          42,
+          42
+        ],
+        "attribute_section_lines": [
+          516,
+          545
+        ],
+        "anchor": "whisper-large-v3",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "lightonocr-3-0.8b",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "unsupported",
+          "documented_value": "No",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "unsupported",
+          "documented_value": "No",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          43,
+          43
+        ],
+        "attribute_section_lines": [
+          502,
+          515
+        ],
+        "anchor": "lightonocr-3-08b",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "llama-3.3-70b-instruct",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          44,
+          44
+        ],
+        "attribute_section_lines": [
+          729,
+          751
+        ],
+        "anchor": "llama-33-70b-instruct",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "llama-3.1-70b-instruct",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "[EOL](#end-of-life-eol-models)",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          45,
+          45
+        ],
+        "attribute_section_lines": [
+          752,
+          772
+        ],
+        "anchor": "llama-31-70b-instruct",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "llama-3.1-8b-instruct",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "[EOL](#end-of-life-eol-models)",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          46,
+          46
+        ],
+        "attribute_section_lines": [
+          773,
+          793
+        ],
+        "anchor": "llama-31-8b-instruct",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "llama-3-8b-instruct",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "No",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          47,
+          47
+        ],
+        "attribute_section_lines": [
+          794,
+          808
+        ],
+        "anchor": "llama-3-8b-instruct",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "llama-3-70b-instruct",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "No",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "unsupported",
+          "documented_value": "No",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          48,
+          48
+        ],
+        "attribute_section_lines": [
+          809,
+          826
+        ],
+        "anchor": "llama-3-70b-instruct",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "llama-3.1-nemotron-70b-instruct",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "No",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          49,
+          49
+        ],
+        "attribute_section_lines": [
+          827,
+          843
+        ],
+        "anchor": "llama-31-nemotron-70b-instruct",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "mistral-7b-instruct-v0.3",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "No",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          50,
+          50
+        ],
+        "attribute_section_lines": [
+          862,
+          878
+        ],
+        "anchor": "mistral-7b-instruct-v03",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "mistral-large-3-675b-instruct-2512",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "No",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          51,
+          51
+        ],
+        "attribute_section_lines": [
+          294,
+          314
+        ],
+        "anchor": "mistral-large-3-675b-instruct-2512",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "mistral-medium-3.5-128b",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          52,
+          52
+        ],
+        "attribute_section_lines": [
+          315,
+          340
+        ],
+        "anchor": "mistral-medium-35-128b",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "mistral-small-3.2-24b-instruct-2506",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          53,
+          53
+        ],
+        "attribute_section_lines": [
+          341,
+          365
+        ],
+        "anchor": "mistral-small-32-24b-instruct-2506",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "mistral-small-3.1-24b-instruct-2503",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "[EOL](#end-of-life-eol-models)",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          54,
+          54
+        ],
+        "attribute_section_lines": [
+          366,
+          395
+        ],
+        "anchor": "mistral-small-31-24b-instruct-2503",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "mistral-small-24b-instruct-2501",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "No",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          55,
+          55
+        ],
+        "attribute_section_lines": [
+          879,
+          896
+        ],
+        "anchor": "mistral-small-24b-instruct-2501",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "voxtral-small-24b-2507",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          56,
+          56
+        ],
+        "attribute_section_lines": [
+          465,
+          501
+        ],
+        "anchor": "voxtral-small-24b-2507",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "mistral-nemo-instruct-2407",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "[EOL](#end-of-life-eol-models)",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          57,
+          57
+        ],
+        "attribute_section_lines": [
+          897,
+          919
+        ],
+        "anchor": "mistral-nemo-instruct-2407",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "mixtral-8x7b-instruct-v0.1",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "No",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "unsupported",
+          "documented_value": "No",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          58,
+          58
+        ],
+        "attribute_section_lines": [
+          844,
+          861
+        ],
+        "anchor": "mixtral-8x7b-instruct-v01",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "magistral-small-2506",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "No",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          59,
+          59
+        ],
+        "attribute_section_lines": [
+          920,
+          940
+        ],
+        "anchor": "magistral-small-2506",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "devstral-2-123b-instruct-2512",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          60,
+          60
+        ],
+        "attribute_section_lines": [
+          983,
+          1000
+        ],
+        "anchor": "devstral-2-123b-instruct-2512",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "devstral-small-2505",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "[EOL](#end-of-life-eol-models)",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          61,
+          61
+        ],
+        "attribute_section_lines": [
+          1001,
+          1018
+        ],
+        "anchor": "devstral-small-2505",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "pixtral-12b-2409",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          62,
+          62
+        ],
+        "attribute_section_lines": [
+          396,
+          420
+        ],
+        "anchor": "pixtral-12b-2409",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "molmo-72b-0924",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "No",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "unsupported",
+          "documented_value": "No",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          63,
+          63
+        ],
+        "attribute_section_lines": [
+          444,
+          464
+        ],
+        "anchor": "molmo-72b-0924",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "holo2-30b-a3b",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "unsupported",
+          "documented_value": "No",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          64,
+          64
+        ],
+        "attribute_section_lines": [
+          421,
+          443
+        ],
+        "anchor": "holo2-30b-a3b",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "bge-multilingual-gemma2",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "supported",
+        "documented_value": "Yes",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "unsupported",
+          "documented_value": "No",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "unsupported",
+          "documented_value": "No",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          65,
+          65
+        ],
+        "attribute_section_lines": [
+          1058,
+          1082
+        ],
+        "anchor": "bge-multilingual-gemma2",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "sentence-t5-xxl",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "[EOL](#end-of-life-eol-models)",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "unsupported",
+          "documented_value": "No",
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "unsupported",
+          "documented_value": "No",
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          66,
+          66
+        ],
+        "attribute_section_lines": [
+          1083,
+          1107
+        ],
+        "anchor": "sentence-t5-xxl",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    },
+    {
+      "model_documentation_name": "minimax-m2.5",
+      "serverless_model_id": null,
+      "endpoint": "https://api.scaleway.ai/v1",
+      "operation": "chat/completions",
+      "scope": {
+        "connection_ref": null,
+        "organization_ref": null,
+        "project_ref": null,
+        "credential_revision": null,
+        "region_selection": "not_established"
+      },
+      "catalog_availability": {
+        "status": "unsupported",
+        "documented_value": "No",
+        "live_status": "unknown"
+      },
+      "features": {
+        "tool_calling": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "parallel_tool_calling": {
+          "status": "supported",
+          "documented_value": "Yes",
+          "limitations": []
+        },
+        "structured_output": {
+          "status": "unknown",
+          "documented_value": null,
+          "limitations": []
+        },
+        "streamed_tool_arguments": {
+          "status": "unknown"
+        },
+        "stream_usage": {
+          "status": "unknown"
+        },
+        "cancellation_stops_billing": {
+          "status": "unknown"
+        }
+      },
+      "provenance": {
+        "method": "documentation_review",
+        "source_id": "scw-supported-models",
+        "source_revision": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+        "summary_lines": [
+          67,
+          67
+        ],
+        "attribute_section_lines": [
+          1019,
+          1037
+        ],
+        "anchor": "minimax-m25",
+        "verified_at": "2026-10-20T15:02:06.548326+00:00",
+        "fixture_result": "not_run",
+        "live_result": "blocked_no_authorization"
+      },
+      "limitations": [
+        "Catalog names are not authenticated serverless discovery identifiers.",
+        "Dedicated quantized model examples are not serverless identifier proof.",
+        "Generic attributes may span offerings/API transports. No model live support established."
+      ]
+    }
+  ],
+  "live_blockers": [
+    "No approved account/credential mandate/budget: live GET and inference unexecuted.",
+    "Project routing/serving revision mapping unresolved.",
+    "Fixtures delegated to parent, not executed here."
+  ]
+}

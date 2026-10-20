@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "projects response shapes \u2014 source-derived, NOT official OpenAPI",
+  "$comment": "Partial projection of Go generated SDK JSON tags, primitive/pointer/array types and enums. No required fields inferred. Unexpanded types unconstrained. Pointer nullability and known enums describe source, not a verified complete wire contract. No live validation.",
+  "x-source": {
+    "file": "projects-go-account_sdk.go",
+    "sha256": "10879b484e4a696e3a5c2e888e4cfd412a701c5c35ccf3115294a564fe6dbad5",
+    "commit": "46763ab9fc78781eca1af94bd3a83750d3a2068f",
+    "generator": "dedicated-extract.py"
+  },
+  "$defs": {
+    "Project": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "organization_id": {
+          "type": "string"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "updated_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "qualification": {
+          "anyOf": [
+            {
+              "description": "Unexpanded SDK type Qualification; intentionally unconstrained."
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "unknown_status",
+            "active",
+            "deleting"
+          ],
+          "description": "Known values at source revision; future values may exist."
+        },
+        "srn": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "ListProjectsResponse": {
+      "type": "object",
+      "properties": {
+        "total_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "projects": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Project"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

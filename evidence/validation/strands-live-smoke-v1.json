@@ -1,0 +1,117 @@
+{
+  "record_id": "strands-scaleway-smoke-20261020-v1",
+  "timestamp": "2026-10-20T21:19:20+0200",
+  "method": "authorized_live_inference_via_Strands_OpenAIModel_not_Agent_loop",
+  "scope": "stakeholder-default-project-fr-par",
+  "endpoint_pattern": "https://api.scaleway.ai/{project_id}/v1/chat/completions",
+  "model_id": "mistral-small-3.2-24b-instruct-2506",
+  "physical_POSTs": 3,
+  "tool_executions": 0,
+  "retries": 0,
+  "elapsed_seconds": 1.09,
+  "versions": {
+    "strands-agents": "1.61.1",
+    "openai": "2.54.0",
+    "httpx": "0.28.1",
+    "mistral-common": "1.12.0"
+  },
+  "tokenizer": {
+    "repository": "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+    "revision": "95a6d26c4bfb886c58daf9d3f7332c857cb27b43",
+    "file": "tekken.json",
+    "sha256": "6e2501687ccd0e1f30f36319eaf2b46958b897811e246cd8eb5d385b9e3de7d1",
+    "limitation": "Official tokenizer/template, not independent attestation of provider serving template; reported usage checked after each request, stop on mismatch."
+  },
+  "request_ledger": [
+    {
+      "request": 1,
+      "local_input_tokens": 6,
+      "max_output_tokens": 128,
+      "stream": false,
+      "tools_declared": false
+    },
+    {
+      "request": 2,
+      "local_input_tokens": 11,
+      "max_output_tokens": 128,
+      "stream": true,
+      "tools_declared": false
+    },
+    {
+      "request": 3,
+      "local_input_tokens": 76,
+      "max_output_tokens": 128,
+      "stream": true,
+      "tools_declared": true
+    }
+  ],
+  "results": [
+    {
+      "case": "nonstream",
+      "event_types": {
+        "messageStart": 1,
+        "contentBlockStart": 1,
+        "contentBlockDelta": 1,
+        "contentBlockStop": 1,
+        "messageStop": 1,
+        "metadata": 1
+      },
+      "text_delta_count": 1,
+      "tool_blocks": 0,
+      "usage": {
+        "inputTokens": 6,
+        "outputTokens": 22,
+        "totalTokens": 28
+      },
+      "stop_reason": "end_turn",
+      "result": "completed"
+    },
+    {
+      "case": "stream",
+      "event_types": {
+        "messageStart": 1,
+        "contentBlockStart": 1,
+        "contentBlockDelta": 18,
+        "contentBlockStop": 1,
+        "messageStop": 1,
+        "metadata": 1
+      },
+      "text_delta_count": 18,
+      "tool_blocks": 0,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 19,
+        "totalTokens": 30
+      },
+      "stop_reason": "end_turn",
+      "result": "completed"
+    },
+    {
+      "case": "tool_proposal",
+      "event_types": {
+        "messageStart": 1,
+        "contentBlockStart": 1,
+        "contentBlockDelta": 10,
+        "contentBlockStop": 1,
+        "messageStop": 1,
+        "metadata": 1
+      },
+      "text_delta_count": 0,
+      "tool_blocks": 1,
+      "usage": {
+        "inputTokens": 76,
+        "outputTokens": 10,
+        "totalTokens": 86
+      },
+      "stop_reason": "end_turn",
+      "result": "completed"
+    }
+  ],
+  "limitations": [
+    "Three bounded smoke cases only; no production Agent/runtime security or full model matrix validation.",
+    "No tool execution, resource creation, native structured output or cancellation billing-stop claim.",
+    "Usage absent or mismatch freezes further sends; remote failure outcomes not assumed free."
+  ],
+  "approval": "stakeholder 2026-10-20 21:14 ok followed by avance; <=3 sends/5min,256 input/128 output per send,EUR0.01",
+  "reported_token_cost_EUR": "3.18e-05"
+}

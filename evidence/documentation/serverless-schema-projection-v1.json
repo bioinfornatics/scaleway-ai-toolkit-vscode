@@ -1,0 +1,340 @@
+{
+  "artifact_kind": "rendered_schema_projection_not_full_openapi",
+  "source_url": "https://www.scaleway.com/en/developers/api/generative-apis/",
+  "source_sha256": "5d79b596a5457033417de0592a83a9cdcd8a46a98bcf7403caefba291c4994b6",
+  "retrieved_at": "2026-10-20T14:59:44.205732+00:00",
+  "version": "v1",
+  "revision": null,
+  "schema_info": [
+    {
+      "extensions": {},
+      "description": "Scaleway Generative APIs provides access to the latest AI models hosted on Scaleway infrastructure.\n\nThe Generative APIs specification targets OpenAI API compatibility.\n\nFor details about the Scaleway Generative APIs used for dedicated deployments, refer to the [Generative APIs - Dedicated Deployment API](https://www.scaleway.com/en/developers/api/inference) documentation.\n\n## Concepts\n\nRefer to the [dedicated concepts page](https://www.scaleway.com/en/docs/generative-apis/concepts/) to find definitions of the different terms referring to Generative APIs.\n\n## Quickstart\n\n<Message type=\"requirement\">\nTo complete the actions presented below, you must have:\n  - A Scaleway account logged in to the [console](https://console.scaleway.com/organization)\n  - A valid [API key](https://www.scaleway.com/en/docs/iam/how-to/create-api-keys/) with sufficient [IAM permissions](https://www.scaleway.com/en/docs/iam/reference-content/permission-sets/) to perform the actions described on this page\n  - [Installed `curl`](https://curl.se/download.html)\n</Message>\n\n1. (Optional) Configure your environment variables to simplify your usage of the APIs.\n\n    ```bash\n    export SCW_ACCESS_KEY=\"<API access key>\"\n    export SCW_SECRET_KEY=\"<API secret key>\"\n    export SCW_REGION=\"<Scaleway region>\"\n    ```\n2. Generate content from a model by running the following command.\n    ```bash\n    curl https://api.scaleway.ai/v1/chat/completions \\\n      -H \"Content-Type: application/json\" \\\n      -H \"Authorization: Bearer $SCW_SECRET_KEY\" \\\n      -d '{\n        \"model\": \"llama-3.3-70b-instruct\",\n        \"messages\": [\n          {\n            \"role\": \"system\",\n            \"content\": \"You are a helpful assistant.\"\n          },\n          {\n            \"role\": \"user\",\n            \"content\": \"Hello!\"\n          }\n        ]\n      }'\n    ```\n\nSee [How to use Generative APIs](https://www.scaleway.com/en/docs/generative-apis/how-to/)\nfor quickstart information and snippets using `REST` requests or libraries such as the `openai` Python client.\n\n\n## Technical information\n\n### Regions\n\nScaleway's infrastructure is spread across different [regions and Availability Zones](https://www.scaleway.com/en/docs/account/reference-content/products-availability/).\n\nGenerative APIs is available in the Paris region, which is represented by the following path parameter (optional while there is only one region):\n- `fr-par`\n\n### Supported endpoints and features\n\nSupported endpoints are:\n- `/v1/responses`\n- `/v1/chat/completions`\n- `/v1/audio/transcriptions`\n- `/v1/embeddings`\n- `/v1/rerank`\n- `/v1/batches`\n- `/v1/models`\n\nThe `/v1/chat/completions` endpoint:\n- **Supported features**:\n  - Structured outputs (JSON response format)\n  - Tool calling (i.e., compatibility with workflows using MCP servers)\n  - Sending and analyzing images\n  - Sending and analyzing audio files\n- **Not supported parameters**: `audio`, `metadata`, `modalities`,\n`prediction`, `prompt_cache_key`, `user`, `safety_identifier`,\n`service_tier`, `stream_options.include_obfuscation`, `store`, `system_fingerprint`,\n`web_search_options`\n- **Not supported tools**: only `function` tools are supported. `custom` tools require you to provide a custom `grammar` to verify their input format\n\nThe `/v1/audio/transcriptions` endpoint:\n- **Not supported parameters**: `chunking_strategy`, `include[]` and `timestamp_granularities[]`\n\nThe `/v1/responses` endpoint:\n- **Supported features**: currently, only `function` tools are supported. These tools must be fully defined in your query, and should be executed if the model requests them. The execution result is then sent to the model so that it can use this additional context to produce a suitable answer.\n- **Not supported features**: \n  - storing conversation state server-side \n  - execution by Scaleway of \"built-in\" tools (such as web or file search) while the model generates a response\n  - sending response output object directly as an input for the next message. Standard messages using `role:assistant` and `content` fields should be used instead. Specifically, `custom_tool_call` and `custom_tool_call_output` types are not yet supported. As a workaround, tool call results can be sent using `role:user`, although Scaleway recommends using `/chat/completions` for better results in this case.\n- **Not supported parameters**: `background`, `conversation`, `include`,\n`instructions`, `max_tool_calls`, `metadata`, `previous_response_id`, `prompt_cache_key`,\n`safety_identifier`, `service_tier`, `stream_options`, `top_logprobs`, `user`, `prompt`, `verbosity`\n\nThe `/v1/batches` endpoint:\n- **Supported features**: processing files stored in Object Storage (using the Amazon S3 protocol)\n- **Not supported parameters**: `metadata`\n\nThe `/v1/rerank` endpoint:\n- **Compatiblity**: aims for compatibility with the JinAI API and Cohere API formats (no OpenAI API exists for this endpoint)\n\n### Third-party tool integration\n\nFor full details of direct integration into third party tooling, see [Integrating Scaleway Generative APIs with popular AI tools](https://www.scaleway.com/en/docs/generative-apis/reference-content/integrating-generative-apis-with-popular-tools/).\nIf your tool is not listed, you can still specify the Scaleway URL and\nAPI key in most OpenAI-like plugins, as compatibility largely depends on the above APIs.\n\n## Technical limitations\n\nWhen choosing a model, select the ones compatible with the API endpoints you want to use\nin the [model catalog](https://www.scaleway.com/en/docs/generative-apis/reference-content/supported-models/).\nFor example, `/v1/embeddings` is only available for embeddings models.\n\n## Going further\n\nFor more information about Generative APIs, you can check out the following pages:\n\n* [Generative APIs Documentation](https://www.scaleway.com/en/docs/generative-apis/)\n* [Generative APIs FAQ](https://www.scaleway.com/en/docs/generative-apis/faq/)\n* [Scaleway Slack Community - AI Channel](https://scaleway-community.slack.com/archives/C01SGLGRLEA) join the #ai channel\n* [Contact Scaleway support](https://console.scaleway.com/support/tickets)\n\n## Troubleshooting\n\nSee [Troubleshooting Generative APIs](https://www.scaleway.com/en/docs/generative-apis/troubleshooting/)\nfor descriptions regarding advanced API behavior and solutions to common issues.",
+      "tags": [
+        {
+          "slug": "chat-completions",
+          "name": "Chat Completions",
+          "extensions": {},
+          "operations": [
+            {
+              "summary": "Create a chat completion",
+              "slug": "create-a-chat-completion",
+              "method": "post",
+              "operationId": "createChatCompletion",
+              "path": "/{project_id}/v1/chat/completions",
+              "isMcpServer": false
+            }
+          ]
+        },
+        {
+          "slug": "responses",
+          "name": "Responses",
+          "extensions": {},
+          "operations": [
+            {
+              "summary": "Create a response",
+              "slug": "create-a-response",
+              "method": "post",
+              "operationId": "createResponse",
+              "path": "/{project_id}/v1/responses",
+              "isMcpServer": false
+            }
+          ]
+        },
+        {
+          "slug": "embeddings",
+          "name": "Embeddings",
+          "extensions": {},
+          "operations": [
+            {
+              "summary": "Create an embedding",
+              "slug": "create-an-embedding",
+              "method": "post",
+              "operationId": "createEmbedding",
+              "path": "/{project_id}/v1/embeddings",
+              "isMcpServer": false
+            }
+          ]
+        },
+        {
+          "slug": "rerank",
+          "name": "Rerank",
+          "extensions": {},
+          "operations": [
+            {
+              "summary": "Create a reranking",
+              "slug": "create-a-reranking",
+              "method": "post",
+              "operationId": "createRerank",
+              "path": "/{project_id}/v1/rerank",
+              "isMcpServer": false
+            }
+          ]
+        },
+        {
+          "slug": "audio",
+          "name": "Audio",
+          "extensions": {},
+          "operations": [
+            {
+              "summary": "Create an audio transcription",
+              "slug": "create-an-audio-transcription",
+              "method": "post",
+              "operationId": "createAudioTranscription",
+              "path": "/{project_id}/v1/audio/transcriptions",
+              "isMcpServer": false
+            }
+          ]
+        },
+        {
+          "slug": "batch",
+          "name": "Batch",
+          "extensions": {},
+          "operations": [
+            {
+              "summary": "List batches",
+              "slug": "list-batches",
+              "method": "get",
+              "operationId": "listBatch",
+              "path": "/{project_id}/v1/batches",
+              "isMcpServer": false
+            },
+            {
+              "summary": "Create a batch",
+              "slug": "create-a-batch",
+              "method": "post",
+              "operationId": "createBatch",
+              "path": "/{project_id}/v1/batches",
+              "isMcpServer": false
+            },
+            {
+              "summary": "Get a batch",
+              "slug": "get-a-batch",
+              "method": "get",
+              "operationId": "getBatch",
+              "path": "/{project_id}/v1/batches/{batch_id}",
+              "isMcpServer": false
+            },
+            {
+              "summary": "Delete a batch",
+              "slug": "delete-a-batch",
+              "method": "delete",
+              "operationId": "deleteBatch",
+              "path": "/{project_id}/v1/batches/{batch_id}",
+              "isMcpServer": false
+            },
+            {
+              "summary": "Cancel a batch",
+              "slug": "cancel-a-batch",
+              "method": "post",
+              "operationId": "cancelBatch",
+              "path": "/{project_id}/v1/batches/{batch_id}/cancel",
+              "isMcpServer": false
+            }
+          ]
+        },
+        {
+          "slug": "models",
+          "name": "Models",
+          "extensions": {},
+          "operations": [
+            {
+              "summary": "List models",
+              "slug": "list-models",
+              "method": "get",
+              "operationId": "listModels",
+              "path": "/v1/models",
+              "isMcpServer": false
+            }
+          ]
+        }
+      ],
+      "components": {
+        "schemas": [
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          },
+          {
+            "__typename": "SchemaItem"
+          }
+        ]
+      }
+    },
+    {
+      "servers": [
+        {
+          "url": "https://api.scaleway.ai",
+          "description": null
+        }
+      ],
+      "license": null,
+      "termsOfService": null,
+      "externalDocs": null,
+      "contact": null,
+      "description": "Scaleway Generative APIs provides access to the latest AI models hosted on Scaleway infrastructure.\n\nThe Generative APIs specification targets OpenAI API compatibility.\n\nFor details about the Scaleway Generative APIs used for dedicated deployments, refer to the [Generative APIs - Dedicated Deployment API](https://www.scaleway.com/en/developers/api/inference) documentation.\n\n## Concepts\n\nRefer to the [dedicated concepts page](https://www.scaleway.com/en/docs/generative-apis/concepts/) to find definitions of the different terms referring to Generative APIs.\n\n## Quickstart\n\n<Message type=\"requirement\">\nTo complete the actions presented below, you must have:\n  - A Scaleway account logged in to the [console](https://console.scaleway.com/organization)\n  - A valid [API key](https://www.scaleway.com/en/docs/iam/how-to/create-api-keys/) with sufficient [IAM permissions](https://www.scaleway.com/en/docs/iam/reference-content/permission-sets/) to perform the actions described on this page\n  - [Installed `curl`](https://curl.se/download.html)\n</Message>\n\n1. (Optional) Configure your environment variables to simplify your usage of the APIs.\n\n    ```bash\n    export SCW_ACCESS_KEY=\"<API access key>\"\n    export SCW_SECRET_KEY=\"<API secret key>\"\n    export SCW_REGION=\"<Scaleway region>\"\n    ```\n2. Generate content from a model by running the following command.\n    ```bash\n    curl https://api.scaleway.ai/v1/chat/completions \\\n      -H \"Content-Type: application/json\" \\\n      -H \"Authorization: Bearer $SCW_SECRET_KEY\" \\\n      -d '{\n        \"model\": \"llama-3.3-70b-instruct\",\n        \"messages\": [\n          {\n            \"role\": \"system\",\n            \"content\": \"You are a helpful assistant.\"\n          },\n          {\n            \"role\": \"user\",\n            \"content\": \"Hello!\"\n          }\n        ]\n      }'\n    ```\n\nSee [How to use Generative APIs](https://www.scaleway.com/en/docs/generative-apis/how-to/)\nfor quickstart information and snippets using `REST` requests or libraries such as the `openai` Python client.\n\n\n## Technical information\n\n### Regions\n\nScaleway's infrastructure is spread across different [regions and Availability Zones](https://www.scaleway.com/en/docs/account/reference-content/products-availability/).\n\nGenerative APIs is available in the Paris region, which is represented by the following path parameter (optional while there is only one region):\n- `fr-par`\n\n### Supported endpoints and features\n\nSupported endpoints are:\n- `/v1/responses`\n- `/v1/chat/completions`\n- `/v1/audio/transcriptions`\n- `/v1/embeddings`\n- `/v1/rerank`\n- `/v1/batches`\n- `/v1/models`\n\nThe `/v1/chat/completions` endpoint:\n- **Supported features**:\n  - Structured outputs (JSON response format)\n  - Tool calling (i.e., compatibility with workflows using MCP servers)\n  - Sending and analyzing images\n  - Sending and analyzing audio files\n- **Not supported parameters**: `audio`, `metadata`, `modalities`,\n`prediction`, `prompt_cache_key`, `user`, `safety_identifier`,\n`service_tier`, `stream_options.include_obfuscation`, `store`, `system_fingerprint`,\n`web_search_options`\n- **Not supported tools**: only `function` tools are supported. `custom` tools require you to provide a custom `grammar` to verify their input format\n\nThe `/v1/audio/transcriptions` endpoint:\n- **Not supported parameters**: `chunking_strategy`, `include[]` and `timestamp_granularities[]`\n\nThe `/v1/responses` endpoint:\n- **Supported features**: currently, only `function` tools are supported. These tools must be fully defined in your query, and should be executed if the model requests them. The execution result is then sent to the model so that it can use this additional context to produce a suitable answer.\n- **Not supported features**: \n  - storing conversation state server-side \n  - execution by Scaleway of \"built-in\" tools (such as web or file search) while the model generates a response\n  - sending response output object directly as an input for the next message. Standard messages using `role:assistant` and `content` fields should be used instead. Specifically, `custom_tool_call` and `custom_tool_call_output` types are not yet supported. As a workaround, tool call results can be sent using `role:user`, although Scaleway recommends using `/chat/completions` for better results in this case.\n- **Not supported parameters**: `background`, `conversation`, `include`,\n`instructions`, `max_tool_calls`, `metadata`, `previous_response_id`, `prompt_cache_key`,\n`safety_identifier`, `service_tier`, `stream_options`, `top_logprobs`, `user`, `prompt`, `verbosity`\n\nThe `/v1/batches` endpoint:\n- **Supported features**: processing files stored in Object Storage (using the Amazon S3 protocol)\n- **Not supported parameters**: `metadata`\n\nThe `/v1/rerank` endpoint:\n- **Compatiblity**: aims for compatibility with the JinAI API and Cohere API formats (no OpenAI API exists for this endpoint)\n\n### Third-party tool integration\n\nFor full details of direct integration into third party tooling, see [Integrating Scaleway Generative APIs with popular AI tools](https://www.scaleway.com/en/docs/generative-apis/reference-content/integrating-generative-apis-with-popular-tools/).\nIf your tool is not listed, you can still specify the Scaleway URL and\nAPI key in most OpenAI-like plugins, as compatibility largely depends on the above APIs.\n\n## Technical limitations\n\nWhen choosing a model, select the ones compatible with the API endpoints you want to use\nin the [model catalog](https://www.scaleway.com/en/docs/generative-apis/reference-content/supported-models/).\nFor example, `/v1/embeddings` is only available for embeddings models.\n\n## Going further\n\nFor more information about Generative APIs, you can check out the following pages:\n\n* [Generative APIs Documentation](https://www.scaleway.com/en/docs/generative-apis/)\n* [Generative APIs FAQ](https://www.scaleway.com/en/docs/generative-apis/faq/)\n* [Scaleway Slack Community - AI Channel](https://scaleway-community.slack.com/archives/C01SGLGRLEA) join the #ai channel\n* [Contact Scaleway support](https://console.scaleway.com/support/tickets)\n\n## Troubleshooting\n\nSee [Troubleshooting Generative APIs](https://www.scaleway.com/en/docs/generative-apis/troubleshooting/)\nfor descriptions regarding advanced API behavior and solutions to common issues.",
+      "summary": null,
+      "title": "OpenAI Compatible API",
+      "url": "https://api.scaleway.ai",
+      "version": "v1",
+      "tags": [
+        {
+          "name": "Chat Completions",
+          "description": "A chat completion is a model response for a given conversation. It represents the functionality of generating a response in a chat context\n",
+          "extensions": {}
+        },
+        {
+          "name": "Responses",
+          "description": "A response is a model output for a given input. It represents the functionality of generating a response in various contexts.\n",
+          "extensions": {}
+        },
+        {
+          "name": "Embeddings",
+          "description": "A vector representation of an input.\nSimilar vectors corresponds to semantically similar inputs.\n\nSee [How to query embedding models](https://www.scaleway.com/en/docs/generative-apis/how-to/query-embedding-models/)\nfor code snippets using `openai` Python client.\n",
+          "extensions": {}
+        },
+        {
+          "name": "Rerank",
+          "description": "A ranking is an ordering of documents by relevance, based on a query.\n\nSee [How to query reranking models](https://www.scaleway.com/en/docs/generative-apis/how-to/query-reranking-models/)\nfor code snippets using `openai` Python client.\n",
+          "extensions": {}
+        },
+        {
+          "name": "Audio",
+          "description": "A transcription is a text transcribed from an audio input.\n\nTo support file upload, this API must be queried with `multipart/form-data` content type instead of `application/json`.\n\nSee [How to query audio models](https://www.scaleway.com/en/docs/generative-apis/how-to/query-audio-models/)\nfor code snippets using `openai` Python client.\n",
+          "extensions": {}
+        },
+        {
+          "name": "Batch",
+          "description": "A batch is an asynchronous process that executes multiple requests. It takes a file containing the requests to perform\n as input, and writes the results to an output file.\n\nFiles are stored within Scaleway Object Storage.\n\nSee [How to use batch processing](https://www.scaleway.com/en/docs/generative-apis/how-to/use-batch-processing/)\nfor code snippets using `openai` Python client.\n",
+          "extensions": {}
+        },
+        {
+          "name": "Models",
+          "description": "A model refers to a system that has been trained to generate content such as text, images, or other data types based on input prompts or instructions\n",
+          "extensions": {}
+        }
+      ],
+      "components": {
+        "securitySchemes": []
+      },
+      "webhooks": []
+    }
+  ],
+  "limitations": [
+    "Operation and descriptive metadata only; request/response field schemas unavailable in this projection.",
+    "Empty securitySchemes is not evidence of anonymous access.",
+    "Source build file path excluded; no external JavaScript executed."
+  ]
+}

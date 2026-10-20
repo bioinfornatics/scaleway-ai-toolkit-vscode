@@ -1,0 +1,8 @@
+[project]
+name = "scaleway-agent-runtime"
+version = "0.0.0"
+description = "Offline JSON repair helper; Strands integration not implemented"
+requires-python = ">=3.11"
+dependencies = []
+
+# Source-tree testing only; no build backend or dependency installation selected.

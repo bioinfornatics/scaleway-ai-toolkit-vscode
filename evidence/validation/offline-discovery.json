@@ -1,0 +1,33 @@
+{
+  "status": "passed",
+  "method": "offline_document_consistency_only",
+  "json_files": 18,
+  "source_hashes": 83,
+  "security_threats": 26,
+  "future_security_cases": 26,
+  "catalog_rows": 47,
+  "not_run": [
+    "production adapter tests",
+    "Strands integration",
+    "runtime security cases",
+    "live provider requests",
+    "developer study",
+    "hosting"
+  ],
+  "record_id": "offline-discovery-20261020",
+  "executed_at": "2026-10-20T15:51:21.138940+00:00",
+  "tests_run": 24,
+  "failures": 0,
+  "errors": 0,
+  "test_scope": "6 evidence-validator tests + 18 TEST-ONLY wire helper tests; no production adapter or Strands integration",
+  "commands": [
+    "PYTHONDONTWRITEBYTECODE=1 python3 tooling/validate_discovery.py",
+    "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/discovery -v",
+    "PYTHONDONTWRITEBYTECODE=1 python3 evidence/schemas/dedicated-validate.py"
+  ],
+  "code_hashes": {
+    "tooling/validate_discovery.py": "1776c1bd6d1f3d17fa82cfc547b690c4697d12f37db6debdc416995d29be1581",
+    "tests/discovery/test_evidence_validator.py": "047f196f436e6ec18174452f2383c0aa1df87f294f8cc3dfefe5932b93089467",
+    "tests/discovery/test_wire_contracts.py": "a5413d99261723499fe309d76aedfe5b66b38b309119a024ab44311e07a6cde0"
+  }
+}

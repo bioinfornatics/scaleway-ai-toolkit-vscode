@@ -1,0 +1,59 @@
+{
+  "record_id": "json-repair-offline-20261020",
+  "verified_at_utc": "2026-10-20T18:42:12.275226+00:00",
+  "method": "standard-library unittest against capture-only sender/reference ledger; no network, SDK or credentials",
+  "task": "scaleway_ai_vscode-jgh.1.10",
+  "status": "passed_offline_only",
+  "python_tests": {
+    "json_repair": 19,
+    "discovery": 32
+  },
+  "document_validator": {
+    "status": "passed",
+    "source_hashes": 83
+  },
+  "commands": [
+    "python3 -m unittest discover -s runtimes/strands-python/tests -v",
+    "python3 -m unittest discover -s tests/discovery -v",
+    "python3 tooling/validate_discovery.py"
+  ],
+  "files": [
+    {
+      "file": "runtimes/strands-python/src/scaleway_agent_runtime/json_repair.py",
+      "sha256": "00169df5a2ef71b4b6b072dcfcee66e34b144cabf115f4db363c4e3f71e11668"
+    },
+    {
+      "file": "runtimes/strands-python/tests/test_json_repair.py",
+      "sha256": "2d639df088e22a9bd0219aebba1ff31c57657004f1e413e98d97357b83b66ab7"
+    },
+    {
+      "file": "runtimes/strands-python/pyproject.toml",
+      "sha256": "9ccb5c677bed323dd7040ac8d0951af7abaeb1cf37f9e23d79e2b620019c3a68"
+    },
+    {
+      "file": "runtimes/strands-python/README.md",
+      "sha256": "9790e589c1698e8105863022c7c27a8380ebec20f7a893b89a012f65e6cc96ec"
+    },
+    {
+      "file": "tests/discovery/test_catalog_quota_observations.py",
+      "sha256": "e77d74ba8d47c2aa00327c99465cc91984bb381650165aee09ef114b5e7188f2"
+    },
+    {
+      "file": "tests/discovery/fixtures/catalog-quota-observations.json",
+      "sha256": "2e426a6a7f696119eee8a64533818cccc808bc22bee7c54471a2f61897c812c3"
+    },
+    {
+      "file": "specifications/providers/scaleway/offline-catalog-quota-contract.md",
+      "sha256": "e7e965f2ed49f366d11b982ed5d629c863460c651ec48a2b2bcc01671cc86ba0"
+    }
+  ],
+  "not_run": [
+    "Strands integration/all physical retry interception",
+    "durable production budgets/revocation",
+    "live API/IAM/quota validation",
+    "inference",
+    "UI/MVP/build approval",
+    "package installs/builds",
+    "lint/type tools (none configured)"
+  ]
+}

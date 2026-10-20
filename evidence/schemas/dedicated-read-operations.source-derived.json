@@ -1,0 +1,92 @@
+{
+  "kind": "Source-derived operation inventory, NOT OpenAPI, NOT executed requests",
+  "commit": "e05f031e8590090311adf028747139fe7b490d59",
+  "operations": [
+    {
+      "sdk_method": "pageOfListProjects",
+      "http_method": "GET",
+      "path_expression": "/account/v3/projects",
+      "query_wire_names": [
+        "name",
+        "order_by",
+        "organization_id",
+        "page",
+        "page_size",
+        "project_ids"
+      ],
+      "source_file": "projects-js-packages_generated_account_src_v3_api.gen.ts"
+    },
+    {
+      "sdk_method": "getProject",
+      "http_method": "GET",
+      "path_expression": "/account/v3/projects/${validatePathParam('projectId', request.projectId ?? this.client.settings.defaultProjectId)}",
+      "query_wire_names": [],
+      "source_file": "projects-js-packages_generated_account_src_v3_api.gen.ts"
+    },
+    {
+      "sdk_method": "pageOfListDeployments",
+      "http_method": "GET",
+      "path_expression": "/inference/v1/regions/${validatePathParam('region', request.region ?? this.client.settings.defaultRegion)}/deployments",
+      "query_wire_names": [
+        "name",
+        "order_by",
+        "organization_id",
+        "page",
+        "page_size",
+        "project_id",
+        "tags"
+      ],
+      "source_file": "dedicated-js-packages_generated_inference_src_v1_api.gen.ts"
+    },
+    {
+      "sdk_method": "getDeployment",
+      "http_method": "GET",
+      "path_expression": "/inference/v1/regions/${validatePathParam('region', request.region ?? this.client.settings.defaultRegion)}/deployments/${validatePathParam('deploymentId', request.deploymentId)}",
+      "query_wire_names": [],
+      "source_file": "dedicated-js-packages_generated_inference_src_v1_api.gen.ts"
+    },
+    {
+      "sdk_method": "getDeploymentCertificate",
+      "http_method": "GET",
+      "path_expression": "/inference/v1/regions/${validatePathParam('region', request.region ?? this.client.settings.defaultRegion)}/deployments/${validatePathParam('deploymentId', request.deploymentId)}/certificate",
+      "query_wire_names": [
+        "dl"
+      ],
+      "source_file": "dedicated-js-packages_generated_inference_src_v1_api.gen.ts"
+    },
+    {
+      "sdk_method": "pageOfListModels",
+      "http_method": "GET",
+      "path_expression": "/inference/v1/regions/${validatePathParam('region', request.region ?? this.client.settings.defaultRegion)}/models",
+      "query_wire_names": [
+        "name",
+        "order_by",
+        "organization_id",
+        "page",
+        "page_size",
+        "project_id",
+        "tags"
+      ],
+      "source_file": "dedicated-js-packages_generated_inference_src_v1_api.gen.ts"
+    },
+    {
+      "sdk_method": "getModel",
+      "http_method": "GET",
+      "path_expression": "/inference/v1/regions/${validatePathParam('region', request.region ?? this.client.settings.defaultRegion)}/models/${validatePathParam('modelId', request.modelId)}",
+      "query_wire_names": [],
+      "source_file": "dedicated-js-packages_generated_inference_src_v1_api.gen.ts"
+    },
+    {
+      "sdk_method": "pageOfListNodeTypes",
+      "http_method": "GET",
+      "path_expression": "/inference/v1/regions/${validatePathParam('region', request.region ?? this.client.settings.defaultRegion)}/node-types",
+      "query_wire_names": [
+        "include_disabled_types",
+        "page",
+        "page_size"
+      ],
+      "source_file": "dedicated-js-packages_generated_inference_src_v1_api.gen.ts"
+    }
+  ],
+  "standalone_list_endpoints": "Absent in inspected generated API"
+}

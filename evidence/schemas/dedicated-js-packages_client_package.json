@@ -1,0 +1,38 @@
+{
+  "name": "@scaleway/sdk-client",
+  "version": "2.16.0",
+  "description": "Scaleway SDK Client",
+  "keywords": [
+    "client",
+    "cloud",
+    "scaleway",
+    "sdk"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/scaleway/scaleway-sdk-js",
+    "directory": "packages/client"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsdown --config tsdown.config.ts"
+  },
+  "devDependencies": {
+    "@repo/configs": "workspace:^",
+    "@types/node": "catalog:"
+  }
+}

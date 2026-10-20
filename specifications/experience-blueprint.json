@@ -1,0 +1,366 @@
+{
+  "schemaVersion": 1,
+  "inputs": [
+    {
+      "id": "F1",
+      "detail": "Stakeholder requests Foundry-equivalent developer workflows on Scaleway",
+      "evidenceLabel": "stakeholder-input"
+    },
+    {
+      "id": "F2",
+      "detail": "Supplied Foundry sidebar separates resources and developer actions; not approved Scaleway sources",
+      "evidenceLabel": "stakeholder-input"
+    },
+    {
+      "id": "F3",
+      "detail": "Provider docs confirm inference/deployment/HTTP hosting/monitoring building blocks, not tested contracts",
+      "evidenceLabel": "external-research"
+    },
+    {
+      "id": "F4",
+      "detail": "Strands Python SDK selected by stakeholder on 2026-10-20; Scaleway integration and serverless application hosting remain unverified",
+      "evidenceLabel": "stakeholder-input"
+    },
+    {
+      "id": "F5",
+      "detail": "Cross-tool friction and time savings are unmeasured",
+      "evidenceLabel": "inference"
+    }
+  ],
+  "userValues": [
+    {
+      "personaId": "developer",
+      "goal": "Deliver runnable reproducible model/agent code",
+      "currentAlternative": "Console playground plus SDK/scripts and separate tools",
+      "valueHypothesis": "Reduce total useful-task effort; not measured",
+      "costOfFailure": "Secret leakage, wasted spend or incorrect application behavior",
+      "successCriterion": "Complete supported streaming test and run exported example without secret leakage",
+      "evidenceInputIds": [
+        "F1",
+        "F5"
+      ]
+    },
+    {
+      "personaId": "operator",
+      "goal": "Control deployment and tool effects with evidence",
+      "currentAlternative": "Manual IAM, deployment commands and dashboards",
+      "valueHypothesis": "Reduce ambiguous effects and cleanup effort; not measured",
+      "costOfFailure": "Unauthorized exposure, costs and orphaned resources",
+      "successCriterion": "Provisioned resources identified, runtime verified and cleanup reconciled",
+      "evidenceInputIds": [
+        "F3",
+        "F4"
+      ]
+    }
+  ],
+  "deferredPersonas": [],
+  "questions": [
+    {
+      "id": "Q1",
+      "theme": "responsibility-value",
+      "prompt": "What complete first task creates useful portable output?",
+      "answer": "SC1 from connection to exported example; benefit tested in EXP1",
+      "disposition": "answered",
+      "inputIds": [
+        "F1",
+        "F2",
+        "F5"
+      ],
+      "decisionIds": [
+        "D1"
+      ]
+    },
+    {
+      "id": "Q2",
+      "theme": "feasibility-safety",
+      "prompt": "What does Scaleway supply versus what must we own?",
+      "answer": "Scaleway supplies documented cloud building blocks; selected Strands Python provides agent orchestration inside our policy/event wrapper. Compatibility and hosting require EXP2/EXP3.",
+      "disposition": "assumed",
+      "inputIds": [
+        "F3",
+        "F4"
+      ],
+      "decisionIds": [
+        "D2"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "D1",
+      "detail": "Prioritize portable model experiment MVP, not complete Foundry menu parity",
+      "productImpact": "Test narrow useful value before maintaining broad agent platform",
+      "uxImpact": "Connect through exported runnable example with complete recovery",
+      "uiImpact": "Resources/actions trees and focused experiment editor; no placeholder menus"
+    },
+    {
+      "id": "D2",
+      "detail": "Use stakeholder-selected Strands Python for local agents; separate model deployment from agent runtime and hosting",
+      "productImpact": "Avoid promises of unverified managed agent services",
+      "uxImpact": "Explicit tool mandates, reviewed deployment and cleanup",
+      "uiImpact": "Distinct deployment targets and status/effect labels"
+    }
+  ],
+  "screenStates": [
+    {
+      "id": "SS1",
+      "scenarioId": "SC1",
+      "screenId": "connection-catalog",
+      "state": "disconnected/loading/denied/unknown/ready",
+      "question": "Where can I safely test a supported model?",
+      "information": "Connection scope, destination, model capabilities and freshness",
+      "primaryAction": "Connect/select supported model",
+      "resultEvidence": "Verified discovery or explicit unavailable state",
+      "contextReturn": "Preserve navigation/scope/model/filter/origin",
+      "decisionIds": [
+        "D1"
+      ]
+    },
+    {
+      "id": "SS2",
+      "scenarioId": "SC1",
+      "screenId": "playground-export",
+      "state": "draft/streaming/partial/cancelled/saved/export-review",
+      "question": "Is this result reproducible outside VS Code?",
+      "information": "Prompt revision, supported parameters, run status, generated diff",
+      "primaryAction": "Explicit send then save/export",
+      "resultEvidence": "Correlated run and external example execution; not run yet",
+      "contextReturn": "Retain manual edits and originating run when switching views",
+      "decisionIds": [
+        "D1"
+      ]
+    },
+    {
+      "id": "SS3",
+      "scenarioId": "SC2",
+      "screenId": "builder-inspector-evaluation",
+      "state": "untrusted/draft/approved/running/denied/evaluated",
+      "question": "Can tools run safely and can I explain quality changes?",
+      "information": "Tool mandate, spec version, events, partial evaluation labels",
+      "primaryAction": "Approve bounded tools and run/evaluate",
+      "resultEvidence": "Policy and dataset run evidence; planned only",
+      "contextReturn": "Return to same spec version and preserve edits",
+      "decisionIds": [
+        "D2"
+      ]
+    },
+    {
+      "id": "SS4",
+      "scenarioId": "SC3",
+      "screenId": "deployment-review-monitor",
+      "state": "review/provisioning/unknown-effect/healthy/cleanup-failed",
+      "question": "What will this deploy cost/expose and what actually happened?",
+      "information": "Exact app version, budget, exposure, license and resource identities",
+      "primaryAction": "Activate reviewed command or reconcile provider state",
+      "resultEvidence": "Provider response, health test, trace and cleanup evidence; planned only",
+      "contextReturn": "Same project/region/deployment ledger",
+      "decisionIds": [
+        "D2"
+      ]
+    }
+  ],
+  "verifications": [
+    {
+      "id": "V1",
+      "scenarioId": "SC1",
+      "criterion": "SC1 supported successful task and complete recovery with no secret leakage",
+      "evidenceLevel": "proposed",
+      "screenStateIds": [
+        "SS1"
+      ]
+    },
+    {
+      "id": "V2",
+      "scenarioId": "SC1",
+      "criterion": "SC1 supported successful task and complete recovery with no secret leakage",
+      "evidenceLevel": "proposed",
+      "screenStateIds": [
+        "SS2"
+      ]
+    },
+    {
+      "id": "V3",
+      "scenarioId": "SC2",
+      "criterion": "Tool mandate enforcement, origin-bound inspector and honest evaluation outcomes",
+      "evidenceLevel": "proposed",
+      "screenStateIds": [
+        "SS3"
+      ]
+    },
+    {
+      "id": "V4",
+      "scenarioId": "SC3",
+      "criterion": "Reviewed activation, provider reconciliation, healthy runtime and cleanup",
+      "evidenceLevel": "proposed",
+      "screenStateIds": [
+        "SS4"
+      ]
+    }
+  ],
+  "traceability": [
+    {
+      "inputId": "F1",
+      "disposition": "addressed",
+      "decisionIds": [
+        "D1"
+      ],
+      "scenarioIds": [
+        "SC1"
+      ],
+      "screenStateIds": [
+        "SS1",
+        "SS2"
+      ],
+      "verificationIds": [
+        "V1",
+        "V2"
+      ]
+    },
+    {
+      "inputId": "F2",
+      "disposition": "addressed",
+      "decisionIds": [
+        "D1"
+      ],
+      "scenarioIds": [
+        "SC1"
+      ],
+      "screenStateIds": [
+        "SS1",
+        "SS2"
+      ],
+      "verificationIds": [
+        "V1",
+        "V2"
+      ]
+    },
+    {
+      "inputId": "F3",
+      "disposition": "addressed",
+      "decisionIds": [
+        "D2"
+      ],
+      "scenarioIds": [
+        "SC2",
+        "SC3"
+      ],
+      "screenStateIds": [
+        "SS3",
+        "SS4"
+      ],
+      "verificationIds": [
+        "V3",
+        "V4"
+      ]
+    },
+    {
+      "inputId": "F4",
+      "disposition": "addressed",
+      "decisionIds": [
+        "D2"
+      ],
+      "scenarioIds": [
+        "SC2",
+        "SC3"
+      ],
+      "screenStateIds": [
+        "SS3",
+        "SS4"
+      ],
+      "verificationIds": [
+        "V3",
+        "V4"
+      ]
+    },
+    {
+      "inputId": "F5",
+      "disposition": "addressed",
+      "decisionIds": [
+        "D1"
+      ],
+      "scenarioIds": [
+        "SC1"
+      ],
+      "screenStateIds": [
+        "SS1",
+        "SS2"
+      ],
+      "verificationIds": [
+        "V1",
+        "V2"
+      ]
+    }
+  ],
+  "features": {
+    "conversation": true,
+    "proactivity": true,
+    "presentations": false
+  },
+  "intents": [
+    {
+      "id": "I1",
+      "personaId": "developer",
+      "scenarioId": "SC1",
+      "kind": "prepare",
+      "location": "Prompt/export editor",
+      "directPath": "Edit prompt and export using direct controls",
+      "actionKind": "prepare",
+      "effect": "internal",
+      "contextReturn": "Same experiment and version",
+      "manualEditsPolicy": "Diff before overwrite; retain edits",
+      "lateResultPolicy": "Attach to originating run, never take over navigation"
+    },
+    {
+      "id": "I2",
+      "personaId": "operator",
+      "scenarioId": "SC3",
+      "kind": "command",
+      "location": "Exact-version deployment review",
+      "directPath": "Review then explicitly activate cloud command",
+      "actionKind": "command",
+      "effect": "external",
+      "authority": "Separately approved project/budget mandate",
+      "reviewVersion": "Exact reviewed application and deployment configuration version",
+      "effectSummary": "Create billable resources with reviewed network exposure",
+      "explicitActivation": true,
+      "contextReturn": "Same project/deployment and resource identities",
+      "manualEditsPolicy": "Changed configuration invalidates review",
+      "lateResultPolicy": "Reconcile provider state before retry; no false completion"
+    }
+  ],
+  "conversation": {
+    "continuousAccessRequested": false,
+    "accessible": true,
+    "permanentTranscriptSidebar": false,
+    "directControlsAvailable": true,
+    "stableContext": [
+      "navigation",
+      "scope",
+      "period",
+      "filters",
+      "object",
+      "origin",
+      "return"
+    ],
+    "focusAndSpace": "Scoped playground conversation in editor; direct controls remain visible",
+    "manualEditsPolicy": "Retain prompt/code edits and show diffs",
+    "lateResultPolicy": "Bind to run origin without focus takeover",
+    "revokedRecovery": "Stop new requests; remove unauthorized data and recheck access"
+  },
+  "proactivity": {
+    "triggerReview": [
+      {
+        "kind": "opportunity",
+        "disposition": "deferred",
+        "rationale": "No evidenced recommendation/scheduling trigger or mandate; automatic preparation deferred"
+      },
+      {
+        "kind": "exception",
+        "disposition": "deferred",
+        "rationale": "Contextual error recovery is defined; autonomous incident remediation deferred"
+      }
+    ],
+    "initiatives": []
+  },
+  "artifacts": []
+}

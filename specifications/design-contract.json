@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "product": {
+    "problem": "Cross-tool model experimentation and application delivery may add effort",
+    "value": "Portable reproducible AI application workflow in VS Code; benefit unvalidated",
+    "sharedOutcome": "Developers and operators deliver inspectable applications with bounded effects",
+    "evidenceLevel": "Stakeholder input and provider documentation; no observed user behavior",
+    "invariants": [
+      "No credentials in files/webviews/logs",
+      "No navigation-triggered external effects",
+      "Unsupported/unknown capabilities truthful",
+      "Portable artifacts and protected edits"
+    ]
+  },
+  "personas": [
+    {
+      "id": "developer",
+      "responsibility": "Experiment, build and evaluate reproducible AI applications"
+    },
+    {
+      "id": "operator",
+      "responsibility": "Authorize scope/budget and operate/clean up deployments"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "SC1",
+      "personaId": "developer",
+      "trigger": "Need to test a Scaleway model from a workspace",
+      "start": "Trusted workspace and authorized account; no connection saved",
+      "end": "Saved experiment and exported example run outside VS Code",
+      "successCriterion": "Complete supported streaming test and run exported example without secret leakage",
+      "directPath": "Connect, catalog, playground, save, export, run",
+      "conversationalPath": "Scoped model chat in playground; navigation stays direct",
+      "handoff": "Developer obtains approved account scope from operator",
+      "states": [
+        "disconnected",
+        "loading",
+        "permission-denied",
+        "unknown",
+        "ready",
+        "streaming",
+        "cancelled",
+        "partial",
+        "saved",
+        "export-review"
+      ],
+      "recovery": "Retain prompt edits and origin; recheck credentials; show partial results honestly"
+    },
+    {
+      "id": "SC2",
+      "personaId": "developer",
+      "trigger": "Successful prompt needs tools and reproducibility",
+      "start": "Saved experiment",
+      "end": "Local bounded agent inspected and evaluated",
+      "successCriterion": "Tool policy enforced and versioned evaluation evidence saved",
+      "directPath": "Create spec, approve tools, run, inspect, evaluate",
+      "conversationalPath": "Agent test conversation inside run workspace",
+      "handoff": "Operator approves bounded tool mandate; developer owns code",
+      "states": [
+        "untrusted",
+        "draft",
+        "approved",
+        "running",
+        "denied",
+        "timeout",
+        "budget-exhausted",
+        "evaluated"
+      ],
+      "recovery": "Stop new effects, preserve edits, reconcile unknown tool outcomes"
+    },
+    {
+      "id": "SC3",
+      "personaId": "operator",
+      "trigger": "Evaluated application ready for an authorized cloud trial",
+      "start": "Exact reviewed application version and approved budget",
+      "end": "Healthy hosted run correlated with trace and tested cleanup",
+      "successCriterion": "Provisioned resources identified, runtime verified and cleanup reconciled",
+      "directPath": "Review target, activate, inspect status, test, monitor, clean up",
+      "conversationalPath": "Hosted test conversation; deployment remains explicit control",
+      "handoff": "Developer supplies evaluated version; operator authorizes scope",
+      "states": [
+        "review",
+        "quota-denied",
+        "provisioning",
+        "partial",
+        "unknown-effect",
+        "healthy",
+        "cleanup-failed",
+        "removed"
+      ],
+      "recovery": "Query provider state before retry and preserve created resource identities"
+    }
+  ],
+  "components": [
+    {
+      "id": "connection",
+      "question": "Which account/project/region and destination are active?",
+      "representation": "Native tree context and focused connection picker",
+      "dataKind": "status",
+      "source": "Verified provider response and local connection reference",
+      "scope": "Selected account/project/region",
+      "period": "Current request",
+      "freshness": "Fetch timestamp and stale indication",
+      "detailTarget": "Same connection scope",
+      "states": [
+        "loading",
+        "authorized",
+        "denied",
+        "stale",
+        "unknown"
+      ],
+      "recovery": "Reauthenticate without showing secret and invalidate old scope",
+      "action": {
+        "kind": "view",
+        "effect": "none",
+        "authorization": "Read-only approved connection"
+      }
+    },
+    {
+      "id": "experiment",
+      "question": "Does this prompt produce a usable result with this model?",
+      "representation": "Focused editor playground with stream and code export",
+      "dataKind": "artifact",
+      "source": "Prompt revision and correlated inference run",
+      "scope": "Selected model/connection/run",
+      "period": "Current experiment revision",
+      "freshness": "Run timestamp, pending/partial labels",
+      "detailTarget": "Same run and prompt version",
+      "states": [
+        "draft",
+        "running",
+        "partial",
+        "cancelled",
+        "saved"
+      ],
+      "recovery": "Preserve edits; bind late results to originating run",
+      "action": {
+        "kind": "prepare",
+        "effect": "internal",
+        "authorization": "Local draft preparation only; Send is separate explicit inference activation"
+      }
+    }
+  ],
+  "ui": {
+    "principalWorkspace": "VS Code editor experiment/run workspace",
+    "hierarchy": "Scope, model and prompt first; result and next action; details progressively",
+    "density": "Native compact sidebar with focused editor panels",
+    "designSystem": "VS Code native controls, theme tokens and library icons; unofficial provisional branding",
+    "viewportRationale": "Desktop VS Code editor; keyboard, zoom and high-contrast required"
+  }
+}

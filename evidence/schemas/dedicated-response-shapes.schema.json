@@ -1,0 +1,478 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "dedicated response shapes \u2014 source-derived, NOT official OpenAPI",
+  "$comment": "Partial projection of Go generated SDK JSON tags, primitive/pointer/array types and enums. No required fields inferred. Unexpanded types unconstrained. Pointer nullability and known enums describe source, not a verified complete wire contract. No live validation.",
+  "x-source": {
+    "file": "dedicated-go-inference_sdk.go",
+    "sha256": "4ab66570f2260c7f9b8ab39574d06fc8f1b703370e831475cd424323ff9f13ed",
+    "commit": "46763ab9fc78781eca1af94bd3a83750d3a2068f",
+    "generator": "dedicated-extract.py"
+  },
+  "$defs": {
+    "ModelSupportedQuantization": {
+      "type": "object",
+      "properties": {
+        "quantization_bits": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "allowed": {
+          "type": "boolean"
+        },
+        "max_context_size": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": true
+    },
+    "EndpointPrivateNetworkDetails": {
+      "type": "object",
+      "properties": {
+        "private_network_id": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "EndpointPublicNetworkDetails": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": true
+    },
+    "ModelSupportedNode": {
+      "type": "object",
+      "properties": {
+        "node_type_name": {
+          "type": "string"
+        },
+        "quantizations": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ModelSupportedQuantization"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "DeploymentQuantization": {
+      "type": "object",
+      "properties": {
+        "bits": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": true
+    },
+    "Endpoint": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "public_network": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EndpointPublicNetworkDetails"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "private_network": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EndpointPrivateNetworkDetails"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "disable_auth": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "ModelSupportInfo": {
+      "type": "object",
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ModelSupportedNode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "Deployment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "unknown_status",
+            "creating",
+            "deploying",
+            "ready",
+            "error",
+            "deleting",
+            "locked",
+            "scaling",
+            "deleted"
+          ],
+          "description": "Known values at source revision; future values may exist."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "node_type_name": {
+          "type": "string"
+        },
+        "endpoints": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Endpoint"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "min_size": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_size": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "error_message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model_id": {
+          "type": "string"
+        },
+        "quantization": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DeploymentQuantization"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model_name": {
+          "type": "string"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "updated_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "region": {
+          "type": "string",
+          "description": "Generic SDK region type, not product availability."
+        }
+      },
+      "additionalProperties": true
+    },
+    "Model": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "unknown_status",
+            "preparing",
+            "downloading",
+            "ready",
+            "error"
+          ],
+          "description": "Known values at source revision; future values may exist."
+        },
+        "description": {
+          "type": "string"
+        },
+        "error_message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_eula": {
+          "type": "boolean"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "updated_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "region": {
+          "type": "string",
+          "description": "Generic SDK region type, not product availability."
+        },
+        "nodes_support": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ModelSupportInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "parameter_size_bits": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": true
+    },
+    "NodeType": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "stock_status": {
+          "type": "string",
+          "enum": [
+            "unknown_stock",
+            "low_stock",
+            "out_of_stock",
+            "available"
+          ],
+          "description": "Known values at source revision; future values may exist."
+        },
+        "description": {
+          "type": "string"
+        },
+        "vcpus": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "memory": {
+          "description": "Unexpanded SDK type scw.Size; intentionally unconstrained."
+        },
+        "vram": {
+          "description": "Unexpanded SDK type scw.Size; intentionally unconstrained."
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "beta": {
+          "type": "boolean"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "updated_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "gpus": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "region": {
+          "type": "string",
+          "description": "Generic SDK region type, not product availability."
+        }
+      },
+      "additionalProperties": true
+    },
+    "ListDeploymentsResponse": {
+      "type": "object",
+      "properties": {
+        "deployments": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Deployment"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "total_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": true
+    },
+    "ListModelsResponse": {
+      "type": "object",
+      "properties": {
+        "models": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Model"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "total_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": true
+    },
+    "ListNodeTypesResponse": {
+      "type": "object",
+      "properties": {
+        "node_types": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/NodeType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "total_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}
