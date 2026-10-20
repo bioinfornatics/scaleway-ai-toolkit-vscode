@@ -31,13 +31,12 @@ export function activate(context: vscode.ExtensionContext): void {
       command: 'scalewayAI.modelInfo', args: [kind, m.id]}));
   };
   const resources = (): Node[] => [
-    {id: 'connection', label: connection.metadata ? 'Session : ' + connection.metadata.name : 'Se connecter à Scaleway', icon: 'account', command: 'scalewayAI.login'},
     {id: 'project', label: connection.project ? 'Projet : ' + connection.project.name : 'Projet : sélectionner', icon: 'organization', command: 'scalewayAI.switchProject'},
     ...(connection.project ? [{id:'region',label:'Région dédiée : fr-par',icon:'globe'}] : []),
-    {id: 'real-models', label: 'Modèles', icon: 'library', children: [
+    {id: 'real-models', label: 'Modèles', icon: 'library', command:'scalewayAI.loadModels', children: [
       {id:'load',label:connection.busy ? 'Chargement…' : 'Charger / actualiser les modèles',icon:'refresh',command:'scalewayAI.loadModels'},
-      {id:'serverless',label:'Serverless',description:connection.serverlessState,children:realModelNodes('serverless')},
-      {id:'dedicated',label:'Déploiements dédiés',description:connection.dedicatedState,children:realModelNodes('dedicated')},
+      {id:'serverless',label:'Serverless',command:'scalewayAI.loadModels',description:connection.serverlessState,children:realModelNodes('serverless')},
+      {id:'dedicated',label:'Déploiements dédiés',command:'scalewayAI.loadModels',description:connection.dedicatedState,children:realModelNodes('dedicated')},
     ]},
     {id: 'models', label: 'Démonstration hors ligne', icon: 'beaker', children: modelNodes()},
     {id: 'last', label: 'Dernière expérience de démo', icon: 'history', description: last ? last.status : 'Aucune', command: 'scalewayAI.experiment'},
@@ -49,7 +48,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const help = (): Node[] => [
     {id: 'start', label: 'Bien démarrer', icon: 'book', command: 'scalewayAI.getStarted'},
     {id: 'docs', label: 'Documentation Scaleway', icon: 'link-external', command: 'scalewayAI.documentation'},
-    {id:'logout',label:'Se déconnecter',icon:'sign-out',command:'scalewayAI.disconnect'},
+    ...(connection.connected ? [{id:'logout',label:'Se déconnecter',icon:'sign-out',command:'scalewayAI.disconnect'}] : []),
   ];
   const createView = (id: string, roots: () => Node[]) => {
     const provider: vscode.TreeDataProvider<Node> = {
@@ -70,8 +69,13 @@ export function activate(context: vscode.ExtensionContext): void {
   createView('scalewayAI.models', resources);
   createView('scalewayAI.tools', tools);
   createView('scalewayAI.help', help);
+  const accountCommands = new Set(['scalewayAI.loadModels','scalewayAI.modelInfo']);
   const register = (id: string, callback: (...args: any[]) => unknown) =>
-    context.subscriptions.push(vscode.commands.registerCommand(id, callback));
+    context.subscriptions.push(vscode.commands.registerCommand(id, async (...args: any[]) => {
+      // One shared gate for account-required actions; public/offline actions stay public.
+      if(accountCommands.has(id) && !await connection.ensureProject())return;
+      return callback(...args);
+    }));
   const openExperiment = async () => {
     if (!last) { void vscode.window.showInformationMessage('Exécutez une démonstration pour créer une expérience.'); return; }
     const doc = await vscode.workspace.openTextDocument({language: 'json', content: JSON.stringify(last, null, 2)});
@@ -113,7 +117,7 @@ export function activate(context: vscode.ExtensionContext): void {
   };
   register('scalewayAI.login', () => connection.login());
   register('scalewayAI.switchProject', () => connection.switchProject());
-  register('scalewayAI.loadModels', async () => {if (!connection.project) await connection.switchProject(); if (connection.project) await connection.loadModels();});
+  register('scalewayAI.loadModels', () => connection.loadModels());
   register('scalewayAI.disconnect', () => connection.disconnect());
   register('scalewayAI.modelInfo', (kind: unknown, id: unknown) => {
     const row = (kind === 'serverless' ? connection.serverless : connection.dedicated).find(m => m.id === id);

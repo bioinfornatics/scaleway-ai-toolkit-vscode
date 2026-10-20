@@ -18,3 +18,12 @@ test('manifest separates resource/action/help views and hides idle stop', () => 
   const stop = pkg.contributes.menus['view/title'].find(m=>m.command==='scalewayAI.cancel');
   assert.ok(stop.when.includes('scalewayAI.running'));
 });
+
+test('sidebar has no login row; account commands share gate while public actions remain accessible',()=>{
+ const s=fs.readFileSync('src/extension.ts','utf8');
+ assert.ok(!s.includes("id: 'connection'"));assert.ok(!s.includes("command: 'scalewayAI.login'"));
+ assert.ok(s.includes("new Set(['scalewayAI.loadModels','scalewayAI.modelInfo'])"));
+ assert.ok(s.includes('!await connection.ensureProject()'));
+ assert.ok(s.includes("register('scalewayAI.switchProject', () => connection.switchProject())"));
+ assert.ok(s.includes("command:'scalewayAI.loadModels', children:"));
+});

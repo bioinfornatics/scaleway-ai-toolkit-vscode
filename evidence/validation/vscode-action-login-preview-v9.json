@@ -1,0 +1,25 @@
+{
+  "record_id": "vscode-action-login-preview-v9",
+  "verified_at": "2026-10-20T21:15:47.618979+00:00",
+  "issue": "scaleway_ai_vscode-jgh.3.16",
+  "artifact": "artifacts/scaleway-ai-toolkit-preview-0.0.9.vsix",
+  "sha256": "94a43a68367744c33f4cfac2f5f6bb3b87c47cd78d89d5c7df9efb1146ed45bc",
+  "tests_passed": 25,
+  "strict_typescript": "passed",
+  "isolated_install": "passed",
+  "package_audit": "standalone login row removed; shared account action gate present",
+  "account_actions": [
+    "project switch",
+    "model refresh/catalog",
+    "real model info"
+  ],
+  "public_actions": [
+    "offline demo/playground/catalog/experiment",
+    "documentation/help",
+    "open sidebar"
+  ],
+  "tree_expansion": "no automatic login or API request",
+  "continuation": "model action resumes only with live session+selected project; cancelled login/project selection stops",
+  "v9_manual_journey": "not_run",
+  "authenticated_requests_by_agent": 0
+}

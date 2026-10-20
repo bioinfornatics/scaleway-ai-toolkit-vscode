@@ -22,6 +22,14 @@ export class Connection implements vscode.Disposable {
     if(!this.session||this.session.expiresAt<=Date.now()+30000){this.dropSession();throw new ReadError('session_expired');}
     return this.session.token;
   }
+  get connected():boolean {return !!this.session && this.session.expiresAt>Date.now()+30000;}
+  /** Command-level gate: login and project selection, then resume only if ready. */
+  async ensureProject():Promise<boolean> {
+    if(this.busy||!vscode.workspace.isTrusted)return false;
+    if(!this.connected){this.dropSession();await this.login();}
+    else if(!this.project)await this.switchProject();
+    return this.connected && !!this.project && !this.busy && vscode.workspace.isTrusted;
+  }
   private async report(error:unknown) {
     const code=error instanceof ReadError?error.code:'local_error';
     if(code==='access_denied')this.dropSession();
@@ -63,7 +71,7 @@ export class Connection implements vscode.Disposable {
     this.token();this.project=pick.project;this.changed();
   }
   async switchProject():Promise<void> {
-    if(!this.session)return this.login();
+    if(!this.connected){this.dropSession();return this.login();}
     if(this.busy||!vscode.workspace.isTrusted)return;
     this.busy=true;
     try {

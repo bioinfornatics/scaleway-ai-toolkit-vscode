@@ -1,4 +1,4 @@
-# Scaleway AI Toolkit — Preview 0.0.8
+# Scaleway AI Toolkit — Preview 0.0.9
 
 Experimental community VS Code extension; no Scaleway affiliation. **User browser
 login without API keys**, scoped read-only projects/dedicated deployments and a
@@ -6,11 +6,14 @@ separate **offline synthetic** playground. No real inference or cloud writes.
 
 ## Install and try
 
-    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.8.vsix --force
+    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.9.vsix --force
 
 Reload Window, then **Scaleway AI: Open Offline Preview** (legacy command name).
 
-1. Mes ressources -> **Projet : sélectionner**, or **Se connecter à Scaleway**.
+1. Click **Projet : sélectionner**, **Modèles**, or **Catalogue de modèles**.
+   Account-required commands trigger login automatically when disconnected. There
+   is no standalone login/session row in the sidebar. Login remains available in
+   the Command Palette; documentation and offline demo do not require an account.
 2. Confirm browser opening. Sign in on **account.scaleway.com**, not inside VS Code.
 3. The browser returns the user JWT automatically to a temporary local callback.
    Return to VS Code; no token/password/key to copy or paste.

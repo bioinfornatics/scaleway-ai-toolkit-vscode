@@ -67,3 +67,19 @@ test('cancelled UUID, invalid UUID or disconnect during entry prevents project r
  s.vscode.window.showInputBox=async()=>{await s.connection.disconnect();return org;};await s.connection.switchProject();assert.equal(s.requests(),before);assert.equal(s.connection.project,undefined);
  }finally{s.connection.dispose();s.restore();}
 });
+
+test('shared account gate logs in and selects project once; cancellation prevents continuation',async()=>{
+ const s=setup();try {
+ assert.equal(await s.connection.ensureProject(),true);assert.equal(s.logins(),1);assert.equal(s.requests(),1);
+ assert.equal(await s.connection.ensureProject(),true);assert.equal(s.logins(),1);assert.equal(s.requests(),1);
+ await s.connection.disconnect();s.vscode.window.showInformationMessage=async()=>undefined;
+ assert.equal(await s.connection.ensureProject(),false);assert.equal(s.logins(),1);
+ }finally{s.connection.dispose();s.restore();}
+});
+test('expired session reconnects through action gate; direct project switch also reconnects',async()=>{
+ const s=setup();try {
+ await s.connection.ensureProject();s.connection.session.expiresAt=Date.now()-1;
+ assert.equal(await s.connection.ensureProject(),true);assert.equal(s.logins(),2);
+ s.connection.session.expiresAt=Date.now()-1;await s.connection.switchProject();assert.equal(s.logins(),3);assert.ok(s.connection.connected);
+ }finally{s.connection.dispose();s.restore();}
+});
