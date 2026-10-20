@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.11.5",
+  "checkpoint_id": "01M5DJ883V8QW7R3M7SZNBF026",
+  "session_id": "20261020_58",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-20T21:07:52.274762277Z",
+  "branch": "main",
+  "checkpoints_count": 18,
+  "save_step_count": 3,
+  "files_touched": [
+    ".beads/interactions.jsonl"
+  ],
+  "agent": "Goose",
+  "model": "gpt-6.1-sol",
+  "turn_id": "279d18af3eec",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 151
+  },
+  "session_metrics": {
+    "turn_count": 18
+  }
+}

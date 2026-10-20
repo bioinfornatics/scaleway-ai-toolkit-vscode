@@ -1,0 +1,79 @@
+Objectif: .1.6 — Vérifier les limites d’hébergement du runtime est maintenant pris en charge. La première étape porte sur la documentation et les tests locaux : streaming, durée, concurrence, authentification et sessions.
+
+commit quand c'est nécessaire, pas de push
+
+---
+
+qu'as tu modifié?
+
+---
+
+c'est quoi la suite?
+
+---
+
+ok faisons le spike , informe les fichiers mdifié, commit , focus sur les livrables et l'objectif de faire une extension vscode
+
+---
+
+ok avancons, je note que l'on fat beaucoup de test, de spike et je vois pas le debut d'un vsix testable pour avancer bout par bout
+
+---
+
+❯ code --install-extension /home/jmercier/Codes/me/scaleway_ai_vscode/artifacts/scaleway-ai-toolkit-preview-0.0.1.vsix
+Installing extensions...
+Extension 'scaleway-ai-toolkit-preview-0.0.1.vsix' was successfully installed.
+(node:3494665) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `code --trace-deprecation ...` to show where the warning was created)
+
+---
+
+see "/home/jmercier/Images/Captures d’écran/Capture d’écran du 2026-10-20 22-19-41.png"  o view currenbt layout from the vsix
+
+---
+
+le menu est trop eloigner de celui de azure foundry toolkit, propose un menu proche tout en étant adapté aux fonctionnalité de scaleway
+
+---
+
+procede
+
+---
+
+Capture d’écran du 2026-10-20 22-19-41.pngpour azure foundry dans menu -> model -> switch Project -> login azure -> fenetre azure login -> ...
+
+---
+
+oui , procede a l'implementation
+
+---
+
+pour la connection via azure ca page par une fenetre web qui s'ouvre ou met l'identifiant et le mot de passe, je suppose que via ce processus on recupere le token d'authentification jwt/bearer
+
+---
+
+mime ce comportement pour scaleway
+
+---
+
+utilise l'icon/logo de scaleway pour le vsix ou si tu trouve scaleway ai pulse
+
+---
+
+le flux pour se loguuer ne fonctionne pas il mélange clé api, ouverture dune page web login scaleway et oauth
+
+---
+
+non je ne veux pas utiliser les clé api, plutot uiliser l'oauth  se logguer en tant que l'utilisateur
+
+---
+
+regarde l'implementation de /home/jmercier/Codes/third-parties/scaleway-cli
+
+---
+
+ok
+
+---
+
+procede
