@@ -1,0 +1,45 @@
+{
+  "record_id": "vscode-connection-preview-v3",
+  "issue": "scaleway_ai_vscode-jgh.3.10",
+  "verified_at": "2026-10-20T20:38:34.181805+00:00",
+  "method": "Strict TS build,15 mocked/offline unit tests,isolated VSIX install, real development Extension Host smoke",
+  "authority": "User explicitly approves API-key connection/project switch/read-only models implementation, commit no push",
+  "artifact": "artifacts/scaleway-ai-toolkit-preview-0.0.3.vsix",
+  "sha256": "28c503aa777b76dbb94fc8b24973adfe1fcdc595a25bce620417a1e06ab7d3b4",
+  "bytes": 17555,
+  "package_files": [
+    "extension.vsixmanifest",
+    "[Content_Types].xml",
+    "extension/package.json",
+    "extension/readme.md",
+    "extension/media/toolkit.svg",
+    "extension/media/playground.js",
+    "extension/media/playground.css",
+    "extension/dist/webview.js",
+    "extension/dist/provider.js",
+    "extension/dist/ipc.js",
+    "extension/dist/extension.js",
+    "extension/dist/demo.js",
+    "extension/dist/connection.js"
+  ],
+  "tests_passed": 15,
+  "extension_host": {
+    "status": "passed",
+    "hostVersion": "1.142.0",
+    "activation": true,
+    "commands": true,
+    "nativeViewOpen": true,
+    "centralPlaygroundCommand": true,
+    "manualPlayground": "not_run"
+  },
+  "host_scope": "Development source matching VSIX build; no real secret login or packaged-activation assertion",
+  "not_run": [
+    "Actual account key validation, IAM project listing and model discovery through this extension",
+    "Manual login/project/refresh and visual UX journey",
+    "Production SecretStorage/platform penetration tests",
+    "Real inference/cloud provisioning"
+  ],
+  "provider_requests_by_agent": 0,
+  "credentials_used": false,
+  "scope_semantics": "Serverless GET global/key access, not project availability; dedicated deployment exact project/organization/fr-par"
+}
