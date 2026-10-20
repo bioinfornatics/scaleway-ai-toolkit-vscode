@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 /** Fixed-origin read-only provider adapter. No inference, retries or redirects. */
 import * as https from 'node:https';
 export class ReadError extends Error {

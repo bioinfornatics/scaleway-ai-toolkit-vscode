@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 /** Official CLI browser flow, without its API-key creation step. No password capture. */
 
 import { randomBytes } from 'node:crypto';

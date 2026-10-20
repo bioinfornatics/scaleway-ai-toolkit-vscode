@@ -6,7 +6,8 @@
     "outDir": "dist",
     "rootDir": "src",
     "sourceMap": false,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["node", "vscode"]
   },
   "include": ["src/**/*.ts"]
 }

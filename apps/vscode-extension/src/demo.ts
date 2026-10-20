@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 /** Synthetic offline data: not a provider catalog, usage or compatibility claim. */
 export const models = [
   {

@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import * as vscode from 'vscode';
 import { browserLogin, parseSession, type UserSession } from './browserLogin';
 import {

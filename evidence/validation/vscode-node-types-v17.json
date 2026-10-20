@@ -1,0 +1,13 @@
+{
+  "version": "0.0.17",
+  "change": "explicit node/vscode compiler types and node:buffer imports in four host modules",
+  "biome_check": "passed without diagnostics",
+  "strict_typescript": "passed",
+  "tests": {
+    "passed": 40,
+    "failed": 0
+  },
+  "editor_user_diagnostic": "reported TS2591; actual editor project association not observed",
+  "renderer_service_worker_issue": "separate issue .3.27, not resolved by these typing changes",
+  "vsix_sha256": "3417d7e3b66cf1a9cfaaf8daa67c5d39ac21f24f39fb1ac3df7b32d30e2e0b27"
+}
