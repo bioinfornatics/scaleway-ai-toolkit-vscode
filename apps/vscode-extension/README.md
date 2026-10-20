@@ -1,4 +1,4 @@
-# Scaleway AI Toolkit — Preview 0.0.12
+# Scaleway AI Toolkit — Preview 0.0.13
 
 Experimental community VS Code extension; no Scaleway affiliation. **User browser
 login without API keys**, scoped read-only projects/dedicated deployments and a
@@ -6,7 +6,7 @@ separate **offline synthetic** playground. No real inference or cloud writes.
 
 ## Install and try
 
-    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.12.vsix --force
+    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.13.vsix --force
 
 Reload Window, then **Scaleway AI: Open Offline Preview** (legacy command name).
 
@@ -94,11 +94,40 @@ No response body/header/error details logged; safe error codes only. A 401/403
 drops the local session; check IAM/organization and reconnect, no key fallback.
 Local minimum projections are not full production wire-schema validation.
 
-**Serverless JWT audience/header support is not established.** This preview sends
-no JWT to api.scaleway.ai and displays that limitation explicitly. User reports that browser login works in v0.0.7. Precise project/dedicated
-API acceptance has not been independently verified by the agent. Dedicated entries
-are deployments, not the dedicated model catalog. Clicking a real entry shows
-information only; **real models cannot run in this playground yet**.
+## Model catalogs versus deployments
+
+**Catalogue de modèles** now opens a real native searchable catalog, not the
+existing deployment list. Mes ressources -> Modèles separates:
+
+- **Serverless · catalogue**: public commercial Generative APIs offerings in fr-par,
+  from GET /product-catalog/v2alpha1/public-catalog/products?product_types=generative_apis&region=fr-par.
+  Input/output/cache/batch SKUs are grouped by product name; lifecycle statuses are
+  preserved, including deprecated offerings. Catalog presence does not prove
+  account access, active serving or suitability of that name as inference ID.
+  No prices or feature compatibility are inferred from grouped variants.
+- **Modèles dédiés à déployer**: GET regional /inference/v1/regions/fr-par/models,
+  scoped by selected project/organization. Returned selected-project records and
+  provider zero-project sentinel records are kept separate by provenance label.
+  Zero sentinel support is based on prior observed catalog evidence; the semantics
+  are not a blanket permission to accept arbitrary foreign-project models.
+- **Déploiements dédiés**: existing resources in selected project/fr-par only,
+  not a catalog. Empty result reads **Aucun déploiement**; error is not empty.
+
+Model refresh loads public catalog, dedicated catalog then existing deployments
+sequentially, at most 5 pages per collection (15 GET total), only on explicit action.
+Catalogue de modèles loads catalogs only (max10 GET), then opens a QuickPick.
+Each catalog has independent loading/error/empty states. Public route sends **no
+credential**, even when logged in; user JWT is used only for reviewed control routes.
+The navigation retains the account/project login gate to preserve the selected
+journey, although the public Serverless catalog itself needs no authentication.
+
+Public catalog was checked with unauthenticated HTTP and the actual extension
+adapter. Dedicated catalog/deployment JWT access remains unverified live in this
+increment. Source records: evidence/documentation/scaleway-model-catalog-v1.json.
+**No JWT is sent to api.scaleway.ai**; inference JWT support remains unverified.
+Clicking a real model shows offering/scope information only. The playground is
+still synthetic; no model invocation, deployment creation, EULA acceptance or
+other resource write is performed. No API-key fallback.
 
 ## Offline playground
 

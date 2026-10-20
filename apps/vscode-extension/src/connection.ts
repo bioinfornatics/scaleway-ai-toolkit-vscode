@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import {Project, ListedModel, listProjects, listDedicated, listOrganizations, uuid, ReadError} from './provider';
+import {Project, ListedModel, listProjects, listDedicated, listOrganizations, listServerless, listDedicatedCatalog, uuid, ReadError} from './provider';
 import {browserLogin, UserSession, parseSession} from './browserLogin';
 interface Metadata {name:string; organizationId:string; organizationName?:string;}
 const SESSION_SECRET='scalewayAI.userSession.v1';
@@ -7,8 +7,8 @@ const preferenceKey=(userId:string)=>'scalewayAI.preferences.v1.'+userId;
 export class Connection implements vscode.Disposable {
   metadata:Metadata|undefined;
   project:Project|undefined;
-  serverless:ListedModel[]=[];dedicated:ListedModel[]=[];
-  serverlessState='JWT Serverless non établi';dedicatedState='Non chargés';
+  serverless:ListedModel[]=[];dedicated:ListedModel[]=[];dedicatedCatalog:ListedModel[]=[];
+  serverlessState='Non chargé · catalogue public';dedicatedState='Non chargés';dedicatedCatalogState='Non chargé';
   busy=false;
   private session:UserSession|undefined;
   private generation=0;
@@ -54,7 +54,7 @@ export class Connection implements vscode.Disposable {
   }
   private clear() {
     this.generation++;this.abort?.abort();this.abort=undefined;this.project=undefined;
-    this.serverless=[];this.dedicated=[];this.dedicatedState='Non chargés';this.changed();
+    this.serverless=[];this.dedicated=[];this.dedicatedCatalog=[];this.serverlessState='Non chargé · catalogue public';this.dedicatedCatalogState='Non chargé';this.dedicatedState='Non chargés';this.changed();
   }
   private dropSession(){
     clearTimeout(this.expiry);this.expiry=undefined;this.session=undefined;this.metadata=undefined;this.clear();
@@ -133,6 +133,21 @@ export class Connection implements vscode.Disposable {
       this.token();this.metadata={name:'Utilisateur connecté',organizationId:org.id,organizationName:org.name};
       await this.pickProject(projects,generation);
     }catch(error){await this.report(error);}finally{this.busy=false;this.changed();}
+  }
+  async loadCatalogs():Promise<void> {
+    await this.ready;
+    if(this.busy||!vscode.workspace.isTrusted)return;
+    this.busy=true;const operation=this.generation;const abort=new AbortController();this.abort=abort;
+    try {
+      this.serverless=[];this.serverlessState='Chargement…';this.dedicatedCatalog=[];this.dedicatedCatalogState='Chargement…';this.changed();
+      try{const rows=await listServerless('',abort.signal);if(operation===this.generation&&!abort.signal.aborted){this.serverless=rows;this.serverlessState=rows.length?'Offres publiques · accès inférence non vérifié':'Aucune offre retournée';}}
+      catch(error){if(operation===this.generation)this.serverlessState='Erreur · '+(error instanceof ReadError?error.code:'local_error');}
+      if(operation!==this.generation||abort.signal.aborted||!vscode.workspace.isTrusted)return;
+      if(this.connected&&this.project){
+        try{const rows=await listDedicatedCatalog(this.project,this.token(),abort.signal);if(operation===this.generation&&!abort.signal.aborted){this.dedicatedCatalog=rows;this.dedicatedCatalogState=rows.length?'Modèles à déployer · fr-par':'Aucun modèle retourné';}}
+        catch(error){if(operation===this.generation)this.dedicatedCatalogState='Erreur · '+(error instanceof ReadError?error.code:'local_error');}
+      }else this.dedicatedCatalogState='Sélectionnez un projet';
+    }finally{this.busy=false;this.changed();}
   }
   async loadModels():Promise<void> {
     await this.ready;

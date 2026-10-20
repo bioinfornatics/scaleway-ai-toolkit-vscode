@@ -1,6 +1,6 @@
 const assert=require("node:assert/strict");
 const {test}=require("node:test");
-const {listProjects,listServerless,listDedicated,getJSON,ReadError,sessionHeaders,listOrganizations}=require("../dist/provider");
+const {listProjects,listServerless,listDedicated,getJSON,ReadError,sessionHeaders,listOrganizations,listDedicatedCatalog}=require("../dist/provider");
 const org="11111111-1111-1111-1111-111111111111", id="22222222-2222-2222-2222-222222222222";
 const key="eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjQwMDAwMDAwMDB9.c3ludGhldGlj";
 const signal=()=>new AbortController().signal;
@@ -10,10 +10,12 @@ test("projects scoped GET and normalized safe fields",async()=>{
 });
 test("foreign project and malformed response reject instead of empty",async()=>{
  await assert.rejects(listProjects(org,key,signal(),async()=>({projects:[{id,name:"Test",organization_id:id}],total_count:1})),{code:"foreign_or_invalid_scope"});
- await assert.rejects(listServerless(key,signal(),async()=>({error:"private error"})),{code:"serverless_jwt_unverified"});
+ await assert.rejects(listServerless(key,signal(),async()=>({error:"private error"})),{code:"invalid_response"});
 });
-test("serverless JWT dispatch disabled; control JWT uses SDK session header",async()=>{
- let sends=0;await assert.rejects(listServerless(key,signal(),async()=>{sends++;}),{code:'serverless_jwt_unverified'});assert.equal(sends,0);
+test("public offering catalog groups variants without JWT; inference origin remains disabled",async()=>{
+ let sends=0;const product={sku:'input',product:'model-a',status:'preview',locality:{region:'fr-par'},properties:{generative_apis:{}}};
+ const rows=await listServerless(key,signal(),async(o,p,k)=>{sends++;assert.equal(o,'control');assert.ok(p.startsWith('/product-catalog/v2alpha1/public-catalog/products?product_types=generative_apis&region=fr-par'));assert.equal(k,'');return {products:[product,{...product,sku:'output'}],total_count:2};});
+ assert.equal(sends,1);assert.deepEqual(rows,[{id:'model-a',label:'model-a',kind:'serverless',status:'preview'}]);
  assert.deepEqual(sessionHeaders(key),{'X-Session-Token':key,Accept:'application/json'});
  await assert.rejects(getJSON('models','/v1/models',key,signal()),{code:'invalid_request'});
  assert.throws(()=>sessionHeaders('api_key'),{code:'invalid_request'});
@@ -41,4 +43,11 @@ test('IAM user connections provides organization names/IDs only with one scoped 
  await assert.rejects(listOrganizations(id,key,signal(),async()=>({connections:[{organization:{id:org,name:'Test',locked:'no'}}]})),{code:'invalid_response'});
  await assert.rejects(getJSON('control','/iam/v1alpha1/users/'+id+'/connections?extra=1',key,signal()),{code:'invalid_request'});
  await assert.rejects(getJSON('control','/iam/v1alpha1/users/not-a-uuid/connections',key,signal()),{code:'invalid_request'});
+});
+
+test('dedicated model catalog distinct from deployments accepts provider sentinel and selected project only',async()=>{
+ const project={id,name:'Test',organizationId:org};const model={id:org,name:'Model',region:'fr-par',project_id:'00000000-0000-0000-0000-000000000000',status:'ready'};
+ const rows=await listDedicatedCatalog(project,key,signal(),async(o,p)=>{assert.ok(p.startsWith('/inference/v1/regions/fr-par/models?'));return {models:[model],total_count:1};});
+ assert.equal(rows[0].kind,'dedicated-catalog');assert.ok(rows[0].status.startsWith('Catalogue fournisseur'));
+ await assert.rejects(listDedicatedCatalog(project,key,signal(),async()=>({models:[{...model,project_id:org}],total_count:1})),{code:'foreign_or_invalid_scope'});
 });

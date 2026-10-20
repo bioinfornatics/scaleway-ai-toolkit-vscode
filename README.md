@@ -2,14 +2,14 @@
 
 A community extension concept for discovering, testing, building, evaluating and deploying AI applications on Scaleway without leaving VS Code.
 
-**Status:** experimental installable VS Code extension with automatic user browser login (JWT, no API key), project switch and bounded read-only dedicated resource discovery, plus separate offline streaming/cancel and experiment JSON. Real inference, full live-extension verification, production/design acceptance and cloud deployment remain separate gates. Name and branding are provisional; no official Scaleway affiliation is claimed.
+**Status:** experimental installable VS Code extension with automatic user browser login (JWT, no API key), project switch and bounded read-only model catalogs and dedicated resource discovery, plus separate offline streaming/cancel and experiment JSON. Real inference, full live-extension verification, production/design acceptance and cloud deployment remain separate gates. Name and branding are provisional; no official Scaleway affiliation is claimed.
 
 ## Try the first VSIX
 
-Artifact: `artifacts/scaleway-ai-toolkit-preview-0.0.12.vsix` (generated locally).
+Artifact: `artifacts/scaleway-ai-toolkit-preview-0.0.13.vsix` (generated locally).
 
 ```sh
-code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.12.vsix
+code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.13.vsix
 ```
 
 Run **Scaleway AI: Open Offline Preview**, select a synthetic model, then
@@ -17,7 +17,7 @@ Run **Scaleway AI: Open Offline Preview**, select a synthetic model, then
 from the Command Palette. [Extension instructions and build](apps/vscode-extension/README.md).
 The offline demo requires no credentials or Python. Real discovery is opt-in:
 Mes ressources -> Projet -> Se connecter à Scaleway in the browser, then scoped project selection and dedicated deployments.
-JWT persists via VS Code SecretStorage; organization/project preferences are user-bound; Serverless JWT access remains unverified and disabled. No inference or resource writes.
+JWT persists via VS Code SecretStorage; organization/project preferences are user-bound; Serverless public offering catalog is available; inference JWT access remains unverified and disabled. No inference or resource writes.
 
 ## Product authority
 

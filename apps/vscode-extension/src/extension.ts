@@ -24,25 +24,26 @@ export function activate(context: vscode.ExtensionContext): void {
   const modelNodes = (): Node[] => models.map(m => ({id: m.id, label: m.label.replace('Demo · ', ''),
     icon: selected.id === m.id ? 'check' : 'symbol-method', description: selected.id === m.id ? 'Sélectionné' : 'Synthétique',
     command: 'scalewayAI.select', args: [m.id]}));
-  const realModelNodes = (kind: 'serverless' | 'dedicated'): Node[] => {
-    const rows = kind === 'serverless' ? connection.serverless : connection.dedicated;
+  const realModelNodes = (kind: 'serverless' | 'dedicated' | 'dedicated-catalog'): Node[] => {
+    const rows = kind === 'serverless' ? connection.serverless : kind==='dedicated-catalog'?connection.dedicatedCatalog:connection.dedicated;
     return rows.map(m => ({id: kind + ':' + m.id, label: m.label, icon: 'symbol-method',
-      description: kind === 'serverless' ? 'Catalogue global' : m.status,
+      description: m.status,
       command: 'scalewayAI.modelInfo', args: [kind, m.id]}));
   };
   const resources = (): Node[] => [
     {id: 'project', label: connection.project ? 'Projet : ' + connection.project.name : 'Projet : sélectionner', icon: 'organization', command: 'scalewayAI.switchProject'},
     ...(connection.project ? [{id:'region',label:'Région dédiée : fr-par',icon:'globe'}] : []),
-    {id: 'real-models', label: 'Modèles', icon: 'library', command:'scalewayAI.loadModels', children: [
-      {id:'load',label:connection.busy ? 'Chargement…' : 'Charger / actualiser les modèles',icon:'refresh',command:'scalewayAI.loadModels'},
-      {id:'serverless',label:'Serverless',command:'scalewayAI.loadModels',description:connection.serverlessState,children:realModelNodes('serverless')},
+    {id: 'real-models', label: 'Modèles', icon: 'library', command:'scalewayAI.refreshModels', children: [
+      {id:'load',label:connection.busy ? 'Chargement…' : 'Charger / actualiser les modèles',icon:'refresh',command:'scalewayAI.refreshModels'},
+      {id:'serverless',label:'Serverless · catalogue',command:'scalewayAI.openCatalog',description:connection.serverlessState,children:realModelNodes('serverless')},
+      {id:'dedicated-catalog',label:'Modèles dédiés à déployer',command:'scalewayAI.openCatalog',description:connection.dedicatedCatalogState,children:realModelNodes('dedicated-catalog')},
       {id:'dedicated',label:'Déploiements dédiés',command:'scalewayAI.loadModels',description:connection.dedicatedState,children:realModelNodes('dedicated')},
     ]},
     {id: 'models', label: 'Démonstration hors ligne', icon: 'beaker', children: modelNodes()},
     {id: 'last', label: 'Dernière expérience de démo', icon: 'history', description: last ? last.status : 'Aucune', command: 'scalewayAI.experiment'},
   ];
   const tools = (): Node[] => [
-    {id: 'discover', label: 'Découvrir', children: [{id:'real-catalog',label:'Catalogue de modèles',icon:'library',command:'scalewayAI.loadModels'}, {id: 'catalog', label: 'Catalogue de démonstration', icon: 'beaker', command: 'scalewayAI.catalog'}]},
+    {id: 'discover', label: 'Découvrir', children: [{id:'real-catalog',label:'Catalogue de modèles',icon:'library',command:'scalewayAI.openCatalog'}, {id: 'catalog', label: 'Catalogue de démonstration', icon: 'beaker', command: 'scalewayAI.catalog'}]},
     {id: 'build', label: 'Construire et tester', children: [{id: 'playground', label: 'Playground modèle', icon: 'beaker', command: 'scalewayAI.playground'}]},
   ];
   const help = (): Node[] => [
@@ -69,7 +70,7 @@ export function activate(context: vscode.ExtensionContext): void {
   createView('scalewayAI.models', resources);
   createView('scalewayAI.tools', tools);
   createView('scalewayAI.help', help);
-  const accountCommands = new Set(['scalewayAI.loadModels','scalewayAI.modelInfo']);
+  const accountCommands = new Set(['scalewayAI.loadModels','scalewayAI.modelInfo','scalewayAI.openCatalog','scalewayAI.refreshModels']);
   const register = (id: string, callback: (...args: any[]) => unknown) =>
     context.subscriptions.push(vscode.commands.registerCommand(id, async (...args: any[]) => {
       // One shared gate for account-required actions; public/offline actions stay public.
@@ -118,10 +119,18 @@ export function activate(context: vscode.ExtensionContext): void {
   register('scalewayAI.login', () => connection.login());
   register('scalewayAI.switchProject', () => connection.switchProject());
   register('scalewayAI.loadModels', () => connection.loadModels());
+  register('scalewayAI.refreshModels', async()=>{await connection.loadCatalogs();if(connection.connected&&connection.project)await connection.loadModels();});
+  register('scalewayAI.openCatalog', async()=>{
+    await connection.loadCatalogs();
+    const rows=[...connection.serverless,...connection.dedicatedCatalog];
+    if(!rows.length){await vscode.window.showInformationMessage('Catalogue : '+connection.serverlessState+' ; dédiés : '+connection.dedicatedCatalogState);return;}
+    const pick=await vscode.window.showQuickPick(rows.map(model=>({label:model.label,description:model.kind==='serverless'?'Serverless · offre publique':'Dédié · modèle à déployer',detail:model.status,model})),{title:'Catalogue de modèles Scaleway',matchOnDescription:true});
+    if(pick)await vscode.commands.executeCommand('scalewayAI.modelInfo',pick.model.kind,pick.model.id);
+  });
   register('scalewayAI.disconnect', () => connection.disconnect());
   register('scalewayAI.modelInfo', (kind: unknown, id: unknown) => {
-    const row = (kind === 'serverless' ? connection.serverless : connection.dedicated).find(m => m.id === id);
-    if (row) void vscode.window.showInformationMessage(row.label + ' — ' + (kind === 'serverless' ? 'Catalogue global : accès JWT non établi.' : 'Déploiement du projet en fr-par.') + ' Inférence réelle non implémentée dans ce VSIX.');
+    const row = (kind === 'serverless' ? connection.serverless : kind==='dedicated-catalog'?connection.dedicatedCatalog:connection.dedicated).find(m => m.id === id);
+    if (row) void vscode.window.showInformationMessage(row.label + ' — ' + (kind === 'serverless' ? 'Offre du catalogue public, pas une preuve d’accès inférence avec ce JWT.' : kind==='dedicated-catalog'?'Modèle à déployer, pas un déploiement existant.':'Déploiement existant du projet en fr-par.') + ' Inférence réelle non implémentée dans ce VSIX.');
   });
   register('scalewayAI.open', async () => { await vscode.commands.executeCommand('workbench.view.extension.scalewayAI'); });
   register('scalewayAI.select', (id: unknown) => { if (active) return; const model = models.find(m => m.id === id); if (model) {selected = model; refresh(); update();} });

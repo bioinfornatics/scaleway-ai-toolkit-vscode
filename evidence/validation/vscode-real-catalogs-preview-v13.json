@@ -1,0 +1,21 @@
+{
+  "record_id": "vscode-real-catalogs-preview-v13",
+  "verified_at": "2026-10-20T21:43:28.104221+00:00",
+  "issue": "scaleway_ai_vscode-jgh.3.20",
+  "artifact": "artifacts/scaleway-ai-toolkit-preview-0.0.13.vsix",
+  "sha256": "b5f4f87578e2f1209b6b33232307750b5b335b0ed72bb3a1ea468fca34365ca9",
+  "tests_passed": 35,
+  "strict_typescript": "passed",
+  "isolated_install": "passed",
+  "public_catalog_adapter_live": "passed",
+  "public_distinct_offerings": 33,
+  "public_authenticated": false,
+  "package_audit": "dedicated catalogs/resources and public offerings distinct; public request has no auth header",
+  "not_run": [
+    "Live dedicated catalogs/deployments with user JWT",
+    "Manual v13 menu/catalog journey",
+    "Serverless inference JWT acceptance",
+    "Any inference or resource mutation"
+  ],
+  "authenticated_requests_by_agent": 0
+}

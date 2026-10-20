@@ -1,0 +1,12 @@
+{
+  "recorded_at": "2026-10-20T21:42:58.847353+00:00",
+  "sdk_source": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-go/46763ab9fc78781eca1af94bd3a83750d3a2068f/api/product_catalog/v2alpha1/product_catalog_sdk.go",
+  "snapshot": "evidence/documentation/model-public-catalog-sdk.go",
+  "sha256": "996e55b53cc72d0dd2a46669c8c2c3f7b899d87460dd0e5b8a0f8e7ab7b7877d",
+  "public_route": "GET /product-catalog/v2alpha1/public-catalog/products?product_types=generative_apis&region=fr-par&page=N&page_size=100",
+  "dedicated_route": "GET /inference/v1/regions/fr-par/models?project_id=<selected>&organization_id=<selected>&page=N&page_size=100",
+  "dedicated_source": "evidence/schemas/dedicated-js-packages_generated_inference_src_v1_api.gen.ts",
+  "public_probe": "Unauthenticated first page HTTP200, total_count125; separate actual Node adapter verification",
+  "security": "No JWT/keys sent to public route; no inference access claim; dedicated zero-project sentinel kept with provenance, rejects other projects",
+  "live_dedicated_jwt": "not_run"
+}

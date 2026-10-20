@@ -1,0 +1,1809 @@
+// This file was automatically generated. DO NOT EDIT.
+// If you have any remark or suggestion do not hesitate to open an issue.
+
+// Package product_catalog provides methods and message types of the product_catalog v2alpha1 API.
+package product_catalog
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net"
+	"net/http"
+	"net/url"
+	"strings"
+	"time"
+
+	"github.com/scaleway/scaleway-sdk-go/errors"
+	"github.com/scaleway/scaleway-sdk-go/marshaler"
+	"github.com/scaleway/scaleway-sdk-go/namegenerator"
+	"github.com/scaleway/scaleway-sdk-go/parameter"
+	"github.com/scaleway/scaleway-sdk-go/scw"
+)
+
+// always import dependencies
+var (
+	_ fmt.Stringer
+	_ json.Unmarshaler
+	_ url.URL
+	_ net.IP
+	_ http.Header
+	_ bytes.Reader
+	_ time.Time
+	_ = strings.Join
+
+	_ scw.ScalewayRequest
+	_ marshaler.Duration
+	_ scw.File
+	_ = parameter.AddToQuery
+	_ = namegenerator.GetRandomName
+)
+
+type ListPublicCatalogProductsRequestProductType string
+
+const (
+	// Unknown product type.
+	ListPublicCatalogProductsRequestProductTypeUnknownProductType = ListPublicCatalogProductsRequestProductType("unknown_product_type")
+	// Include the Instance information in the response.
+	ListPublicCatalogProductsRequestProductTypeInstance = ListPublicCatalogProductsRequestProductType("instance")
+	// Include the Apple Silicon information in the response.
+	ListPublicCatalogProductsRequestProductTypeAppleSilicon = ListPublicCatalogProductsRequestProductType("apple_silicon")
+	// Include the Elastic Metal information in the response.
+	ListPublicCatalogProductsRequestProductTypeElasticMetal = ListPublicCatalogProductsRequestProductType("elastic_metal")
+	// Include the Dedibox information in the response.
+	ListPublicCatalogProductsRequestProductTypeDedibox = ListPublicCatalogProductsRequestProductType("dedibox")
+	// Include the Block Storage information in the response.
+	ListPublicCatalogProductsRequestProductTypeBlockStorage = ListPublicCatalogProductsRequestProductType("block_storage")
+	// Include the Object Storage information in the response.
+	ListPublicCatalogProductsRequestProductTypeObjectStorage = ListPublicCatalogProductsRequestProductType("object_storage")
+	// Include the Managed Inference information in the response.
+	ListPublicCatalogProductsRequestProductTypeManagedInference = ListPublicCatalogProductsRequestProductType("managed_inference")
+	// Include the Generative APIs information in the response.
+	ListPublicCatalogProductsRequestProductTypeGenerativeAPIs = ListPublicCatalogProductsRequestProductType("generative_apis")
+	// Include the Load Balancer information in the response.
+	ListPublicCatalogProductsRequestProductTypeLoadBalancer = ListPublicCatalogProductsRequestProductType("load_balancer")
+	// Include the Secret Manager information in the response.
+	ListPublicCatalogProductsRequestProductTypeSecretManager = ListPublicCatalogProductsRequestProductType("secret_manager")
+	// Include the Key Manager information in the response.
+	ListPublicCatalogProductsRequestProductTypeKeyManager = ListPublicCatalogProductsRequestProductType("key_manager")
+	// Include the Managed Redis Database information in the response.
+	ListPublicCatalogProductsRequestProductTypeManagedRedisDatabase = ListPublicCatalogProductsRequestProductType("managed_redis_database")
+	// Include the Kubernetes information in the response.
+	ListPublicCatalogProductsRequestProductTypeKubernetes = ListPublicCatalogProductsRequestProductType("kubernetes")
+	// Include the Managed Relational Database information in the response.
+	ListPublicCatalogProductsRequestProductTypeManagedRelationalDatabase = ListPublicCatalogProductsRequestProductType("managed_relational_database")
+	// Include the Managed MongoDB information in the response.
+	ListPublicCatalogProductsRequestProductTypeManagedMongodb = ListPublicCatalogProductsRequestProductType("managed_mongodb")
+	// Include the Serverless Functions information in the response.
+	ListPublicCatalogProductsRequestProductTypeServerlessFunctions = ListPublicCatalogProductsRequestProductType("serverless_functions")
+	// Include the Serverless Containers information in the response.
+	ListPublicCatalogProductsRequestProductTypeServerlessContainers = ListPublicCatalogProductsRequestProductType("serverless_containers")
+	// Include the Serverless Jobs information in the response.
+	ListPublicCatalogProductsRequestProductTypeServerlessJobs = ListPublicCatalogProductsRequestProductType("serverless_jobs")
+	// Include the Kafka information in the response.
+	ListPublicCatalogProductsRequestProductTypeApacheKafka = ListPublicCatalogProductsRequestProductType("apache_kafka")
+	// Include the OpenSearch DB information in the response.
+	ListPublicCatalogProductsRequestProductTypeOpenSearch = ListPublicCatalogProductsRequestProductType("open_search")
+	// Include the Instance Local SSD Snapshot information in the response.
+	ListPublicCatalogProductsRequestProductTypeInstanceLocalSSDSnapshot = ListPublicCatalogProductsRequestProductType("instance_local_ssd_snapshot")
+	// Include the Instance Local SSD Storage information in the response.
+	ListPublicCatalogProductsRequestProductTypeInstanceLocalSSDStorage = ListPublicCatalogProductsRequestProductType("instance_local_ssd_storage")
+	// The properties of File Storage products.
+	ListPublicCatalogProductsRequestProductTypeFileStorage = ListPublicCatalogProductsRequestProductType("file_storage")
+	// Include the Serverless SQL Database information in the response.
+	ListPublicCatalogProductsRequestProductTypeServerlessSQLDatabase = ListPublicCatalogProductsRequestProductType("serverless_sql_database")
+)
+
+func (enum ListPublicCatalogProductsRequestProductType) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(ListPublicCatalogProductsRequestProductTypeUnknownProductType)
+	}
+	return string(enum)
+}
+
+func (enum ListPublicCatalogProductsRequestProductType) Values() []ListPublicCatalogProductsRequestProductType {
+	return []ListPublicCatalogProductsRequestProductType{
+		"unknown_product_type",
+		"instance",
+		"apple_silicon",
+		"elastic_metal",
+		"dedibox",
+		"block_storage",
+		"object_storage",
+		"managed_inference",
+		"generative_apis",
+		"load_balancer",
+		"secret_manager",
+		"key_manager",
+		"managed_redis_database",
+		"kubernetes",
+		"managed_relational_database",
+		"managed_mongodb",
+		"serverless_functions",
+		"serverless_containers",
+		"serverless_jobs",
+		"apache_kafka",
+		"open_search",
+		"instance_local_ssd_snapshot",
+		"instance_local_ssd_storage",
+		"file_storage",
+		"serverless_sql_database",
+	}
+}
+
+func (enum ListPublicCatalogProductsRequestProductType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ListPublicCatalogProductsRequestProductType) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ListPublicCatalogProductsRequestProductType(ListPublicCatalogProductsRequestProductType(tmp).String())
+	return nil
+}
+
+type ListPublicCatalogProductsRequestStatus string
+
+const (
+	// Unknown status.
+	ListPublicCatalogProductsRequestStatusUnknownStatus = ListPublicCatalogProductsRequestStatus("unknown_status")
+	// The product is available in Public Beta.
+	ListPublicCatalogProductsRequestStatusPublicBeta = ListPublicCatalogProductsRequestStatus("public_beta")
+	// The product is available in Preview mode.
+	ListPublicCatalogProductsRequestStatusPreview = ListPublicCatalogProductsRequestStatus("preview")
+	// The product is generally available.
+	ListPublicCatalogProductsRequestStatusGeneralAvailability = ListPublicCatalogProductsRequestStatus("general_availability")
+	// The product is available but no new features will be added. Only bug fixes and security updates provided.
+	ListPublicCatalogProductsRequestStatusEndOfNewFeatures = ListPublicCatalogProductsRequestStatus("end_of_new_features")
+	// The product is no longer available to new customers. Existing resources continue to run and be supported.
+	ListPublicCatalogProductsRequestStatusEndOfGrowth = ListPublicCatalogProductsRequestStatus("end_of_growth")
+	// The product must not be used for new deployments. Deprecated.
+	ListPublicCatalogProductsRequestStatusEndOfDeployment = ListPublicCatalogProductsRequestStatus("end_of_deployment")
+	// There is no longer any commercial support for this product. Deprecated.
+	ListPublicCatalogProductsRequestStatusEndOfSupport = ListPublicCatalogProductsRequestStatus("end_of_support")
+	// The product is not sold anymore but is still in use.
+	ListPublicCatalogProductsRequestStatusEndOfSale = ListPublicCatalogProductsRequestStatus("end_of_sale")
+	// The product is no longer supported or maintained.
+	ListPublicCatalogProductsRequestStatusEndOfLife = ListPublicCatalogProductsRequestStatus("end_of_life")
+	// The product is deprecated and is no longer accessible.
+	ListPublicCatalogProductsRequestStatusRetired = ListPublicCatalogProductsRequestStatus("retired")
+)
+
+func (enum ListPublicCatalogProductsRequestStatus) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(ListPublicCatalogProductsRequestStatusUnknownStatus)
+	}
+	return string(enum)
+}
+
+func (enum ListPublicCatalogProductsRequestStatus) Values() []ListPublicCatalogProductsRequestStatus {
+	return []ListPublicCatalogProductsRequestStatus{
+		"unknown_status",
+		"public_beta",
+		"preview",
+		"general_availability",
+		"end_of_new_features",
+		"end_of_growth",
+		"end_of_deployment",
+		"end_of_support",
+		"end_of_sale",
+		"end_of_life",
+		"retired",
+	}
+}
+
+func (enum ListPublicCatalogProductsRequestStatus) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ListPublicCatalogProductsRequestStatus) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ListPublicCatalogProductsRequestStatus(ListPublicCatalogProductsRequestStatus(tmp).String())
+	return nil
+}
+
+type PublicCatalogProductProductBadge string
+
+const (
+	// Unknown badge.
+	PublicCatalogProductProductBadgeUnknownProductBadge = PublicCatalogProductProductBadge("unknown_product_badge")
+	// The product is new (can be used to make a new product more visible in the Console).
+	PublicCatalogProductProductBadgeNewProduct = PublicCatalogProductProductBadge("new_product")
+	// The product is one of our best sellers.
+	PublicCatalogProductProductBadgeBestSeller = PublicCatalogProductProductBadge("best_seller")
+	// The product is one of our best value.
+	PublicCatalogProductProductBadgeBestValue = PublicCatalogProductProductBadge("best_value")
+	// The product is popular.
+	PublicCatalogProductProductBadgePopular = PublicCatalogProductProductBadge("popular")
+	// The product doesn't have access to KVM.
+	PublicCatalogProductProductBadgeNoKvm = PublicCatalogProductProductBadge("no_kvm")
+)
+
+func (enum PublicCatalogProductProductBadge) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(PublicCatalogProductProductBadgeUnknownProductBadge)
+	}
+	return string(enum)
+}
+
+func (enum PublicCatalogProductProductBadge) Values() []PublicCatalogProductProductBadge {
+	return []PublicCatalogProductProductBadge{
+		"unknown_product_badge",
+		"new_product",
+		"best_seller",
+		"best_value",
+		"popular",
+		"no_kvm",
+	}
+}
+
+func (enum PublicCatalogProductProductBadge) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *PublicCatalogProductProductBadge) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = PublicCatalogProductProductBadge(PublicCatalogProductProductBadge(tmp).String())
+	return nil
+}
+
+type PublicCatalogProductPropertiesApacheKafkaAvailableVolumeType string
+
+const (
+	PublicCatalogProductPropertiesApacheKafkaAvailableVolumeTypeUnknownType = PublicCatalogProductPropertiesApacheKafkaAvailableVolumeType("unknown_type")
+	PublicCatalogProductPropertiesApacheKafkaAvailableVolumeTypeSbs5k       = PublicCatalogProductPropertiesApacheKafkaAvailableVolumeType("sbs_5k")
+	PublicCatalogProductPropertiesApacheKafkaAvailableVolumeTypeSbs15k      = PublicCatalogProductPropertiesApacheKafkaAvailableVolumeType("sbs_15k")
+)
+
+func (enum PublicCatalogProductPropertiesApacheKafkaAvailableVolumeType) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(PublicCatalogProductPropertiesApacheKafkaAvailableVolumeTypeUnknownType)
+	}
+	return string(enum)
+}
+
+func (enum PublicCatalogProductPropertiesApacheKafkaAvailableVolumeType) Values() []PublicCatalogProductPropertiesApacheKafkaAvailableVolumeType {
+	return []PublicCatalogProductPropertiesApacheKafkaAvailableVolumeType{
+		"unknown_type",
+		"sbs_5k",
+		"sbs_15k",
+	}
+}
+
+func (enum PublicCatalogProductPropertiesApacheKafkaAvailableVolumeType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *PublicCatalogProductPropertiesApacheKafkaAvailableVolumeType) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = PublicCatalogProductPropertiesApacheKafkaAvailableVolumeType(PublicCatalogProductPropertiesApacheKafkaAvailableVolumeType(tmp).String())
+	return nil
+}
+
+type PublicCatalogProductPropertiesGenerativeAPIsConsumptionMode string
+
+const (
+	PublicCatalogProductPropertiesGenerativeAPIsConsumptionModeUnknownConsumptionMode = PublicCatalogProductPropertiesGenerativeAPIsConsumptionMode("unknown_consumption_mode")
+	PublicCatalogProductPropertiesGenerativeAPIsConsumptionModeRealtime               = PublicCatalogProductPropertiesGenerativeAPIsConsumptionMode("realtime")
+	PublicCatalogProductPropertiesGenerativeAPIsConsumptionModeBatch                  = PublicCatalogProductPropertiesGenerativeAPIsConsumptionMode("batch")
+)
+
+func (enum PublicCatalogProductPropertiesGenerativeAPIsConsumptionMode) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(PublicCatalogProductPropertiesGenerativeAPIsConsumptionModeUnknownConsumptionMode)
+	}
+	return string(enum)
+}
+
+func (enum PublicCatalogProductPropertiesGenerativeAPIsConsumptionMode) Values() []PublicCatalogProductPropertiesGenerativeAPIsConsumptionMode {
+	return []PublicCatalogProductPropertiesGenerativeAPIsConsumptionMode{
+		"unknown_consumption_mode",
+		"realtime",
+		"batch",
+	}
+}
+
+func (enum PublicCatalogProductPropertiesGenerativeAPIsConsumptionMode) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *PublicCatalogProductPropertiesGenerativeAPIsConsumptionMode) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = PublicCatalogProductPropertiesGenerativeAPIsConsumptionMode(PublicCatalogProductPropertiesGenerativeAPIsConsumptionMode(tmp).String())
+	return nil
+}
+
+type PublicCatalogProductPropertiesGenerativeAPIsTask string
+
+const (
+	PublicCatalogProductPropertiesGenerativeAPIsTaskUnknownTask        = PublicCatalogProductPropertiesGenerativeAPIsTask("unknown_task")
+	PublicCatalogProductPropertiesGenerativeAPIsTaskChat               = PublicCatalogProductPropertiesGenerativeAPIsTask("chat")
+	PublicCatalogProductPropertiesGenerativeAPIsTaskEmbeddings         = PublicCatalogProductPropertiesGenerativeAPIsTask("embeddings")
+	PublicCatalogProductPropertiesGenerativeAPIsTaskVision             = PublicCatalogProductPropertiesGenerativeAPIsTask("vision")
+	PublicCatalogProductPropertiesGenerativeAPIsTaskAudioTranscription = PublicCatalogProductPropertiesGenerativeAPIsTask("audio_transcription")
+	PublicCatalogProductPropertiesGenerativeAPIsTaskCode               = PublicCatalogProductPropertiesGenerativeAPIsTask("code")
+	PublicCatalogProductPropertiesGenerativeAPIsTaskOcr                = PublicCatalogProductPropertiesGenerativeAPIsTask("ocr")
+)
+
+func (enum PublicCatalogProductPropertiesGenerativeAPIsTask) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(PublicCatalogProductPropertiesGenerativeAPIsTaskUnknownTask)
+	}
+	return string(enum)
+}
+
+func (enum PublicCatalogProductPropertiesGenerativeAPIsTask) Values() []PublicCatalogProductPropertiesGenerativeAPIsTask {
+	return []PublicCatalogProductPropertiesGenerativeAPIsTask{
+		"unknown_task",
+		"chat",
+		"embeddings",
+		"vision",
+		"audio_transcription",
+		"code",
+		"ocr",
+	}
+}
+
+func (enum PublicCatalogProductPropertiesGenerativeAPIsTask) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *PublicCatalogProductPropertiesGenerativeAPIsTask) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = PublicCatalogProductPropertiesGenerativeAPIsTask(PublicCatalogProductPropertiesGenerativeAPIsTask(tmp).String())
+	return nil
+}
+
+type PublicCatalogProductPropertiesGenerativeAPIsTokenType string
+
+const (
+	PublicCatalogProductPropertiesGenerativeAPIsTokenTypeUnknownTokenType = PublicCatalogProductPropertiesGenerativeAPIsTokenType("unknown_token_type")
+	PublicCatalogProductPropertiesGenerativeAPIsTokenTypeInputToken       = PublicCatalogProductPropertiesGenerativeAPIsTokenType("input_token")
+	PublicCatalogProductPropertiesGenerativeAPIsTokenTypeOutputToken      = PublicCatalogProductPropertiesGenerativeAPIsTokenType("output_token")
+	PublicCatalogProductPropertiesGenerativeAPIsTokenTypeInputCachedToken = PublicCatalogProductPropertiesGenerativeAPIsTokenType("input_cached_token")
+	PublicCatalogProductPropertiesGenerativeAPIsTokenTypeInputAudio       = PublicCatalogProductPropertiesGenerativeAPIsTokenType("input_audio")
+)
+
+func (enum PublicCatalogProductPropertiesGenerativeAPIsTokenType) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(PublicCatalogProductPropertiesGenerativeAPIsTokenTypeUnknownTokenType)
+	}
+	return string(enum)
+}
+
+func (enum PublicCatalogProductPropertiesGenerativeAPIsTokenType) Values() []PublicCatalogProductPropertiesGenerativeAPIsTokenType {
+	return []PublicCatalogProductPropertiesGenerativeAPIsTokenType{
+		"unknown_token_type",
+		"input_token",
+		"output_token",
+		"input_cached_token",
+		"input_audio",
+	}
+}
+
+func (enum PublicCatalogProductPropertiesGenerativeAPIsTokenType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *PublicCatalogProductPropertiesGenerativeAPIsTokenType) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = PublicCatalogProductPropertiesGenerativeAPIsTokenType(PublicCatalogProductPropertiesGenerativeAPIsTokenType(tmp).String())
+	return nil
+}
+
+type PublicCatalogProductPropertiesHardwareCPUArch string
+
+const (
+	// Unknown architecture.
+	PublicCatalogProductPropertiesHardwareCPUArchUnknownArch = PublicCatalogProductPropertiesHardwareCPUArch("unknown_arch")
+	// X64.
+	PublicCatalogProductPropertiesHardwareCPUArchX64 = PublicCatalogProductPropertiesHardwareCPUArch("x64")
+	// ARM64.
+	PublicCatalogProductPropertiesHardwareCPUArchArm64 = PublicCatalogProductPropertiesHardwareCPUArch("arm64")
+	// RISC-V.
+	PublicCatalogProductPropertiesHardwareCPUArchRiscv = PublicCatalogProductPropertiesHardwareCPUArch("riscv")
+	// Apple Silicon.
+	PublicCatalogProductPropertiesHardwareCPUArchAppleSilicon = PublicCatalogProductPropertiesHardwareCPUArch("apple_silicon")
+)
+
+func (enum PublicCatalogProductPropertiesHardwareCPUArch) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(PublicCatalogProductPropertiesHardwareCPUArchUnknownArch)
+	}
+	return string(enum)
+}
+
+func (enum PublicCatalogProductPropertiesHardwareCPUArch) Values() []PublicCatalogProductPropertiesHardwareCPUArch {
+	return []PublicCatalogProductPropertiesHardwareCPUArch{
+		"unknown_arch",
+		"x64",
+		"arm64",
+		"riscv",
+		"apple_silicon",
+	}
+}
+
+func (enum PublicCatalogProductPropertiesHardwareCPUArch) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *PublicCatalogProductPropertiesHardwareCPUArch) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = PublicCatalogProductPropertiesHardwareCPUArch(PublicCatalogProductPropertiesHardwareCPUArch(tmp).String())
+	return nil
+}
+
+type PublicCatalogProductPropertiesHardwareRAMECCType string
+
+const (
+	// Unknown ECC type.
+	PublicCatalogProductPropertiesHardwareRAMECCTypeUnknownEccType = PublicCatalogProductPropertiesHardwareRAMECCType("unknown_ecc_type")
+	// Standard ECC.
+	PublicCatalogProductPropertiesHardwareRAMECCTypeStandard = PublicCatalogProductPropertiesHardwareRAMECCType("standard")
+	// On Die ECC (ODECC).
+	PublicCatalogProductPropertiesHardwareRAMECCTypeOnDie = PublicCatalogProductPropertiesHardwareRAMECCType("on_die")
+)
+
+func (enum PublicCatalogProductPropertiesHardwareRAMECCType) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(PublicCatalogProductPropertiesHardwareRAMECCTypeUnknownEccType)
+	}
+	return string(enum)
+}
+
+func (enum PublicCatalogProductPropertiesHardwareRAMECCType) Values() []PublicCatalogProductPropertiesHardwareRAMECCType {
+	return []PublicCatalogProductPropertiesHardwareRAMECCType{
+		"unknown_ecc_type",
+		"standard",
+		"on_die",
+	}
+}
+
+func (enum PublicCatalogProductPropertiesHardwareRAMECCType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *PublicCatalogProductPropertiesHardwareRAMECCType) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = PublicCatalogProductPropertiesHardwareRAMECCType(PublicCatalogProductPropertiesHardwareRAMECCType(tmp).String())
+	return nil
+}
+
+type PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClass string
+
+const (
+	// Unknown storage class.
+	PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClassUnknownStorageClass = PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClass("unknown_storage_class")
+	// Block SBS 5k type.
+	PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClassSbs5k = PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClass("sbs_5k")
+	// Block SBS 5k Snapshot type.
+	PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClassSbs5kSnapshot = PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClass("sbs_5k_snapshot")
+	// Block SBS 15k type.
+	PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClassSbs15k = PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClass("sbs_15k")
+	// Block SBS 15k Snapshot type.
+	PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClassSbs15kSnapshot = PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClass("sbs_15k_snapshot")
+)
+
+func (enum PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClass) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClassUnknownStorageClass)
+	}
+	return string(enum)
+}
+
+func (enum PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClass) Values() []PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClass {
+	return []PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClass{
+		"unknown_storage_class",
+		"sbs_5k",
+		"sbs_5k_snapshot",
+		"sbs_15k",
+		"sbs_15k_snapshot",
+	}
+}
+
+func (enum PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClass) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClass) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClass(PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClass(tmp).String())
+	return nil
+}
+
+type PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClass string
+
+const (
+	// Unknown storage class.
+	PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClassUnknownStorageClass = PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClass("unknown_storage_class")
+	// Block SSD type.
+	PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClassBlockSSD = PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClass("block_ssd")
+	// Block SSD Snapshot type.
+	PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClassBlockSSDSnapshot = PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClass("block_ssd_snapshot")
+	// Local SSD type.
+	PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClassLocalSSD = PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClass("local_ssd")
+	// Block SBS 5k type.
+	PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClassSbs5k = PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClass("sbs_5k")
+	// Block SBS 5k Snapshot type.
+	PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClassSbs5kSnapshot = PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClass("sbs_5k_snapshot")
+	// Block SBS 15k type.
+	PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClassSbs15k = PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClass("sbs_15k")
+	// Block SBS 15k Snapshot type.
+	PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClassSbs15kSnapshot = PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClass("sbs_15k_snapshot")
+	// Backup type.
+	PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClassBackup = PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClass("backup")
+)
+
+func (enum PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClass) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClassUnknownStorageClass)
+	}
+	return string(enum)
+}
+
+func (enum PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClass) Values() []PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClass {
+	return []PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClass{
+		"unknown_storage_class",
+		"block_ssd",
+		"block_ssd_snapshot",
+		"local_ssd",
+		"sbs_5k",
+		"sbs_5k_snapshot",
+		"sbs_15k",
+		"sbs_15k_snapshot",
+		"backup",
+	}
+}
+
+func (enum PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClass) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClass) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClass(PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClass(tmp).String())
+	return nil
+}
+
+type PublicCatalogProductPropertiesObjectStorageClassTypeStorageClass string
+
+const (
+	// Unknown storage class.
+	PublicCatalogProductPropertiesObjectStorageClassTypeStorageClassUnknownStorageClass = PublicCatalogProductPropertiesObjectStorageClassTypeStorageClass("unknown_storage_class")
+	// Standard storage class.
+	PublicCatalogProductPropertiesObjectStorageClassTypeStorageClassStandard = PublicCatalogProductPropertiesObjectStorageClassTypeStorageClass("standard")
+	// Glacier storage class.
+	PublicCatalogProductPropertiesObjectStorageClassTypeStorageClassGlacier = PublicCatalogProductPropertiesObjectStorageClassTypeStorageClass("glacier")
+	// One Zone Infrequent Access storage class.
+	PublicCatalogProductPropertiesObjectStorageClassTypeStorageClassOnezoneIa = PublicCatalogProductPropertiesObjectStorageClassTypeStorageClass("onezone_ia")
+)
+
+func (enum PublicCatalogProductPropertiesObjectStorageClassTypeStorageClass) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(PublicCatalogProductPropertiesObjectStorageClassTypeStorageClassUnknownStorageClass)
+	}
+	return string(enum)
+}
+
+func (enum PublicCatalogProductPropertiesObjectStorageClassTypeStorageClass) Values() []PublicCatalogProductPropertiesObjectStorageClassTypeStorageClass {
+	return []PublicCatalogProductPropertiesObjectStorageClassTypeStorageClass{
+		"unknown_storage_class",
+		"standard",
+		"glacier",
+		"onezone_ia",
+	}
+}
+
+func (enum PublicCatalogProductPropertiesObjectStorageClassTypeStorageClass) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *PublicCatalogProductPropertiesObjectStorageClassTypeStorageClass) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = PublicCatalogProductPropertiesObjectStorageClassTypeStorageClass(PublicCatalogProductPropertiesObjectStorageClassTypeStorageClass(tmp).String())
+	return nil
+}
+
+type PublicCatalogProductPropertiesObjectStorageInternetTrafficTypeTrafficType string
+
+const (
+	// Unknown traffic type.
+	PublicCatalogProductPropertiesObjectStorageInternetTrafficTypeTrafficTypeUnknownTrafficType = PublicCatalogProductPropertiesObjectStorageInternetTrafficTypeTrafficType("unknown_traffic_type")
+	// Ingress traffic type.
+	PublicCatalogProductPropertiesObjectStorageInternetTrafficTypeTrafficTypeIngress = PublicCatalogProductPropertiesObjectStorageInternetTrafficTypeTrafficType("ingress")
+	// Egress traffic type.
+	PublicCatalogProductPropertiesObjectStorageInternetTrafficTypeTrafficTypeEgress = PublicCatalogProductPropertiesObjectStorageInternetTrafficTypeTrafficType("egress")
+)
+
+func (enum PublicCatalogProductPropertiesObjectStorageInternetTrafficTypeTrafficType) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(PublicCatalogProductPropertiesObjectStorageInternetTrafficTypeTrafficTypeUnknownTrafficType)
+	}
+	return string(enum)
+}
+
+func (enum PublicCatalogProductPropertiesObjectStorageInternetTrafficTypeTrafficType) Values() []PublicCatalogProductPropertiesObjectStorageInternetTrafficTypeTrafficType {
+	return []PublicCatalogProductPropertiesObjectStorageInternetTrafficTypeTrafficType{
+		"unknown_traffic_type",
+		"ingress",
+		"egress",
+	}
+}
+
+func (enum PublicCatalogProductPropertiesObjectStorageInternetTrafficTypeTrafficType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *PublicCatalogProductPropertiesObjectStorageInternetTrafficTypeTrafficType) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = PublicCatalogProductPropertiesObjectStorageInternetTrafficTypeTrafficType(PublicCatalogProductPropertiesObjectStorageInternetTrafficTypeTrafficType(tmp).String())
+	return nil
+}
+
+type PublicCatalogProductPropertiesObjectStorageRestoreTypeRestoreType string
+
+const (
+	// Unknown restore type.
+	PublicCatalogProductPropertiesObjectStorageRestoreTypeRestoreTypeUnknownRestoreType = PublicCatalogProductPropertiesObjectStorageRestoreTypeRestoreType("unknown_restore_type")
+	// Standard restore type.
+	PublicCatalogProductPropertiesObjectStorageRestoreTypeRestoreTypeStandard = PublicCatalogProductPropertiesObjectStorageRestoreTypeRestoreType("standard")
+)
+
+func (enum PublicCatalogProductPropertiesObjectStorageRestoreTypeRestoreType) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(PublicCatalogProductPropertiesObjectStorageRestoreTypeRestoreTypeUnknownRestoreType)
+	}
+	return string(enum)
+}
+
+func (enum PublicCatalogProductPropertiesObjectStorageRestoreTypeRestoreType) Values() []PublicCatalogProductPropertiesObjectStorageRestoreTypeRestoreType {
+	return []PublicCatalogProductPropertiesObjectStorageRestoreTypeRestoreType{
+		"unknown_restore_type",
+		"standard",
+	}
+}
+
+func (enum PublicCatalogProductPropertiesObjectStorageRestoreTypeRestoreType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *PublicCatalogProductPropertiesObjectStorageRestoreTypeRestoreType) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = PublicCatalogProductPropertiesObjectStorageRestoreTypeRestoreType(PublicCatalogProductPropertiesObjectStorageRestoreTypeRestoreType(tmp).String())
+	return nil
+}
+
+type PublicCatalogProductStatus string
+
+const (
+	// Unknown status.
+	PublicCatalogProductStatusUnknownStatus = PublicCatalogProductStatus("unknown_status")
+	// The product is available in Public Beta.
+	PublicCatalogProductStatusPublicBeta = PublicCatalogProductStatus("public_beta")
+	// The product is available in Preview mode.
+	PublicCatalogProductStatusPreview = PublicCatalogProductStatus("preview")
+	// The product is generally available.
+	PublicCatalogProductStatusGeneralAvailability = PublicCatalogProductStatus("general_availability")
+	PublicCatalogProductStatusEndOfNewFeatures    = PublicCatalogProductStatus("end_of_new_features")
+	PublicCatalogProductStatusEndOfGrowth         = PublicCatalogProductStatus("end_of_growth")
+	// The product must not be used for new deployments.
+	PublicCatalogProductStatusEndOfDeployment = PublicCatalogProductStatus("end_of_deployment")
+	// There is no longer any commercial support for this product.
+	PublicCatalogProductStatusEndOfSupport = PublicCatalogProductStatus("end_of_support")
+	// The product is not sold anymore but is still in use.
+	PublicCatalogProductStatusEndOfSale = PublicCatalogProductStatus("end_of_sale")
+	// The product is at its end of life.
+	PublicCatalogProductStatusEndOfLife = PublicCatalogProductStatus("end_of_life")
+	// The product is retired.
+	PublicCatalogProductStatusRetired = PublicCatalogProductStatus("retired")
+)
+
+func (enum PublicCatalogProductStatus) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(PublicCatalogProductStatusUnknownStatus)
+	}
+	return string(enum)
+}
+
+func (enum PublicCatalogProductStatus) Values() []PublicCatalogProductStatus {
+	return []PublicCatalogProductStatus{
+		"unknown_status",
+		"public_beta",
+		"preview",
+		"general_availability",
+		"end_of_new_features",
+		"end_of_growth",
+		"end_of_deployment",
+		"end_of_support",
+		"end_of_sale",
+		"end_of_life",
+		"retired",
+	}
+}
+
+func (enum PublicCatalogProductStatus) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *PublicCatalogProductStatus) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = PublicCatalogProductStatus(PublicCatalogProductStatus(tmp).String())
+	return nil
+}
+
+type PublicCatalogProductUnitOfMeasureCountableUnit string
+
+const (
+	// Unknown countable unit.
+	PublicCatalogProductUnitOfMeasureCountableUnitUnknownCountableUnit = PublicCatalogProductUnitOfMeasureCountableUnit("unknown_countable_unit")
+	// Chunk.
+	PublicCatalogProductUnitOfMeasureCountableUnitChunk = PublicCatalogProductUnitOfMeasureCountableUnit("chunk")
+	// Core.
+	PublicCatalogProductUnitOfMeasureCountableUnitCore = PublicCatalogProductUnitOfMeasureCountableUnit("core")
+	// Currency.
+	PublicCatalogProductUnitOfMeasureCountableUnitCurrency = PublicCatalogProductUnitOfMeasureCountableUnit("currency")
+	// Device.
+	PublicCatalogProductUnitOfMeasureCountableUnitDevice = PublicCatalogProductUnitOfMeasureCountableUnit("device")
+	// Domain.
+	PublicCatalogProductUnitOfMeasureCountableUnitDomain = PublicCatalogProductUnitOfMeasureCountableUnit("domain")
+	// Email.
+	PublicCatalogProductUnitOfMeasureCountableUnitEmail = PublicCatalogProductUnitOfMeasureCountableUnit("email")
+	// GB/s.
+	PublicCatalogProductUnitOfMeasureCountableUnitGbS = PublicCatalogProductUnitOfMeasureCountableUnit("gb_s")
+	// Gigabyte.
+	PublicCatalogProductUnitOfMeasureCountableUnitGigabyte = PublicCatalogProductUnitOfMeasureCountableUnit("gigabyte")
+	// Hour.
+	PublicCatalogProductUnitOfMeasureCountableUnitHour = PublicCatalogProductUnitOfMeasureCountableUnit("hour")
+	// IOPS gigabyte.
+	PublicCatalogProductUnitOfMeasureCountableUnitIopsGigabyte = PublicCatalogProductUnitOfMeasureCountableUnit("iops_gigabyte")
+	// IP.
+	PublicCatalogProductUnitOfMeasureCountableUnitIP = PublicCatalogProductUnitOfMeasureCountableUnit("ip")
+	// Month.
+	PublicCatalogProductUnitOfMeasureCountableUnitMonth = PublicCatalogProductUnitOfMeasureCountableUnit("month")
+	// Node.
+	PublicCatalogProductUnitOfMeasureCountableUnitNode = PublicCatalogProductUnitOfMeasureCountableUnit("node")
+	// Plan.
+	PublicCatalogProductUnitOfMeasureCountableUnitPlan = PublicCatalogProductUnitOfMeasureCountableUnit("plan")
+	// Query.
+	PublicCatalogProductUnitOfMeasureCountableUnitQuery = PublicCatalogProductUnitOfMeasureCountableUnit("query")
+	// Request.
+	PublicCatalogProductUnitOfMeasureCountableUnitRequest = PublicCatalogProductUnitOfMeasureCountableUnit("request")
+	// Session.
+	PublicCatalogProductUnitOfMeasureCountableUnitSession = PublicCatalogProductUnitOfMeasureCountableUnit("session")
+	// VCPU/s.
+	PublicCatalogProductUnitOfMeasureCountableUnitVcpuS = PublicCatalogProductUnitOfMeasureCountableUnit("vcpu_s")
+	// Version.
+	PublicCatalogProductUnitOfMeasureCountableUnitVersion = PublicCatalogProductUnitOfMeasureCountableUnit("version")
+	// Year.
+	PublicCatalogProductUnitOfMeasureCountableUnitYear = PublicCatalogProductUnitOfMeasureCountableUnit("year")
+	// Key.
+	PublicCatalogProductUnitOfMeasureCountableUnitKey = PublicCatalogProductUnitOfMeasureCountableUnit("key")
+	// Token.
+	PublicCatalogProductUnitOfMeasureCountableUnitToken = PublicCatalogProductUnitOfMeasureCountableUnit("token")
+	// Minute.
+	PublicCatalogProductUnitOfMeasureCountableUnitMinute = PublicCatalogProductUnitOfMeasureCountableUnit("minute")
+	// The installation of a resource (software or hardware).
+	PublicCatalogProductUnitOfMeasureCountableUnitSetup = PublicCatalogProductUnitOfMeasureCountableUnit("setup")
+	// Day.
+	PublicCatalogProductUnitOfMeasureCountableUnitDay = PublicCatalogProductUnitOfMeasureCountableUnit("day")
+	// Second.
+	PublicCatalogProductUnitOfMeasureCountableUnitSecond = PublicCatalogProductUnitOfMeasureCountableUnit("second")
+	// Sample per day.
+	PublicCatalogProductUnitOfMeasureCountableUnitSampleDay = PublicCatalogProductUnitOfMeasureCountableUnit("sample_day")
+	// Gigabyte per day.
+	PublicCatalogProductUnitOfMeasureCountableUnitGigabyteDay = PublicCatalogProductUnitOfMeasureCountableUnit("gigabyte_day")
+	// Milli-vCPU.
+	PublicCatalogProductUnitOfMeasureCountableUnitMvcpu = PublicCatalogProductUnitOfMeasureCountableUnit("mvcpu")
+	// Gigabyte per hour.
+	PublicCatalogProductUnitOfMeasureCountableUnitGigabyteHour = PublicCatalogProductUnitOfMeasureCountableUnit("gigabyte_hour")
+)
+
+func (enum PublicCatalogProductUnitOfMeasureCountableUnit) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(PublicCatalogProductUnitOfMeasureCountableUnitUnknownCountableUnit)
+	}
+	return string(enum)
+}
+
+func (enum PublicCatalogProductUnitOfMeasureCountableUnit) Values() []PublicCatalogProductUnitOfMeasureCountableUnit {
+	return []PublicCatalogProductUnitOfMeasureCountableUnit{
+		"unknown_countable_unit",
+		"chunk",
+		"core",
+		"currency",
+		"device",
+		"domain",
+		"email",
+		"gb_s",
+		"gigabyte",
+		"hour",
+		"iops_gigabyte",
+		"ip",
+		"month",
+		"node",
+		"plan",
+		"query",
+		"request",
+		"session",
+		"vcpu_s",
+		"version",
+		"year",
+		"key",
+		"token",
+		"minute",
+		"setup",
+		"day",
+		"second",
+		"sample_day",
+		"gigabyte_day",
+		"mvcpu",
+		"gigabyte_hour",
+	}
+}
+
+func (enum PublicCatalogProductUnitOfMeasureCountableUnit) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *PublicCatalogProductUnitOfMeasureCountableUnit) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = PublicCatalogProductUnitOfMeasureCountableUnit(PublicCatalogProductUnitOfMeasureCountableUnit(tmp).String())
+	return nil
+}
+
+// PublicCatalogProductPropertiesHardwareCPUPhysical: public catalog product properties hardware cpu physical.
+type PublicCatalogProductPropertiesHardwareCPUPhysical struct {
+	// Sockets: the number of sockets of the CPU.
+	Sockets uint32 `json:"sockets"`
+
+	// CoresPerSocket: the number of cores per socket.
+	CoresPerSocket uint32 `json:"cores_per_socket"`
+
+	// ThreadsPerCore: the number of threads per core.
+	ThreadsPerCore uint32 `json:"threads_per_core"`
+
+	// Frequency: the frequency of the CPU in Hertz.
+	Frequency uint64 `json:"frequency"`
+
+	// Benchmark: the benchmark score of the CPU.
+	Benchmark uint32 `json:"benchmark"`
+}
+
+// PublicCatalogProductPropertiesHardwareCPUVirtual: public catalog product properties hardware cpu virtual.
+type PublicCatalogProductPropertiesHardwareCPUVirtual struct {
+	// Count: the number of vCPUs.
+	Count uint32 `json:"count"`
+}
+
+// PublicCatalogProductPropertiesApacheKafkaNodeType: public catalog product properties apache kafka node type.
+type PublicCatalogProductPropertiesApacheKafkaNodeType struct {
+	// Versions: the list of available versions for the Kafka node.
+	Versions []string `json:"versions"`
+
+	// VcpuCount: number of virtual CPUs.
+	VcpuCount uint32 `json:"vcpu_count"`
+
+	// IsMultiAz: whether or not this Kafka product is multi AZ.
+	IsMultiAz bool `json:"is_multi_az"`
+
+	// MemorySize: memory size in bytes.
+	MemorySize scw.Size `json:"memory_size"`
+}
+
+// PublicCatalogProductPropertiesApacheKafkaStorageType: public catalog product properties apache kafka storage type.
+type PublicCatalogProductPropertiesApacheKafkaStorageType struct {
+	// Type: the type of volume.
+	// Default value: unknown_type
+	Type PublicCatalogProductPropertiesApacheKafkaAvailableVolumeType `json:"type"`
+
+	// MinSize: the minimum size of the volume in bytes.
+	MinSize scw.Size `json:"min_size"`
+
+	// MaxSize: the maximum size of the volume in bytes.
+	MaxSize scw.Size `json:"max_size"`
+
+	// IsMultiAz: whether or not this Kafka product is multi AZ.
+	IsMultiAz bool `json:"is_multi_az"`
+}
+
+// PublicCatalogProductPropertiesBlockStorageSnapshotType: public catalog product properties block storage snapshot type.
+type PublicCatalogProductPropertiesBlockStorageSnapshotType struct{}
+
+// PublicCatalogProductPropertiesBlockStorageVolumeType: public catalog product properties block storage volume type.
+type PublicCatalogProductPropertiesBlockStorageVolumeType struct {
+	// MinSize: the minimum size of storage volume for this product in bytes.
+	MinSize scw.Size `json:"min_size"`
+
+	// MaxSize: the maximum size of storage volume for this product in bytes.
+	MaxSize scw.Size `json:"max_size"`
+}
+
+// PublicCatalogProductPropertiesHardwareCPU: public catalog product properties hardware cpu.
+type PublicCatalogProductPropertiesHardwareCPU struct {
+	// Description: a human readable description of the CPU.
+	Description string `json:"description"`
+
+	// Arch: the architecture of the CPU.
+	// Default value: unknown_arch
+	Arch PublicCatalogProductPropertiesHardwareCPUArch `json:"arch"`
+
+	// Type: the type of the CPU.
+	Type string `json:"type"`
+
+	// Virtual: properties if the CPU is virtual.
+	// Precisely one of Virtual, Physical must be set.
+	Virtual *PublicCatalogProductPropertiesHardwareCPUVirtual `json:"virtual,omitempty"`
+
+	// Physical: properties if the CPU is physical.
+	// Precisely one of Virtual, Physical must be set.
+	Physical *PublicCatalogProductPropertiesHardwareCPUPhysical `json:"physical,omitempty"`
+
+	// Threads: the total number of threads.
+	Threads uint32 `json:"threads"`
+
+	// Shared: indicates whether the CPU is shared or not.
+	Shared bool `json:"shared"`
+}
+
+// PublicCatalogProductPropertiesHardwareGPU: public catalog product properties hardware gpu.
+type PublicCatalogProductPropertiesHardwareGPU struct {
+	// Description: a human-readable description of the GPU.
+	Description string `json:"description"`
+
+	// Count: the number of GPUs.
+	Count uint32 `json:"count"`
+
+	// Type: the type of the GPU.
+	Type string `json:"type"`
+}
+
+// PublicCatalogProductPropertiesHardwareNetwork: public catalog product properties hardware network.
+type PublicCatalogProductPropertiesHardwareNetwork struct {
+	// Description: a human-readable description of the network.
+	Description string `json:"description"`
+
+	// InternalBandwidth: the internal bandwidth in bits per second.
+	InternalBandwidth uint64 `json:"internal_bandwidth"`
+
+	// PublicBandwidth: the default public bandwidth in bits per second.
+	PublicBandwidth uint64 `json:"public_bandwidth"`
+
+	// MaxPublicBandwidth: the maximum public bandwidth in bits per second (may require subscription to options).
+	MaxPublicBandwidth uint64 `json:"max_public_bandwidth"`
+}
+
+// PublicCatalogProductPropertiesHardwareRAM: public catalog product properties hardware ram.
+type PublicCatalogProductPropertiesHardwareRAM struct {
+	// Description: a human-readable description of the RAM.
+	Description string `json:"description"`
+
+	// Size: the size of the RAM in bytes.
+	Size scw.Size `json:"size"`
+
+	// Type: the type of the RAM.
+	Type string `json:"type"`
+
+	// EccType: eCC type.
+	// Default value: unknown_ecc_type
+	EccType *PublicCatalogProductPropertiesHardwareRAMECCType `json:"ecc_type"`
+}
+
+// PublicCatalogProductPropertiesHardwareStorage: public catalog product properties hardware storage.
+type PublicCatalogProductPropertiesHardwareStorage struct {
+	// Description: a human-readable description of the storage.
+	Description string `json:"description"`
+
+	// Total: the total size of the storage in bytes.
+	Total scw.Size `json:"total"`
+}
+
+// PublicCatalogProductPropertiesKubernetesKapsuleControlPlaneType: public catalog product properties kubernetes kapsule control plane type.
+type PublicCatalogProductPropertiesKubernetesKapsuleControlPlaneType struct{}
+
+// PublicCatalogProductPropertiesKubernetesKosmosControlPlaneType: public catalog product properties kubernetes kosmos control plane type.
+type PublicCatalogProductPropertiesKubernetesKosmosControlPlaneType struct{}
+
+// PublicCatalogProductPropertiesKubernetesKosmosNodeType: public catalog product properties kubernetes kosmos node type.
+type PublicCatalogProductPropertiesKubernetesKosmosNodeType struct{}
+
+// PublicCatalogProductPropertiesLoadBalancerIPV4Type: public catalog product properties load balancer ipv4 type.
+type PublicCatalogProductPropertiesLoadBalancerIPV4Type struct{}
+
+// PublicCatalogProductPropertiesLoadBalancerNodeType: public catalog product properties load balancer node type.
+type PublicCatalogProductPropertiesLoadBalancerNodeType struct {
+	// OfferID: the offer ID of the Load Balancer product.
+	OfferID string `json:"offer_id"`
+
+	// MultiCloudProvider: whether the Load Balancer product is available for multi-cloud providers.
+	MultiCloudProvider bool `json:"multi_cloud_provider"`
+
+	// Bandwidth: the bandwidth of the Load Balancer product in bits per second.
+	Bandwidth uint64 `json:"bandwidth"`
+}
+
+// PublicCatalogProductPropertiesManagedInferenceManagedInferenceCustomModelStorage: public catalog product properties managed inference managed inference custom model storage.
+type PublicCatalogProductPropertiesManagedInferenceManagedInferenceCustomModelStorage struct{}
+
+// PublicCatalogProductPropertiesManagedInferenceManagedInferenceDeployment: public catalog product properties managed inference managed inference deployment.
+type PublicCatalogProductPropertiesManagedInferenceManagedInferenceDeployment struct {
+	// InstanceGpuName: the name of the associated instance GPU to this deployment.
+	InstanceGpuName string `json:"instance_gpu_name"`
+}
+
+// PublicCatalogProductPropertiesManagedMongoDBManagementType: public catalog product properties managed mongo db management type.
+type PublicCatalogProductPropertiesManagedMongoDBManagementType struct{}
+
+// PublicCatalogProductPropertiesManagedMongoDBNodeType: public catalog product properties managed mongo db node type.
+type PublicCatalogProductPropertiesManagedMongoDBNodeType struct{}
+
+// PublicCatalogProductPropertiesManagedMongoDBStorageType: public catalog product properties managed mongo db storage type.
+type PublicCatalogProductPropertiesManagedMongoDBStorageType struct {
+	// StorageClass: the type of Storage class.
+	// Default value: unknown_storage_class
+	StorageClass PublicCatalogProductPropertiesManagedMongoDBStorageTypeStorageClass `json:"storage_class"`
+}
+
+// PublicCatalogProductPropertiesManagedRelationalDatabaseManagementType: public catalog product properties managed relational database management type.
+type PublicCatalogProductPropertiesManagedRelationalDatabaseManagementType struct{}
+
+// PublicCatalogProductPropertiesManagedRelationalDatabaseMultiAzType: public catalog product properties managed relational database multi az type.
+type PublicCatalogProductPropertiesManagedRelationalDatabaseMultiAzType struct{}
+
+// PublicCatalogProductPropertiesManagedRelationalDatabaseNodeType: public catalog product properties managed relational database node type.
+type PublicCatalogProductPropertiesManagedRelationalDatabaseNodeType struct{}
+
+// PublicCatalogProductPropertiesManagedRelationalDatabaseStorageType: public catalog product properties managed relational database storage type.
+type PublicCatalogProductPropertiesManagedRelationalDatabaseStorageType struct {
+	// StorageClass: the type of Storage class.
+	// Default value: unknown_storage_class
+	StorageClass PublicCatalogProductPropertiesManagedRelationalDatabaseStorageTypeStorageClass `json:"storage_class"`
+}
+
+// PublicCatalogProductPropertiesObjectStorageClassType: public catalog product properties object storage class type.
+type PublicCatalogProductPropertiesObjectStorageClassType struct {
+	// StorageClass: the storage class.
+	// Default value: unknown_storage_class
+	StorageClass PublicCatalogProductPropertiesObjectStorageClassTypeStorageClass `json:"storage_class"`
+}
+
+// PublicCatalogProductPropertiesObjectStorageInternetTrafficType: public catalog product properties object storage internet traffic type.
+type PublicCatalogProductPropertiesObjectStorageInternetTrafficType struct {
+	// TrafficType: the type of internet traffic.
+	// Default value: unknown_traffic_type
+	TrafficType PublicCatalogProductPropertiesObjectStorageInternetTrafficTypeTrafficType `json:"traffic_type"`
+}
+
+// PublicCatalogProductPropertiesObjectStorageRegionTrafficType: public catalog product properties object storage region traffic type.
+type PublicCatalogProductPropertiesObjectStorageRegionTrafficType struct {
+	// RegionDestination: the destination region for the region traffic.
+	RegionDestination string `json:"region_destination"`
+}
+
+// PublicCatalogProductPropertiesObjectStorageRestoreType: public catalog product properties object storage restore type.
+type PublicCatalogProductPropertiesObjectStorageRestoreType struct {
+	// RestoreType: the type of restore.
+	// Default value: unknown_restore_type
+	RestoreType PublicCatalogProductPropertiesObjectStorageRestoreTypeRestoreType `json:"restore_type"`
+}
+
+// PublicCatalogProductPropertiesServerlessContainersCPUType: public catalog product properties serverless containers cpu type.
+type PublicCatalogProductPropertiesServerlessContainersCPUType struct {
+	// MvcpuCounts: the list of available number of milli-vCPUs.
+	MvcpuCounts []uint64 `json:"mvcpu_counts"`
+}
+
+// PublicCatalogProductPropertiesServerlessContainersMemoryType: public catalog product properties serverless containers memory type.
+type PublicCatalogProductPropertiesServerlessContainersMemoryType struct {
+	// Sizes: the list of available memory size in bytes.
+	Sizes []scw.Size `json:"sizes"`
+}
+
+// PublicCatalogProductPropertiesServerlessFunctionsConsumptionType: public catalog product properties serverless functions consumption type.
+type PublicCatalogProductPropertiesServerlessFunctionsConsumptionType struct{}
+
+// PublicCatalogProductPropertiesServerlessFunctionsFreeTierType: public catalog product properties serverless functions free tier type.
+type PublicCatalogProductPropertiesServerlessFunctionsFreeTierType struct{}
+
+// PublicCatalogProductPropertiesServerlessFunctionsProvisionType: public catalog product properties serverless functions provision type.
+type PublicCatalogProductPropertiesServerlessFunctionsProvisionType struct{}
+
+// PublicCatalogProductPropertiesServerlessFunctionsRequestType: public catalog product properties serverless functions request type.
+type PublicCatalogProductPropertiesServerlessFunctionsRequestType struct{}
+
+// PublicCatalogProductPropertiesServerlessFunctionsRuntimeResource: public catalog product properties serverless functions runtime resource.
+type PublicCatalogProductPropertiesServerlessFunctionsRuntimeResource struct {
+	// MemorySize: the memory size in bytes.
+	MemorySize scw.Size `json:"memory_size"`
+
+	// MvcpuCount: the number of milli-vCPUs.
+	MvcpuCount uint64 `json:"mvcpu_count"`
+}
+
+// PublicCatalogProductPropertiesServerlessJobsCPUType: public catalog product properties serverless jobs cpu type.
+type PublicCatalogProductPropertiesServerlessJobsCPUType struct {
+	// MvcpuCounts: the list of available number of milli-vCPUs.
+	MvcpuCounts []uint64 `json:"mvcpu_counts"`
+}
+
+// PublicCatalogProductPropertiesServerlessJobsMemoryType: public catalog product properties serverless jobs memory type.
+type PublicCatalogProductPropertiesServerlessJobsMemoryType struct {
+	// Sizes: the list of available memory size in bytes.
+	Sizes []scw.Size `json:"sizes"`
+}
+
+// PublicCatalogProductPropertiesApacheKafka: public catalog product properties apache kafka.
+type PublicCatalogProductPropertiesApacheKafka struct {
+	// Node: the properties related to Kafka node products.
+	// Precisely one of Node, Storage must be set.
+	Node *PublicCatalogProductPropertiesApacheKafkaNodeType `json:"node,omitempty"`
+
+	// Storage: the properties related to Kafka storage products.
+	// Precisely one of Node, Storage must be set.
+	Storage *PublicCatalogProductPropertiesApacheKafkaStorageType `json:"storage,omitempty"`
+}
+
+// PublicCatalogProductPropertiesAppleSilicon: public catalog product properties apple silicon.
+type PublicCatalogProductPropertiesAppleSilicon struct {
+	// Range: the range of the Apple Silicon server.
+	Range string `json:"range"`
+
+	// ServerType: the server type of the Apple Silicon server.
+	ServerType string `json:"server_type"`
+}
+
+// PublicCatalogProductPropertiesBlockStorage: public catalog product properties block storage.
+type PublicCatalogProductPropertiesBlockStorage struct {
+	// Deprecated: MinVolumeSize: the minimum size of storage volume for this product in bytes. Deprecated.
+	MinVolumeSize *scw.Size `json:"min_volume_size,omitempty"`
+
+	// Deprecated: MaxVolumeSize: the maximum size of storage volume for this product in bytes. Deprecated.
+	MaxVolumeSize *scw.Size `json:"max_volume_size,omitempty"`
+
+	// Snapshot: the properties related to Block Storage snapshot.
+	// Precisely one of Snapshot, Volume must be set.
+	Snapshot *PublicCatalogProductPropertiesBlockStorageSnapshotType `json:"snapshot,omitempty"`
+
+	// Volume: the properties related to Block Storage volume.
+	// Precisely one of Snapshot, Volume must be set.
+	Volume *PublicCatalogProductPropertiesBlockStorageVolumeType `json:"volume,omitempty"`
+}
+
+// PublicCatalogProductPropertiesDedibox: public catalog product properties dedibox.
+type PublicCatalogProductPropertiesDedibox struct {
+	// Range: the range of the Dedibox server.
+	Range string `json:"range"`
+
+	// OfferID: the offer ID of the Dedibox server.
+	OfferID int64 `json:"offer_id"`
+}
+
+// PublicCatalogProductPropertiesElasticMetal: public catalog product properties elastic metal.
+type PublicCatalogProductPropertiesElasticMetal struct {
+	// Range: the range of the Elastic Metal server.
+	Range string `json:"range"`
+
+	// OfferID: the offer ID of the Elastic Metal server.
+	OfferID string `json:"offer_id"`
+}
+
+// PublicCatalogProductPropertiesFileStorage: public catalog product properties file storage.
+type PublicCatalogProductPropertiesFileStorage struct {
+	// MinSize: the minimum size of storage volume for this product in bytes.
+	MinSize scw.Size `json:"min_size"`
+
+	// MaxSize: the maximum size of storage volume for this product in bytes.
+	MaxSize scw.Size `json:"max_size"`
+}
+
+// PublicCatalogProductPropertiesGenerativeAPIs: public catalog product properties generative ap is.
+type PublicCatalogProductPropertiesGenerativeAPIs struct {
+	Reasoning bool `json:"reasoning"`
+
+	SupportedAPIs []string `json:"supported_apis"`
+
+	// ConsumptionMode: default value: unknown_consumption_mode
+	ConsumptionMode PublicCatalogProductPropertiesGenerativeAPIsConsumptionMode `json:"consumption_mode"`
+
+	ProviderName string `json:"provider_name"`
+
+	Tasks []PublicCatalogProductPropertiesGenerativeAPIsTask `json:"tasks"`
+
+	// TokenType: default value: unknown_token_type
+	TokenType PublicCatalogProductPropertiesGenerativeAPIsTokenType `json:"token_type"`
+
+	SupportedReasoningValues []string `json:"supported_reasoning_values"`
+
+	DefaultReasoningValue *string `json:"default_reasoning_value"`
+}
+
+// PublicCatalogProductPropertiesHardware: public catalog product properties hardware.
+type PublicCatalogProductPropertiesHardware struct {
+	// CPU: the CPU hardware properties.
+	CPU *PublicCatalogProductPropertiesHardwareCPU `json:"cpu"`
+
+	// RAM: the RAM hardware properties.
+	RAM *PublicCatalogProductPropertiesHardwareRAM `json:"ram"`
+
+	// Storage: the storage hardware properties.
+	Storage *PublicCatalogProductPropertiesHardwareStorage `json:"storage"`
+
+	// Network: the network hardware properties.
+	Network *PublicCatalogProductPropertiesHardwareNetwork `json:"network"`
+
+	// Gpu: the GPU hardware properties.
+	Gpu *PublicCatalogProductPropertiesHardwareGPU `json:"gpu"`
+}
+
+// PublicCatalogProductPropertiesInstance: public catalog product properties instance.
+type PublicCatalogProductPropertiesInstance struct {
+	// Range: the range of the Instance server.
+	Range string `json:"range"`
+
+	// OfferID: the offer ID of the Instance server.
+	OfferID string `json:"offer_id"`
+
+	// RecommendedReplacementOfferIDs: the recommended replacement offer IDs of the Instance server.
+	RecommendedReplacementOfferIDs []string `json:"recommended_replacement_offer_ids"`
+}
+
+// PublicCatalogProductPropertiesInstanceLocalSSDSnapshot: public catalog product properties instance local ssd snapshot.
+type PublicCatalogProductPropertiesInstanceLocalSSDSnapshot struct{}
+
+// PublicCatalogProductPropertiesInstanceLocalSSDStorage: public catalog product properties instance local ssd storage.
+type PublicCatalogProductPropertiesInstanceLocalSSDStorage struct{}
+
+// PublicCatalogProductPropertiesKeyManager: public catalog product properties key manager.
+type PublicCatalogProductPropertiesKeyManager struct{}
+
+// PublicCatalogProductPropertiesKubernetes: public catalog product properties kubernetes.
+type PublicCatalogProductPropertiesKubernetes struct {
+	// KapsuleControlPlane: the properties related to Kapsule Control Plane products.
+	// Precisely one of KapsuleControlPlane, KosmosControlPlane, KosmosNode must be set.
+	KapsuleControlPlane *PublicCatalogProductPropertiesKubernetesKapsuleControlPlaneType `json:"kapsule_control_plane,omitempty"`
+
+	// KosmosControlPlane: the properties related to Kosmos Control Plane products.
+	// Precisely one of KapsuleControlPlane, KosmosControlPlane, KosmosNode must be set.
+	KosmosControlPlane *PublicCatalogProductPropertiesKubernetesKosmosControlPlaneType `json:"kosmos_control_plane,omitempty"`
+
+	// KosmosNode: the properties related to Kosmos nodes.
+	// Precisely one of KapsuleControlPlane, KosmosControlPlane, KosmosNode must be set.
+	KosmosNode *PublicCatalogProductPropertiesKubernetesKosmosNodeType `json:"kosmos_node,omitempty"`
+}
+
+// PublicCatalogProductPropertiesLoadBalancer: public catalog product properties load balancer.
+type PublicCatalogProductPropertiesLoadBalancer struct {
+	// Node: the properties related to Load Balancer nodes.
+	// Precisely one of Node, IPv4 must be set.
+	Node *PublicCatalogProductPropertiesLoadBalancerNodeType `json:"node,omitempty"`
+
+	// IPv4: the properties related to Load Balancer IPv4.
+	// Precisely one of Node, IPv4 must be set.
+	IPv4 *PublicCatalogProductPropertiesLoadBalancerIPV4Type `json:"ipv4,omitempty"`
+}
+
+// PublicCatalogProductPropertiesManagedInference: public catalog product properties managed inference.
+type PublicCatalogProductPropertiesManagedInference struct {
+	// Deprecated: InstanceGpuName: the name of the associated instance GPU to this node type. Deprecated, use `deployment.instance_gpu_name` instead.
+	InstanceGpuName string `json:"instance_gpu_name,omitempty"`
+
+	// Deployment: the properties related to Managed Inference Deployment.
+	// Precisely one of Deployment, CustomModelStorage must be set.
+	Deployment *PublicCatalogProductPropertiesManagedInferenceManagedInferenceDeployment `json:"deployment,omitempty"`
+
+	// CustomModelStorage: the properties related to Managed Inference Custom Model Storage.
+	// Precisely one of Deployment, CustomModelStorage must be set.
+	CustomModelStorage *PublicCatalogProductPropertiesManagedInferenceManagedInferenceCustomModelStorage `json:"custom_model_storage,omitempty"`
+}
+
+// PublicCatalogProductPropertiesManagedMongoDB: public catalog product properties managed mongo db.
+type PublicCatalogProductPropertiesManagedMongoDB struct {
+	// Management: the properties related to MongoDB Management type.
+	// Precisely one of Management, Node, Storage must be set.
+	Management *PublicCatalogProductPropertiesManagedMongoDBManagementType `json:"management,omitempty"`
+
+	// Node: the properties related to MongoDB Node type.
+	// Precisely one of Management, Node, Storage must be set.
+	Node *PublicCatalogProductPropertiesManagedMongoDBNodeType `json:"node,omitempty"`
+
+	// Storage: the properties related to MongoDB Storage type.
+	// Precisely one of Management, Node, Storage must be set.
+	Storage *PublicCatalogProductPropertiesManagedMongoDBStorageType `json:"storage,omitempty"`
+}
+
+// PublicCatalogProductPropertiesManagedRedisDatabase: public catalog product properties managed redis database.
+type PublicCatalogProductPropertiesManagedRedisDatabase struct{}
+
+// PublicCatalogProductPropertiesManagedRelationalDatabase: public catalog product properties managed relational database.
+type PublicCatalogProductPropertiesManagedRelationalDatabase struct {
+	// Management: the properties related to Relational Database Management type.
+	// Precisely one of Management, Node, Storage, MultiAz must be set.
+	Management *PublicCatalogProductPropertiesManagedRelationalDatabaseManagementType `json:"management,omitempty"`
+
+	// Node: the properties related to Relational Database Nodes.
+	// Precisely one of Management, Node, Storage, MultiAz must be set.
+	Node *PublicCatalogProductPropertiesManagedRelationalDatabaseNodeType `json:"node,omitempty"`
+
+	// Storage: the properties related to Relational Database Storage type.
+	// Precisely one of Management, Node, Storage, MultiAz must be set.
+	Storage *PublicCatalogProductPropertiesManagedRelationalDatabaseStorageType `json:"storage,omitempty"`
+
+	// MultiAz: the properties related to Relational Database Multi AZ type.
+	// Precisely one of Management, Node, Storage, MultiAz must be set.
+	MultiAz *PublicCatalogProductPropertiesManagedRelationalDatabaseMultiAzType `json:"multi_az,omitempty"`
+}
+
+// PublicCatalogProductPropertiesObjectStorage: public catalog product properties object storage.
+type PublicCatalogProductPropertiesObjectStorage struct {
+	// Class: the properties related to Object Storage class.
+	// Precisely one of Class, Restore, InternetTraffic, RegionTraffic must be set.
+	Class *PublicCatalogProductPropertiesObjectStorageClassType `json:"class,omitempty"`
+
+	// Restore: the properties related to Object Storage restore operations.
+	// Precisely one of Class, Restore, InternetTraffic, RegionTraffic must be set.
+	Restore *PublicCatalogProductPropertiesObjectStorageRestoreType `json:"restore,omitempty"`
+
+	// InternetTraffic: the properties related to Object Storage internet traffic.
+	// Precisely one of Class, Restore, InternetTraffic, RegionTraffic must be set.
+	InternetTraffic *PublicCatalogProductPropertiesObjectStorageInternetTrafficType `json:"internet_traffic,omitempty"`
+
+	// RegionTraffic: the properties related to Object Storage region traffic.
+	// Precisely one of Class, Restore, InternetTraffic, RegionTraffic must be set.
+	RegionTraffic *PublicCatalogProductPropertiesObjectStorageRegionTrafficType `json:"region_traffic,omitempty"`
+}
+
+// PublicCatalogProductPropertiesOpenSearch: public catalog product properties open search.
+type PublicCatalogProductPropertiesOpenSearch struct{}
+
+// PublicCatalogProductPropertiesSecretManager: public catalog product properties secret manager.
+type PublicCatalogProductPropertiesSecretManager struct{}
+
+// PublicCatalogProductPropertiesServerlessContainers: public catalog product properties serverless containers.
+type PublicCatalogProductPropertiesServerlessContainers struct {
+	// Memory: the properties related to Serverless containers memory products.
+	// Precisely one of Memory, CPU must be set.
+	Memory *PublicCatalogProductPropertiesServerlessContainersMemoryType `json:"memory,omitempty"`
+
+	// CPU: the properties related to Serverless containers CPU products.
+	// Precisely one of Memory, CPU must be set.
+	CPU *PublicCatalogProductPropertiesServerlessContainersCPUType `json:"cpu,omitempty"`
+}
+
+// PublicCatalogProductPropertiesServerlessFunctions: public catalog product properties serverless functions.
+type PublicCatalogProductPropertiesServerlessFunctions struct {
+	// Resources: the serverless functions runtime resources sorted by memory size and then by milli-vCPU count.
+	Resources []*PublicCatalogProductPropertiesServerlessFunctionsRuntimeResource `json:"resources"`
+
+	// Consumption: the properties related to Serverless functions consumption products.
+	// Precisely one of Consumption, Request, Provision, FreeTier must be set.
+	Consumption *PublicCatalogProductPropertiesServerlessFunctionsConsumptionType `json:"consumption,omitempty"`
+
+	// Request: the properties related to Serverless functions request products.
+	// Precisely one of Consumption, Request, Provision, FreeTier must be set.
+	Request *PublicCatalogProductPropertiesServerlessFunctionsRequestType `json:"request,omitempty"`
+
+	// Provision: the properties related to Serverless functions provision products.
+	// Precisely one of Consumption, Request, Provision, FreeTier must be set.
+	Provision *PublicCatalogProductPropertiesServerlessFunctionsProvisionType `json:"provision,omitempty"`
+
+	// FreeTier: the properties related to Serverless functions free tier products.
+	// Precisely one of Consumption, Request, Provision, FreeTier must be set.
+	FreeTier *PublicCatalogProductPropertiesServerlessFunctionsFreeTierType `json:"free_tier,omitempty"`
+}
+
+// PublicCatalogProductPropertiesServerlessJobs: public catalog product properties serverless jobs.
+type PublicCatalogProductPropertiesServerlessJobs struct {
+	// Memory: the properties related to Serverless containers memory products.
+	// Precisely one of Memory, CPU must be set.
+	Memory *PublicCatalogProductPropertiesServerlessJobsMemoryType `json:"memory,omitempty"`
+
+	// CPU: the properties related to Serverless containers CPU products.
+	// Precisely one of Memory, CPU must be set.
+	CPU *PublicCatalogProductPropertiesServerlessJobsCPUType `json:"cpu,omitempty"`
+}
+
+// PublicCatalogProductPropertiesServerlessSQLDatabase: public catalog product properties serverless sql database.
+type PublicCatalogProductPropertiesServerlessSQLDatabase struct{}
+
+// PublicCatalogProductEnvironmentalImpactEstimation: public catalog product environmental impact estimation.
+type PublicCatalogProductEnvironmentalImpactEstimation struct {
+	KgCo2Equivalent *float32 `json:"kg_co2_equivalent"`
+
+	M3WaterUsage *float32 `json:"m3_water_usage"`
+}
+
+// PublicCatalogProductLocality: public catalog product locality.
+type PublicCatalogProductLocality struct {
+	// Global: whether or not the product is global.
+	// Precisely one of Global, Region, Zone, Datacenter must be set.
+	Global *bool `json:"global,omitempty"`
+
+	// Region: the region of the product.
+	// Precisely one of Global, Region, Zone, Datacenter must be set.
+	Region *scw.Region `json:"region,omitempty"`
+
+	// Zone: the zone of the product.
+	// Precisely one of Global, Region, Zone, Datacenter must be set.
+	Zone *scw.Zone `json:"zone,omitempty"`
+
+	// Datacenter: the datacenter of the product.
+	// Precisely one of Global, Region, Zone, Datacenter must be set.
+	Datacenter *string `json:"datacenter,omitempty"`
+}
+
+// PublicCatalogProductPrice: public catalog product price.
+type PublicCatalogProductPrice struct {
+	// RetailPrice: the retail price of the product.
+	RetailPrice *scw.Money `json:"retail_price"`
+}
+
+// PublicCatalogProductProperties: public catalog product properties.
+type PublicCatalogProductProperties struct {
+	// Hardware: the hardware properties of the product (if supported).
+	Hardware *PublicCatalogProductPropertiesHardware `json:"hardware"`
+
+	// Dedibox: the properties of Dedibox products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	Dedibox *PublicCatalogProductPropertiesDedibox `json:"dedibox,omitempty"`
+
+	// ElasticMetal: the properties of Elastic Metal products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	ElasticMetal *PublicCatalogProductPropertiesElasticMetal `json:"elastic_metal,omitempty"`
+
+	// AppleSilicon: the properties of Apple Silicon products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	AppleSilicon *PublicCatalogProductPropertiesAppleSilicon `json:"apple_silicon,omitempty"`
+
+	// Instance: the properties of Instance products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	Instance *PublicCatalogProductPropertiesInstance `json:"instance,omitempty"`
+
+	// BlockStorage: the properties of Block Storage products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	BlockStorage *PublicCatalogProductPropertiesBlockStorage `json:"block_storage,omitempty"`
+
+	// ObjectStorage: the properties of Object Storage products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	ObjectStorage *PublicCatalogProductPropertiesObjectStorage `json:"object_storage,omitempty"`
+
+	// ManagedInference: the properties of Managed Inference products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	ManagedInference *PublicCatalogProductPropertiesManagedInference `json:"managed_inference,omitempty"`
+
+	// GenerativeAPIs: the properties of Generative APIs products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	GenerativeAPIs *PublicCatalogProductPropertiesGenerativeAPIs `json:"generative_apis,omitempty"`
+
+	// LoadBalancer: the properties of Load Balancer products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	LoadBalancer *PublicCatalogProductPropertiesLoadBalancer `json:"load_balancer,omitempty"`
+
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	SecretManager *PublicCatalogProductPropertiesSecretManager `json:"secret_manager,omitempty"`
+
+	// ManagedRedisDatabase: the properties of Managed Redis Database products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	ManagedRedisDatabase *PublicCatalogProductPropertiesManagedRedisDatabase `json:"managed_redis_database,omitempty"`
+
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	KeyManager *PublicCatalogProductPropertiesKeyManager `json:"key_manager,omitempty"`
+
+	// Kubernetes: the properties of Kubernetes products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	Kubernetes *PublicCatalogProductPropertiesKubernetes `json:"kubernetes,omitempty"`
+
+	// ManagedRelationalDatabase: the properties of Managed Relational Database products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	ManagedRelationalDatabase *PublicCatalogProductPropertiesManagedRelationalDatabase `json:"managed_relational_database,omitempty"`
+
+	// ServerlessFunctions: the properties of Serverless Functions products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	ServerlessFunctions *PublicCatalogProductPropertiesServerlessFunctions `json:"serverless_functions,omitempty"`
+
+	// ServerlessContainers: the properties of Serverless Containers products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	ServerlessContainers *PublicCatalogProductPropertiesServerlessContainers `json:"serverless_containers,omitempty"`
+
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	ManagedMongodb *PublicCatalogProductPropertiesManagedMongoDB `json:"managed_mongodb,omitempty"`
+
+	// ServerlessJobs: the properties of Serverless Jobs products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	ServerlessJobs *PublicCatalogProductPropertiesServerlessJobs `json:"serverless_jobs,omitempty"`
+
+	// ServerlessSQLDatabase: the properties of Serverless SQL Database products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	ServerlessSQLDatabase *PublicCatalogProductPropertiesServerlessSQLDatabase `json:"serverless_sql_database,omitempty"`
+
+	// ApacheKafka: the properties of Apache Kafka products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	ApacheKafka *PublicCatalogProductPropertiesApacheKafka `json:"apache_kafka,omitempty"`
+
+	// OpenSearch: the properties of OpenSearch DB products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	OpenSearch *PublicCatalogProductPropertiesOpenSearch `json:"open_search,omitempty"`
+
+	// InstanceLocalSSDSnapshot: the properties of Instance Local SSD Snapshot products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	InstanceLocalSSDSnapshot *PublicCatalogProductPropertiesInstanceLocalSSDSnapshot `json:"instance_local_ssd_snapshot,omitempty"`
+
+	// InstanceLocalSSDStorage: the properties of Instance Local SSD Storage products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	InstanceLocalSSDStorage *PublicCatalogProductPropertiesInstanceLocalSSDStorage `json:"instance_local_ssd_storage,omitempty"`
+
+	// FileStorage: the properties of File Storage products.
+	// Precisely one of Dedibox, ElasticMetal, AppleSilicon, Instance, BlockStorage, ObjectStorage, ManagedInference, GenerativeAPIs, LoadBalancer, SecretManager, ManagedRedisDatabase, KeyManager, Kubernetes, ManagedRelationalDatabase, ServerlessFunctions, ServerlessContainers, ManagedMongodb, ServerlessJobs, ServerlessSQLDatabase, ApacheKafka, OpenSearch, InstanceLocalSSDSnapshot, InstanceLocalSSDStorage, FileStorage must be set.
+	FileStorage *PublicCatalogProductPropertiesFileStorage `json:"file_storage,omitempty"`
+}
+
+// PublicCatalogProductUnitOfMeasure: public catalog product unit of measure.
+type PublicCatalogProductUnitOfMeasure struct {
+	// Unit: default value: unknown_countable_unit
+	Unit PublicCatalogProductUnitOfMeasureCountableUnit `json:"unit"`
+
+	Size uint64 `json:"size"`
+}
+
+// PublicCatalogProduct: public catalog product.
+type PublicCatalogProduct struct {
+	// Sku: the unique identifier of the product.
+	Sku string `json:"sku"`
+
+	// ServiceCategory: the category of the product.
+	ServiceCategory string `json:"service_category"`
+
+	// ProductCategory: the product category of the product.
+	ProductCategory string `json:"product_category"`
+
+	// Product: the product name.
+	Product string `json:"product"`
+
+	// Variant: the product variant.
+	Variant string `json:"variant"`
+
+	// Description: the product description.
+	Description string `json:"description"`
+
+	// Locality: the locality of the product.
+	Locality *PublicCatalogProductLocality `json:"locality"`
+
+	// Price: the price of the product.
+	Price *PublicCatalogProductPrice `json:"price"`
+
+	// Properties: the properties of the product.
+	Properties *PublicCatalogProductProperties `json:"properties"`
+
+	// EnvironmentalImpactEstimation: the environmental impact estimation of the product.
+	EnvironmentalImpactEstimation *PublicCatalogProductEnvironmentalImpactEstimation `json:"environmental_impact_estimation"`
+
+	// UnitOfMeasure: the unit of measure of the product.
+	UnitOfMeasure *PublicCatalogProductUnitOfMeasure `json:"unit_of_measure"`
+
+	// Status: the status of the product.
+	// Default value: unknown_status
+	Status PublicCatalogProductStatus `json:"status"`
+
+	// EndOfLifeAt: the end of life date of the product.
+	EndOfLifeAt *time.Time `json:"end_of_life_at"`
+
+	// EndOfGrowthAt: the end of growth date of the product.
+	EndOfGrowthAt *time.Time `json:"end_of_growth_at"`
+
+	// EndOfSaleAt: the end of sale date of the product.
+	EndOfSaleAt *time.Time `json:"end_of_sale_at"`
+
+	// Badges: different badges that can be associated with the product.
+	Badges []PublicCatalogProductProductBadge `json:"badges"`
+}
+
+// ListPublicCatalogProductsResponse: list public catalog products response.
+type ListPublicCatalogProductsResponse struct {
+	// Products: the list of products.
+	Products []*PublicCatalogProduct `json:"products"`
+
+	// TotalCount: the total number of products in the catalog.
+	TotalCount uint64 `json:"total_count"`
+}
+
+// UnsafeGetTotalCount should not be used
+// Internal usage only
+func (r *ListPublicCatalogProductsResponse) UnsafeGetTotalCount() uint64 {
+	return r.TotalCount
+}
+
+// UnsafeAppend should not be used
+// Internal usage only
+func (r *ListPublicCatalogProductsResponse) UnsafeAppend(res any) (uint64, error) {
+	results, ok := res.(*ListPublicCatalogProductsResponse)
+	if !ok {
+		return 0, errors.New("%T type cannot be appended to type %T", res, r)
+	}
+
+	r.Products = append(r.Products, results.Products...)
+	r.TotalCount += uint64(len(results.Products))
+	return uint64(len(results.Products)), nil
+}
+
+// PublicCatalogAPIListPublicCatalogProductsRequest: public catalog api list public catalog products request.
+type PublicCatalogAPIListPublicCatalogProductsRequest struct {
+	// Page: number of the page. Value must be greater or equal to 1.
+	Page *int32 `json:"-"`
+
+	// PageSize: the number of products per page. Value must be greater or equal to 1.
+	PageSize *uint32 `json:"-"`
+
+	// ProductTypes: the list of filtered product categories.
+	ProductTypes []ListPublicCatalogProductsRequestProductType `json:"-"`
+
+	// Global: filter global products.
+	// Precisely one of Global, Region, Zone, Datacenter must be set.
+	Global *bool `json:"global,omitempty"`
+
+	// Region: filter products by region.
+	// Precisely one of Global, Region, Zone, Datacenter must be set.
+	Region *scw.Region `json:"region,omitempty"`
+
+	// Zone: filter products by zone.
+	// Precisely one of Global, Region, Zone, Datacenter must be set.
+	Zone *scw.Zone `json:"zone,omitempty"`
+
+	// Datacenter: filter products by datacenter.
+	// Precisely one of Global, Region, Zone, Datacenter must be set.
+	Datacenter *string `json:"datacenter,omitempty"`
+
+	// Status: the lists of filtered product status, if empty only products with status public_beta, general_availability, preview, end_of_new_features, end_of_growth, end_of_deployment, end_of_support, end_of_sale, end_of_life or retired will be returned.
+	Status []ListPublicCatalogProductsRequestStatus `json:"-"`
+
+	// APIIDs: filter products by API IDs. Each ID is matched against product-specific identifiers: `dedibox.offer_id` (converted to string), `elastic_metal.offer_id`, `apple_silicon.server_type`, `instance.offer_id`, and `load_balancer.node.offer_id`. Products that do not support API ID filtering are excluded from the results. If empty, no filtering is applied.
+	APIIDs []string `json:"-"`
+}
+
+type PublicCatalogAPI struct {
+	client *scw.Client
+}
+
+// NewPublicCatalogAPI returns a PublicCatalogAPI object from a Scaleway client.
+func NewPublicCatalogAPI(client *scw.Client) *PublicCatalogAPI {
+	return &PublicCatalogAPI{
+		client: client,
+	}
+}
+
+// ListPublicCatalogProducts: List all available products in the Scaleway catalog. Returns a complete list of products with their corresponding description, locations, prices and properties. You can define the `page` number and `page_size` for your query in the request.
+func (s *PublicCatalogAPI) ListPublicCatalogProducts(req *PublicCatalogAPIListPublicCatalogProductsRequest, opts ...scw.RequestOption) (*ListPublicCatalogProductsResponse, error) {
+	var err error
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	defaultRegion, exist := s.client.GetDefaultRegion()
+	if exist && req.Global == nil && req.Region == nil && req.Zone == nil && req.Datacenter == nil {
+		req.Region = &defaultRegion
+	}
+
+	defaultZone, exist := s.client.GetDefaultZone()
+	if exist && req.Global == nil && req.Region == nil && req.Zone == nil && req.Datacenter == nil {
+		req.Zone = &defaultZone
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+	parameter.AddToQuery(query, "product_types", req.ProductTypes)
+	parameter.AddToQuery(query, "status", req.Status)
+	parameter.AddToQuery(query, "api_ids", req.APIIDs)
+	parameter.AddToQuery(query, "global", req.Global)
+	parameter.AddToQuery(query, "region", req.Region)
+	parameter.AddToQuery(query, "zone", req.Zone)
+	parameter.AddToQuery(query, "datacenter", req.Datacenter)
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "GET",
+		Path:   "/product-catalog/v2alpha1/public-catalog/products",
+		Query:  query,
+	}
+
+	var resp ListPublicCatalogProductsResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}

@@ -1,0 +1,207 @@
+{
+  "recorded_at": "2026-10-20T21:42:58.771Z",
+  "method": "Actual extension adapter listServerless public unauthenticated GET",
+  "authentication": "none",
+  "models": [
+    {
+      "id": "bge-multilingual-gemma2",
+      "label": "bge-multilingual-gemma2",
+      "kind": "serverless",
+      "status": "general_availability"
+    },
+    {
+      "id": "deepseek-r1",
+      "label": "deepseek-r1",
+      "kind": "serverless",
+      "status": "retired"
+    },
+    {
+      "id": "deepseek-r1-distill-llama-70b",
+      "label": "deepseek-r1-distill-llama-70b",
+      "kind": "serverless",
+      "status": "end_of_life"
+    },
+    {
+      "id": "deepseek-v4-flash-0731",
+      "label": "deepseek-v4-flash-0731",
+      "kind": "serverless",
+      "status": "preview"
+    },
+    {
+      "id": "deepseek-v4.1-flash",
+      "label": "deepseek-v4.1-flash",
+      "kind": "serverless",
+      "status": "preview"
+    },
+    {
+      "id": "devstral-2-123b-instruct-2512",
+      "label": "devstral-2-123b-instruct-2512",
+      "kind": "serverless",
+      "status": "end_of_life"
+    },
+    {
+      "id": "devstral-small-2505",
+      "label": "devstral-small-2505",
+      "kind": "serverless",
+      "status": "end_of_life"
+    },
+    {
+      "id": "gemma-3-27b-it",
+      "label": "gemma-3-27b-it",
+      "kind": "serverless",
+      "status": "end_of_life"
+    },
+    {
+      "id": "gemma-4-26b-a4b-it",
+      "label": "gemma-4-26b-a4b-it",
+      "kind": "serverless",
+      "status": "preview"
+    },
+    {
+      "id": "glm-5.2",
+      "label": "glm-5.2",
+      "kind": "serverless",
+      "status": "preview"
+    },
+    {
+      "id": "glm-5.3",
+      "label": "glm-5.3",
+      "kind": "serverless",
+      "status": "preview"
+    },
+    {
+      "id": "gpt-oss-120b",
+      "label": "gpt-oss-120b",
+      "kind": "serverless",
+      "status": "general_availability"
+    },
+    {
+      "id": "holo2-30b-a3b",
+      "label": "holo2-30b-a3b",
+      "kind": "serverless",
+      "status": "end_of_life"
+    },
+    {
+      "id": "lightonocr-3-0.8b",
+      "label": "lightonocr-3-0.8b",
+      "kind": "serverless",
+      "status": "preview"
+    },
+    {
+      "id": "llama-3.1-70b-instruct",
+      "label": "llama-3.1-70b-instruct",
+      "kind": "serverless",
+      "status": "end_of_life"
+    },
+    {
+      "id": "llama-3.1-8b-instruct",
+      "label": "llama-3.1-8b-instruct",
+      "kind": "serverless",
+      "status": "end_of_life"
+    },
+    {
+      "id": "llama-3.3-70b-instruct",
+      "label": "llama-3.3-70b-instruct",
+      "kind": "serverless",
+      "status": "general_availability"
+    },
+    {
+      "id": "mistral-medium-3.5-128b",
+      "label": "mistral-medium-3.5-128b",
+      "kind": "serverless",
+      "status": "preview"
+    },
+    {
+      "id": "mistral-nemo-instruct-2407",
+      "label": "mistral-nemo-instruct-2407",
+      "kind": "serverless",
+      "status": "end_of_life"
+    },
+    {
+      "id": "mistral-ocr-2512",
+      "label": "mistral-ocr-2512",
+      "kind": "serverless",
+      "status": "end_of_life"
+    },
+    {
+      "id": "mistral-small-3.1-24b-instruct-2503",
+      "label": "mistral-small-3.1-24b-instruct-2503",
+      "kind": "serverless",
+      "status": "end_of_life"
+    },
+    {
+      "id": "mistral-small-3.2-24b-instruct-2506",
+      "label": "mistral-small-3.2-24b-instruct-2506",
+      "kind": "serverless",
+      "status": "general_availability"
+    },
+    {
+      "id": "pixtral-12b-2409",
+      "label": "pixtral-12b-2409",
+      "kind": "serverless",
+      "status": "end_of_life"
+    },
+    {
+      "id": "qwen2.5-coder-32b-instruct",
+      "label": "qwen2.5-coder-32b-instruct",
+      "kind": "serverless",
+      "status": "end_of_life"
+    },
+    {
+      "id": "qwen3-235b-a22b-instruct-2507",
+      "label": "qwen3-235b-a22b-instruct-2507",
+      "kind": "serverless",
+      "status": "general_availability"
+    },
+    {
+      "id": "qwen3-coder-30b-a3b-instruct",
+      "label": "qwen3-coder-30b-a3b-instruct",
+      "kind": "serverless",
+      "status": "end_of_life"
+    },
+    {
+      "id": "qwen3-embedding-8b",
+      "label": "qwen3-embedding-8b",
+      "kind": "serverless",
+      "status": "general_availability"
+    },
+    {
+      "id": "qwen3.5-397b-a17b",
+      "label": "qwen3.5-397b-a17b",
+      "kind": "serverless",
+      "status": "general_availability"
+    },
+    {
+      "id": "qwen3.6-35b-a3b",
+      "label": "qwen3.6-35b-a3b",
+      "kind": "serverless",
+      "status": "general_availability"
+    },
+    {
+      "id": "qwen3.8-27b",
+      "label": "qwen3.8-27b",
+      "kind": "serverless",
+      "status": "preview"
+    },
+    {
+      "id": "sentence-t5-xxl",
+      "label": "sentence-t5-xxl",
+      "kind": "serverless",
+      "status": "retired"
+    },
+    {
+      "id": "voxtral-small-24b-2507",
+      "label": "voxtral-small-24b-2507",
+      "kind": "serverless",
+      "status": "end_of_life"
+    },
+    {
+      "id": "whisper-large-v3",
+      "label": "whisper-large-v3",
+      "kind": "serverless",
+      "status": "preview"
+    }
+  ],
+  "account_access_verified": false,
+  "inference_performed": false
+}

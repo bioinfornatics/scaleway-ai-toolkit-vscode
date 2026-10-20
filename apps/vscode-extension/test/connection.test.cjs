@@ -142,3 +142,14 @@ test('named organization selector filters locked entries and persists organizati
  assert.equal(s.connection.metadata.organizationName,'Visible organization');assert.equal(s.state.get('scalewayAI.preferences.v1.'+org).organizationName,'Visible organization');
  }finally{provider.listOrganizations=old;s.connection.dispose();s.restore();}
 });
+
+test('catalog loading separates public offerings/models from existing deployments and keeps failures independent',async()=>{
+ const s=setup();const old=provider.listServerless,oldCatalog=provider.listDedicatedCatalog;try {
+ await s.connection.ensureProject();const before=s.requests();
+ provider.listServerless=async k=>{assert.equal(k,'');return [{id:'model',label:'Model',kind:'serverless',status:'preview'}];};
+ provider.listDedicatedCatalog=async(p,k)=>{assert.equal(p.id,id);assert.equal(k,token);return [{id,label:'Dedicated model',kind:'dedicated-catalog'}];};
+ await s.connection.loadCatalogs();assert.equal(s.requests(),before);assert.equal(s.connection.serverless.length,1);assert.equal(s.connection.dedicatedCatalog.length,1);assert.equal(s.connection.dedicated.length,0);
+ provider.listDedicatedCatalog=async()=>{throw new provider.ReadError('access_denied');};
+ await s.connection.loadCatalogs();assert.equal(s.connection.serverless.length,1);assert.equal(s.connection.dedicatedCatalog.length,0);assert.ok(s.connection.dedicatedCatalogState.includes('access_denied'));
+ }finally{provider.listServerless=old;provider.listDedicatedCatalog=oldCatalog;s.connection.dispose();s.restore();}
+});
