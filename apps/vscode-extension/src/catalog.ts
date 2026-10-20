@@ -4,6 +4,12 @@ import { text, uuid } from './provider';
 export type CatalogInput =
   | { type: 'ready' | 'refresh' | 'project' }
   | { type: 'prepare'; id: string }
+  | {
+      type: 'rendered';
+      revision: number;
+      publicCards: number;
+      dedicatedCards: number;
+    }
   | { type: 'details'; kind: 'serverless' | 'dedicated-catalog'; id: string };
 export function parseCatalogInput(value: unknown): CatalogInput | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return;
@@ -15,6 +21,24 @@ export function parseCatalogInput(value: unknown): CatalogInput | undefined {
       message.type === 'project')
   )
     return { type: message.type };
+  if (
+    message.type === 'rendered' &&
+    Object.keys(message).length === 4 &&
+    Number.isSafeInteger(message.revision) &&
+    Number(message.revision) > 0 &&
+    Number.isSafeInteger(message.publicCards) &&
+    Number(message.publicCards) >= 0 &&
+    Number(message.publicCards) <= 500 &&
+    Number.isSafeInteger(message.dedicatedCards) &&
+    Number(message.dedicatedCards) >= 0 &&
+    Number(message.dedicatedCards) <= 500
+  )
+    return {
+      type: 'rendered',
+      revision: Number(message.revision),
+      publicCards: Number(message.publicCards),
+      dedicatedCards: Number(message.dedicatedCards),
+    };
   if (
     message.type === 'prepare' &&
     Object.keys(message).length === 2 &&

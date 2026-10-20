@@ -191,3 +191,21 @@ test('deployment preparation IPC is exact UUID identity, never network/budget/ac
   ])
     assert.equal(parseCatalogInput(value), undefined);
 });
+
+test('renderer acknowledgement IPC accepts bounded counts and exact shape only', () => {
+  const valid = {
+    type: 'rendered',
+    revision: 1,
+    publicCards: 17,
+    dedicatedCards: 0,
+  };
+  assert.deepEqual(parseCatalogInput(valid), valid);
+  for (const message of [
+    { ...valid, revision: 0 },
+    { ...valid, publicCards: -1 },
+    { ...valid, publicCards: 501 },
+    { ...valid, dedicatedCards: 1.2 },
+    { ...valid, token: 'secret' },
+  ])
+    assert.equal(parseCatalogInput(message), undefined);
+});

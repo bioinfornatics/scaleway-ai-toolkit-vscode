@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { catalogHtml, parseCatalogInput } from './catalog';
 import { catalogDetails } from './catalogDetails';
+import { CatalogHealth } from './catalogHealth';
 import { visibleCatalogModels } from './catalogVisibility';
 import { Connection } from './connection';
 import { type DemoModel, type Experiment, models, runDemo } from './demo';
@@ -27,6 +28,7 @@ export function activate(context: vscode.ExtensionContext): void {
   let active: { cancelled: boolean } | undefined;
   let panel: vscode.WebviewPanel | undefined;
   let catalogPanel: vscode.WebviewPanel | undefined;
+  const catalogHealth = new CatalogHealth();
   let response = '';
   let importedPrompt: string | undefined;
   let message = 'Prêt · Ctrl+Entrée pour exécuter';
@@ -34,6 +36,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const updateCatalog = () => {
     void catalogPanel?.webview.postMessage({
       type: 'catalog-state',
+      revision: catalogHealth.next(),
       serverless: visibleCatalogModels(connection.serverless),
       dedicated: visibleCatalogModels(connection.dedicatedCatalog),
       publicStatus: connection.serverlessState,
@@ -435,13 +438,16 @@ export function activate(context: vscode.ExtensionContext): void {
         },
       );
       const origin = catalogPanel;
-      origin.webview.html = catalogHtml(origin.webview, context.extensionUri);
       const messages = origin.webview.onDidReceiveMessage(
         async (value: unknown) => {
           if (catalogPanel !== origin) return;
           const input = parseCatalogInput(value);
           if (!input) return;
-          if (input.type === 'ready') updateCatalog();
+          if (input.type === 'ready') {
+            catalogHealth.ready = true;
+            updateCatalog();
+          }
+          if (input.type === 'rendered') catalogHealth.accept(input);
           if (input.type === 'prepare')
             await connection.prepareDeployment(input.id);
           if (input.type === 'details') {
@@ -474,8 +480,12 @@ export function activate(context: vscode.ExtensionContext): void {
       );
       origin.onDidDispose(() => {
         messages.dispose();
-        if (catalogPanel === origin) catalogPanel = undefined;
+        if (catalogPanel === origin) {
+          catalogPanel = undefined;
+          catalogHealth.reset();
+        }
       });
+      origin.webview.html = catalogHtml(origin.webview, context.extensionUri);
     } else catalogPanel.reveal(vscode.ViewColumn.One);
     updateCatalog();
     // Open first, then load public offers. An unavailable account never hides the panel.
@@ -490,6 +500,21 @@ export function activate(context: vscode.ExtensionContext): void {
       publicCount: connection.serverless.length,
       publicStatus: connection.serverlessState,
       panelOpened: !!catalogPanel,
+    };
+  });
+  register('scalewayAI.catalogDiagnostics', async () => {
+    if (!catalogPanel) return { panelOpened: false, rendererReady: false };
+    updateCatalog();
+    const report = await catalogHealth.wait();
+    return {
+      panelOpened: !!catalogPanel,
+      rendererReady: catalogHealth.ready,
+      rendered: !!report,
+      publicCards: report?.publicCards,
+      dedicatedCards: report?.dedicatedCards,
+      expectedPublicCards: visibleCatalogModels(connection.serverless).length,
+      expectedDedicatedCards: visibleCatalogModels(connection.dedicatedCatalog)
+        .length,
     };
   });
   register('scalewayAI.deploymentDetails', async (id: unknown) => {

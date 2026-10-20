@@ -106,3 +106,12 @@ IAM-only endpoint intent, exact decimal user ceiling, non-executable local plan,
 cancellation/session invalidation. This is preparation, not deployment creation.
 Next independent implementation slice: enrich existing deployment explorer with
 validated provider-returned model linkage/endpoints, then portable saved outputs.
+
+
+Version 0.0.22 adds one-GET existing deployment details with returned endpoints,
+network/auth and fetch timestamp; no probe or inference. Version 0.0.23 adds
+explicit local experiment save/import and independently runnable offline replay
+exports, plus reviewed vsce4 tooling (audit zero). Version 0.0.24 strengthens the
+installed catalog test: actual webview JS/DOM reports 17 rendered active public
+cards from33 raw offers, no account authentication. This closes the missing renderer
+proof, not visual/theme/keyboard or user-specific service worker root cause.

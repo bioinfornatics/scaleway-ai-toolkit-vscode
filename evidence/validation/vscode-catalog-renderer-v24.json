@@ -1,0 +1,31 @@
+{
+  "version": "0.0.24",
+  "biome": "passed",
+  "strict_typescript": "passed",
+  "tests": 72,
+  "packaged_renderer": {
+    "status": "passed",
+    "version": "0.0.24",
+    "hostVersion": "1.142.0",
+    "packagedPath": "/tmp/scw-v24-ext/scaleway-ai-community-preview.scaleway-ai-toolkit-preview-0.0.24",
+    "catalogCommand": {
+      "publicCount": 33,
+      "publicStatus": "Offres publiques \u00b7 acc\u00e8s inf\u00e9rence non v\u00e9rifi\u00e9",
+      "panelOpened": true
+    },
+    "renderer": {
+      "panelOpened": true,
+      "rendererReady": true,
+      "rendered": true,
+      "publicCards": 17,
+      "dedicatedCards": 0,
+      "expectedPublicCards": 17,
+      "expectedDedicatedCards": 0
+    },
+    "authentication": "none",
+    "method": "actual packaged extension host and webview DOM acknowledgement with live public adapter"
+  },
+  "trust": "workspace trust disabled only in isolated test host, never user config",
+  "interpretation": "Actual packaged webview JavaScript/DOM acknowledges 17 public cards after retired filter (33 raw offers). This is not screenshot/theme/keyboard QA. User serviceworker error cause not proven.",
+  "sha256": "869856256f3b6d03af7dd3bc95e16ee4abe3e90de0c66e889f0c892b3bae421d"
+}

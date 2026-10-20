@@ -97,6 +97,17 @@
     if (event.data?.type === 'catalog-state') {
       state = event.data;
       render();
+      if (Number.isSafeInteger(state.revision))
+        vscode.postMessage({
+          type: 'rendered',
+          revision: state.revision,
+          publicCards: document
+            .getElementById('public-list')
+            .querySelectorAll('article').length,
+          dedicatedCards: document
+            .getElementById('dedicated-list')
+            .querySelectorAll('article').length,
+        });
     }
   });
   search.addEventListener('input', render);
