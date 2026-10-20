@@ -2,7 +2,20 @@
 
 A community extension concept for discovering, testing, building, evaluating and deploying AI applications on Scaleway without leaving VS Code.
 
-**Status:** specifications plus an offline-tested Python JSON repair helper; production implementation remains gated. No extension, authenticated API tests, approved visual sources, or deployment exists yet. Name and branding are provisional; no official Scaleway affiliation is claimed.
+**Status:** first experimental installable VS Code extension (offline model selection, simulated streaming/cancel, experiment JSON), specifications and JSON repair helper. Real provider integration, production/design acceptance and cloud deployment remain separate gates. Name and branding are provisional; no official Scaleway affiliation is claimed.
+
+## Try the first VSIX
+
+Artifact: `artifacts/scaleway-ai-toolkit-preview-0.0.1.vsix` (generated locally).
+
+```sh
+code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.1.vsix
+```
+
+Run **Scaleway AI: Open Offline Preview**, select a synthetic model, then
+**Scaleway AI: Run Offline Playground**. Cancel and inspect the last experiment
+from the Command Palette. [Extension instructions and build](apps/vscode-extension/README.md).
+No credentials, network calls, charges or Python runtime required.
 
 ## Product authority
 

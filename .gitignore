@@ -12,3 +12,7 @@ __pycache__/
 # Isolated contract validation tooling
 node_modules/
 tooling/contract-validation/dist/
+
+# Built experimental extension and local install artifact
+apps/vscode-extension/dist/
+artifacts/*.vsix

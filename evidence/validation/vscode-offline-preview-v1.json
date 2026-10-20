@@ -1,0 +1,42 @@
+{
+  "record_id": "vscode-offline-preview-v1",
+  "issue": "scaleway_ai_vscode-jgh.3.8",
+  "verified_at": "2026-10-20T20:13:32.826033+00:00",
+  "authority": "Current user requests first incremental testable VSIX; experimental native slice only, existing commit/no-push policy",
+  "artifact": "artifacts/scaleway-ai-toolkit-preview-0.0.1.vsix",
+  "sha256": "3b802175f727496e560c60ca60c964de3ebc29490823cada58a49670f9166266",
+  "bytes": 6664,
+  "package_files": [
+    "extension.vsixmanifest",
+    "[Content_Types].xml",
+    "extension/package.json",
+    "extension/readme.md",
+    "extension/media/toolkit.svg",
+    "extension/dist/extension.js",
+    "extension/dist/demo.js"
+  ],
+  "build": "TypeScript5.9.3 strict passed",
+  "unit_tests": {
+    "passed": 3,
+    "failed": 0
+  },
+  "installation": "VSIX installed successfully into isolated temporary VS Code profile/extensions directory",
+  "extension_host": {
+    "status": "passed",
+    "hostVersion": "1.142.0",
+    "activation": true,
+    "commands": true,
+    "nativeViewOpen": true,
+    "selectedModelCommand": true,
+    "manualPlayground": "not_run"
+  },
+  "host_scope": "Real Extension Host tests loaded development build from same compiled source as packaged VSIX; packaged activation not separately asserted",
+  "not_run": [
+    "Manual interactive prompt/progress/cancel journey and visual accessibility QA",
+    "Real provider connection/catalog/inference",
+    "Production acceptance, Marketplace publishing and cloud hosting"
+  ],
+  "runtime_dependencies": [],
+  "provider_requests": 0,
+  "credentials_used": false
+}
