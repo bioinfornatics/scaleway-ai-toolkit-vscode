@@ -73,6 +73,12 @@
     document.getElementById('scope').textContent = state.scope;
     renderRows('public-list', state.serverless, 'public');
     renderRows('dedicated-list', state.dedicated, 'dedicated');
+    document.getElementById('search-results').textContent =
+      document.getElementById('public-list').querySelectorAll('article')
+        .length +
+      document.getElementById('dedicated-list').querySelectorAll('article')
+        .length +
+      ' résultat(s) affiché(s)';
   }
   window.addEventListener('message', (event) => {
     if (
@@ -111,11 +117,22 @@
     }
   });
   search.addEventListener('input', render);
-  document.getElementById('close-details').addEventListener('click', () => {
+  function closeDetails() {
     document.getElementById('model-details').hidden = true;
     if (detailTrigger?.isConnected) detailTrigger.focus();
     else search.focus();
-  });
+  }
+  document
+    .getElementById('close-details')
+    .addEventListener('click', closeDetails);
+  document
+    .getElementById('model-details')
+    .addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeDetails();
+      }
+    });
   document
     .getElementById('refresh')
     .addEventListener('click', () => vscode.postMessage({ type: 'refresh' }));

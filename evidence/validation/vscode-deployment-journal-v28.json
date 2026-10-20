@@ -1,0 +1,40 @@
+{
+  "version": "0.0.28",
+  "tests": 92,
+  "biome": "passed",
+  "strict_typescript": "passed",
+  "audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "packaged_renderer": {
+    "status": "passed",
+    "version": "0.0.28",
+    "hostVersion": "1.142.0",
+    "packagedPath": "/tmp/scw-v28-install-ext/scaleway-ai-community-preview.scaleway-ai-toolkit-preview-0.0.28",
+    "catalogCommand": {
+      "publicCount": 33,
+      "publicStatus": "Offres publiques \u00b7 acc\u00e8s inf\u00e9rence non v\u00e9rifi\u00e9",
+      "panelOpened": true
+    },
+    "renderer": {
+      "panelOpened": true,
+      "rendererReady": true,
+      "rendered": true,
+      "publicCards": 17,
+      "dedicatedCards": 0,
+      "expectedPublicCards": 17,
+      "expectedDedicatedCards": 0
+    },
+    "authentication": "none",
+    "method": "actual packaged extension host and webview DOM acknowledgement with live public adapter"
+  },
+  "journal": "Strict100-record user/org/project-keyed storage adapter; snapshots/serialized writes, no eviction, corrupt journals fail closed, restart submitting -> unknown and prepared transition refused. Metadata only. Adapter is not connected to paid creation/controller UI yet.",
+  "account_calls": 0,
+  "cloud_creation": 0,
+  "sha256": "70ef80a9956ba506e239e4681c0a2a1f6fdd389fa7d5ea5af0edcc9186389f01"
+}

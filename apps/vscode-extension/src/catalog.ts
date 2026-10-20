@@ -74,7 +74,7 @@ export function catalogHtml(webview: vscode.Webview, root: vscode.Uri): string {
     '<p>Découvrir les offres Serverless et les modèles dédiés à déployer. Ce catalogue ne lance aucune inférence et ne crée aucune ressource.</p>' +
     '<div class="actions"><button id="refresh">Actualiser</button><button id="project">Choisir le projet Scaleway</button></div>' +
     '<p id="scope" role="status">Catalogue public disponible sans connexion. Projet dédié non sélectionné.</p>' +
-    '<label for="search">Rechercher un modèle</label><input id="search" type="search" placeholder="Nom du modèle ou statut">' +
+    '<label for="search">Rechercher un modèle</label><input id="search" type="search" placeholder="Nom du modèle ou statut" aria-describedby="search-results"><p id="search-results" role="status" aria-live="polite" aria-atomic="true"></p>' +
     '<section id="model-details" hidden aria-labelledby="detail-title"><h2 id="detail-title" tabindex="-1"></h2><p id="detail-status"></p><p id="detail-source"></p><p id="detail-scope"></p><p id="detail-limits"></p><button id="close-details">Fermer les détails</button></section>' +
     '<h2>Serverless · offres publiques</h2><p id="public-status" role="status">Chargement du catalogue public…</p><div id="public-list" class="grid"></div>' +
     '<h2>Modèles dédiés à déployer · fr-par</h2><p id="dedicated-status" role="status">Sélectionnez un projet pour le catalogue dédié.</p><div id="dedicated-list" class="grid"></div>' +

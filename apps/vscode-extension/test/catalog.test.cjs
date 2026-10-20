@@ -110,6 +110,11 @@ test('card click sends identity; details render text, focus and return to trigge
     addEventListener(type, handler) {
       this.events[type] = handler;
     }
+    querySelectorAll(tag) {
+      return tag === 'article'
+        ? this.children.filter((child) => child.tag === 'article')
+        : [];
+    }
     setAttribute(name, value) {
       this[name] = value;
     }
@@ -126,7 +131,10 @@ test('card click sends identity; details render text, focus and return to trigge
   let receive;
   vm.runInNewContext(fs.readFileSync('media/catalog.js', 'utf8'), {
     acquireVsCodeApi: () => ({ postMessage: (value) => sent.push(value) }),
-    document: { getElementById: get, createElement: () => new Element() },
+    document: {
+      getElementById: get,
+      createElement: (tag) => Object.assign(new Element(), { tag }),
+    },
     window: {
       addEventListener: (_event, handler) => {
         receive = handler;
@@ -164,9 +172,25 @@ test('card click sends identity; details render text, focus and return to trigge
   assert.equal(get('detail-title').textContent, '<unsafe>');
   assert.equal(get('model-details').hidden, false);
   assert.equal(focused, get('detail-title'));
+  assert.equal(get('search-results').textContent, '1 résultat(s) affiché(s)');
+  let prevented = false;
+  get('model-details').events.keydown({
+    key: 'Escape',
+    preventDefault: () => {
+      prevented = true;
+    },
+  });
+  assert.equal(prevented, true);
   get('close-details').events.click();
   assert.equal(get('model-details').hidden, true);
   assert.equal(focused, button);
+  get('search').value = 'no match';
+  get('search').events.input();
+  assert.equal(get('search-results').textContent, '0 résultat(s) affiché(s)');
+  assert.equal(
+    get('public-list').children[0].textContent,
+    'Aucun résultat pour cette recherche.',
+  );
 });
 
 test('navigation explicitly separates deployable dedicated catalog and existing resources', () => {

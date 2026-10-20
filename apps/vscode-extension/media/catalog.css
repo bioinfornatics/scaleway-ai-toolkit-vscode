@@ -6,6 +6,7 @@ body {
 }
 main {
   max-width: 1200px;
+  min-width: 0;
   margin: auto;
 }
 h1 {
@@ -26,7 +27,7 @@ p {
 button {
   background: var(--vscode-button-background);
   color: var(--vscode-button-foreground);
-  border: 0;
+  border: 1px solid var(--vscode-contrastBorder, transparent);
   padding: 9px 14px;
   cursor: pointer;
 }
@@ -59,6 +60,8 @@ article {
   border: 1px solid var(--vscode-panel-border);
   border-radius: 4px;
   padding: 16px;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 article h3 {
   margin: 0;
@@ -89,4 +92,16 @@ article p:last-child {
 }
 #model-details h2 {
   margin-top: 0;
+}
+
+@media (forced-colors: active) {
+  button,
+  article,
+  input,
+  #model-details {
+    border: 1px solid CanvasText;
+  }
+  :focus-visible {
+    outline-color: Highlight;
+  }
 }

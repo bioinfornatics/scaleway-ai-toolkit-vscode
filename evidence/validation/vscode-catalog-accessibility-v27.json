@@ -1,0 +1,45 @@
+{
+  "version": "0.0.27",
+  "tests": 89,
+  "biome": "passed",
+  "strict_typescript": "passed",
+  "audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "packaged_renderer": {
+    "status": "passed",
+    "version": "0.0.27",
+    "hostVersion": "1.142.0",
+    "packagedPath": "/tmp/scw-v27-install-ext/scaleway-ai-community-preview.scaleway-ai-toolkit-preview-0.0.27",
+    "catalogCommand": {
+      "publicCount": 33,
+      "publicStatus": "Offres publiques \u00b7 acc\u00e8s inf\u00e9rence non v\u00e9rifi\u00e9",
+      "panelOpened": true
+    },
+    "renderer": {
+      "panelOpened": true,
+      "rendererReady": true,
+      "rendered": true,
+      "publicCards": 17,
+      "dedicatedCards": 0,
+      "expectedPublicCards": 17,
+      "expectedDedicatedCards": 0
+    },
+    "authentication": "none",
+    "method": "actual packaged extension host and webview DOM acknowledgement with live public adapter"
+  },
+  "changes": [
+    "Escape closes model details and restores trigger focus",
+    "Local search result announcement",
+    "Contrast borders and narrow card overflow protection"
+  ],
+  "desktop_visual": "blocked: actual capture shows VS Code first-run Copilot sign-in overlay, not inspectable catalog; no login performed",
+  "keyboard_theme_visual": "not_run",
+  "cloud_account_calls": 0,
+  "sha256": "68c728f370b2a348c3dd9902bafb282929beb8ed00245a835b757bdb390edf1d"
+}
