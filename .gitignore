@@ -4,3 +4,7 @@
 *.db
 .beads-credential-key
 .beads/proxieddb/
+
+# Generated Python caches
+__pycache__/
+*.py[cod]
