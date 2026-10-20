@@ -30,6 +30,19 @@ export class Connection implements vscode.Disposable {
     this.busy = true;
     const operation=this.generation;
     try {
+      const method = await vscode.window.showQuickPick([
+        {label:'Se connecter dans le navigateur',description:'Console officielle Scaleway, puis retour manuel avec une clé API',id:'browser'},
+        {label:'Utiliser une clé API existante',description:'Saisie masquée dans VS Code',id:'key'},
+      ], {title:'Se connecter à Scaleway',placeHolder:'Authentification API par clé : aucun mot de passe collecté par l’extension.'});
+      if (!method || operation!==this.generation) return;
+      if (method.id === 'browser') {
+        const opened=await vscode.env.openExternal(vscode.Uri.parse('https://console.scaleway.com/iam/users'));
+        if (!opened) {await vscode.window.showWarningMessage('Impossible d’ouvrir la console officielle. Utilisez une clé API existante.');return;}
+        const resume=await vscode.window.showInformationMessage(
+          'Dans la console Scaleway : connectez-vous, choisissez l’organisation, puis IAM & API keys → API keys. Utilisez une clé appropriée ou créez-en une vous-même si autorisé. Revenez ici avec son secret et l’UUID d’organisation. Aucun token de session web n’est récupéré automatiquement.',
+          {modal:true},'Continuer avec ma clé API');
+        if(resume!=='Continuer avec ma clé API'||operation!==this.generation)return;
+      }
       const name = await vscode.window.showInputBox({title:'Connexion Scaleway — nom',value:this.metadata?.name ?? 'Scaleway',validateInput:v=>v.trim().length<1||v.length>80?'Nom de 1 à 80 caractères.':undefined});
       if (name === undefined) return;
       const org = await vscode.window.showInputBox({title:'Organisation Scaleway',prompt:'UUID de l’organisation autorisée. Nécessaire pour limiter la liste des projets.',value:this.metadata?.organizationId,validateInput:v=>uuid(v.trim())?undefined:'UUID requis.'});

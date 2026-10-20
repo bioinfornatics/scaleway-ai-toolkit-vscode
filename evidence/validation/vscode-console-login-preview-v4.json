@@ -1,0 +1,37 @@
+{
+  "record_id": "vscode-console-login-preview-v4",
+  "issue": "scaleway_ai_vscode-jgh.3.11",
+  "verified_at": "2026-10-20T20:42:38.679671+00:00",
+  "method": "Strict TS build,17 offline/mock tests,VSIX install into isolated profile",
+  "artifact": "artifacts/scaleway-ai-toolkit-preview-0.0.4.vsix",
+  "sha256": "67d7f708f8049d7011f019f53b0304825c20b94a837979e841556c3b84d22d7f",
+  "package_files": [
+    "extension.vsixmanifest",
+    "[Content_Types].xml",
+    "extension/package.json",
+    "extension/readme.md",
+    "extension/media/toolkit.svg",
+    "extension/media/playground.js",
+    "extension/media/playground.css",
+    "extension/dist/webview.js",
+    "extension/dist/provider.js",
+    "extension/dist/ipc.js",
+    "extension/dist/extension.js",
+    "extension/dist/demo.js",
+    "extension/dist/connection.js"
+  ],
+  "tests_passed": 17,
+  "browser_url": "https://console.scaleway.com/iam/users",
+  "auth_method": "Official-console-assisted manual API key; NOT OAuth/JWT browser exchange",
+  "source": "evidence/documentation/dedicated-docs-pages_iam_credentials_create-api-keys.mdx",
+  "source_sha256": "621439dcb60da3292c2a155e4446e89ca36868e58a039a7e1378fa9eac2ab0af",
+  "research": "Public web search for Scaleway third-party OAuth yielded no established supported flow; absence not proven",
+  "not_run": [
+    "Actual browser login and real key entry",
+    "Third-party OAuth authorization-code/device-code availability",
+    "Live provider account calls",
+    "Visual UX QA"
+  ],
+  "provider_requests_by_agent": 0,
+  "credentials_used": false
+}

@@ -8,7 +8,7 @@ function setup() {
  const secrets=new Map(),state=new Map(), inputs=['Test',org,key];let requests=0;
  const vscode={workspace:{isTrusted:true},ProgressLocation:{Notification:15},window:{
   showInputBox:async()=>inputs.shift(),showInformationMessage:async(_m,opts,action)=>action,
-  showErrorMessage:async()=>{},showWarningMessage:async()=>{},showQuickPick:async items=>items[0],
+  showErrorMessage:async()=>{},showWarningMessage:async()=>{},showQuickPick:async items=>items.find(i=>i.id==='key') ?? items[0],
   withProgress:async(_opts,fn)=>fn({}, {onCancellationRequested:()=>({dispose(){}})}),
  }};
  const context={globalState:{get:k=>state.get(k),update:async(k,v)=>v===undefined?state.delete(k):state.set(k,v)},
@@ -35,5 +35,18 @@ test('declined permission makes no request or secret write',async()=>{
 });
 test('disconnect while login confirmation open invalidates pending operation',async()=>{
  const s=setup();s.vscode.window.showInformationMessage=async()=>{await s.connection.disconnect();return 'Lister les projets';};
+ try {await s.connection.login();assert.equal(s.requests(),0);assert.equal(s.secrets.size,0);}finally{s.restore();}
+});
+test('browser route opens official console, explicitly resumes with API key',async()=>{
+ const s=setup();let opened,step=0;
+ s.vscode.Uri={parse:value=>value};s.vscode.env={openExternal:async value=>{opened=value;return true;}};
+ s.vscode.window.showQuickPick=async items=>items.find(i=>i.id==='browser') ?? items[0];
+ s.vscode.window.showInformationMessage=async(_m,_opts,action)=>{step++;return action;};
+ try {await s.connection.login();assert.equal(opened,'https://console.scaleway.com/iam/users');assert.equal(step,2);assert.equal(s.requests(),1);assert.equal(s.secrets.get('scalewayAI.apiKey.v1'),key);}finally{s.restore();}
+});
+test('browser return cancelled performs no API reads or storage',async()=>{
+ const s=setup();s.vscode.Uri={parse:value=>value};s.vscode.env={openExternal:async()=>true};
+ s.vscode.window.showQuickPick=async items=>items.find(i=>i.id==='browser') ?? items[0];
+ s.vscode.window.showInformationMessage=async()=>undefined;
  try {await s.connection.login();assert.equal(s.requests(),0);assert.equal(s.secrets.size,0);}finally{s.restore();}
 });

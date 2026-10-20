@@ -1,4 +1,4 @@
-# Scaleway AI Toolkit — Preview 0.0.3
+# Scaleway AI Toolkit — Preview 0.0.4
 
 Experimental community VS Code extension; no Scaleway affiliation. Real **read-only
 connection/project/model discovery** plus a separate **offline** playground.
@@ -6,7 +6,7 @@ No real inference, cloud writes, telemetry, OAuth browser login or Python runtim
 
 ## Install
 
-    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.3.vsix --force
+    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.4.vsix --force
 
 Reload Window after updating. Run **Scaleway AI: Open Offline Preview** to open the
 sidebar (legacy command name retained).
@@ -14,12 +14,18 @@ sidebar (legacy command name retained).
 ## Connect and switch project
 
 1. Mes ressources -> **Projet : sélectionner** -> native connection wizard.
-2. Enter connection name, **organization UUID**, then **secret API key** in the
+2. Choose **Se connecter dans le navigateur** to open the official Scaleway console.
+   Authenticate there (password/MFA/passkey handled by Scaleway). In IAM & API keys,
+   use an appropriate key or manually generate one only if authorized. Return to
+   VS Code and click **Continuer avec ma clé API**. Alternatively choose an
+   existing API key directly. This is **console-assisted API-key setup**, not
+   OAuth: no automatic JWT/session exchange, cookie access or callback listener.
+3. Enter connection name, **organization UUID**, then **secret API key** in the
    masked field. Obtain these yourself from Scaleway console; never paste keys
    into chat/workspace/settings. Use a narrowly scoped key, not full owner rights.
-3. Confirm bounded read-only listing of that organization’s projects (max 5 GET).
-4. Select an accessible project then **fr-par** for dedicated resources.
-5. Under Modèles click **Charger / actualiser les modèles** and confirm the
+4. Confirm bounded read-only listing of that organization’s projects (max 5 GET).
+5. Select an accessible project then **fr-par** for dedicated resources.
+6. Under Modèles click **Charger / actualiser les modèles** and confirm the
    read-only request scope (max 6 GET: 1 global serverless + up to 5 dedicated pages).
 
 **Changer de projet** reuses the saved key. **Se connecter / changer de connexion**
