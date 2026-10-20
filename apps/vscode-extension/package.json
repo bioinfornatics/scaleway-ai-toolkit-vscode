@@ -2,7 +2,7 @@
   "name": "scaleway-ai-toolkit-preview",
   "displayName": "Scaleway AI Toolkit \u2014 Preview",
   "description": "Scaleway user browser login, read-only project resources and offline playground.",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "publisher": "scaleway-ai-community-preview",
   "private": true,
   "license": "UNLICENSED",
@@ -98,6 +98,10 @@
         "command": "scalewayAI.prepareDeployment",
         "title": "Scaleway AI: Pr\u00e9parer un d\u00e9ploiement d\u00e9di\u00e9 (sans cr\u00e9ation)",
         "icon": "$(server)"
+      },
+      {
+        "command": "scalewayAI.deploymentDetails",
+        "title": "Scaleway AI: D\u00e9tails du d\u00e9ploiement (lecture seule)"
       }
     ],
     "viewsContainers": {
@@ -148,7 +152,7 @@
   "scripts": {
     "build": "tsc -p .",
     "test": "npm run build && node --test test/*.test.cjs",
-    "package": "npm run check && npm test && vsce package --allow-missing-repository --skip-license --out ../../artifacts/scaleway-ai-toolkit-preview-0.0.21.vsix",
+    "package": "npm run check && npm test && vsce package --allow-missing-repository --skip-license --out ../../artifacts/scaleway-ai-toolkit-preview-0.0.22.vsix",
     "check": "biome check --error-on-warnings .",
     "lint": "biome lint --error-on-warnings .",
     "format": "biome format --write ."

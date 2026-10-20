@@ -1,0 +1,10 @@
+{
+  "version": "0.0.22",
+  "biome": "passed",
+  "strict_typescript": "passed",
+  "tests": 64,
+  "explorer": "selected-project deployment details and embedded endpoint projection, single GET, timestamp and network/auth metadata",
+  "endpoint_probe_or_cloud_writes": 0,
+  "live_account_tests": "not_run",
+  "sha256": "e07e7fb562700a4bf4b3ccf8b471ee4c938b7cc41a5bc6ac89bfaaf65b8a54ef"
+}

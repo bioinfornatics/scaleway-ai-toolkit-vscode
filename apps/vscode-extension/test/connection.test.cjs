@@ -603,3 +603,34 @@ test('logout during preparation stops hardware read and cannot finish stale wiza
     s.restore();
   }
 });
+
+test('deployment detail only uses known selected-project identities and rejects stale logout', async () => {
+  const s = setup();
+  const previous = provider.getDeployment;
+  try {
+    await s.connection.ensureProject();
+    s.connection.dedicated = [{ id, label: 'Known', kind: 'dedicated' }];
+    let calls = 0;
+    provider.getDeployment = async (project, deploymentId, jwt) => {
+      calls++;
+      assert.equal(project.id, id);
+      assert.equal(deploymentId, id);
+      assert.equal(jwt, token);
+      return { id, label: 'Known', kind: 'dedicated', status: 'ready' };
+    };
+    assert.equal(await s.connection.deploymentDetails(org), undefined);
+    assert.equal(calls, 0);
+    assert.equal((await s.connection.deploymentDetails(id)).status, 'ready');
+    assert.equal(s.connection.busy, false);
+    provider.getDeployment = async () => {
+      await s.connection.disconnect();
+      return { id, label: 'Stale', kind: 'dedicated' };
+    };
+    assert.equal(await s.connection.deploymentDetails(id), undefined);
+    assert.equal(s.connection.dedicated.length, 0);
+  } finally {
+    provider.getDeployment = previous;
+    s.connection.dispose();
+    s.restore();
+  }
+});

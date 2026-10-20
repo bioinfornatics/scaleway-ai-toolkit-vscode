@@ -1,4 +1,4 @@
-# Scaleway AI Toolkit — Preview 0.0.21
+# Scaleway AI Toolkit — Preview 0.0.22
 
 Experimental community VS Code extension; no Scaleway affiliation. **User browser
 login without API keys**, scoped read-only projects/dedicated deployments and a
@@ -6,7 +6,7 @@ separate **offline synthetic** playground. No real inference or cloud writes.
 
 ## Install and try
 
-    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.21.vsix --force
+    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.22.vsix --force
 
 Reload Window, then **Scaleway AI: Open Offline Preview** (legacy command name).
 
@@ -161,7 +161,7 @@ Scaleway; local experimental identification only, not endorsement. Publication
 requires separate brand review. ai-PULSE event branding not used. Asset provenance:
 evidence/documentation/scaleway-icon-preview-v1.json.
 
-## Preview 0.0.21 navigation and catalog visibility fix
+## Preview 0.0.22 navigation and catalog visibility fix
 
 Resources now separate **Projet Scaleway**, **Modèles**, **Récents**, and
 **Ressources locales** (synthetic demo). Developer tools separate **Découvrir**
@@ -177,7 +177,7 @@ and do not wait for pending SecretStorage. Untrusted workspace displays an expli
 explanation; approve the workspace for HTTP. Dedicated errors do not hide public
 offers. No credentials or provider endpoint input in the catalog webview.
 
-Packaged extension host catalog command (0.0.14 and final0.0.21) verified live public
+Packaged extension host catalog command (0.0.14 and final0.0.22) verified live public
 33 offerings in isolated trusted test workspace. This is stronger than standalone
 adapter testing, but it does not prove screenshot card rendering, keyboard/theme
 review or actual-account dedicated acceptance; those checks remain outstanding.
@@ -251,3 +251,13 @@ La confirmation ouvre un JSON local non exécutable : prix dédié, quota, condi
 EULA et contrat de création restent à vérifier. Aucun POST, acceptation EULA,
 déploiement, réseau, endpoint ou coût n’est déclenché. Un changement de compte,
 projet, confiance ou une annulation stoppe le parcours. Aucun JWT dans le plan.
+
+### Explorer les déploiements existants
+
+Un clic sur une ressource « Dédiés · déploiements existants » relit son détail
+avec un seul GET du contrôle Scaleway, puis ouvre un JSON natif en lecture seule
+(copie éditable, aucune mise à jour cloud). Le document inclut le modèle exact,
+le nœud, le statut, l’heure de récupération et les endpoints retournés par l’API.
+Les endpoints indiquent public/privé et IAM/désactivé. Métadonnées manquantes
+restent inconnues ; les URLs ambiguës ou portant des identifiants sont rejetées.
+Aucun endpoint n’est sondé, aucune inférence, URL construite ou création.

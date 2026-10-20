@@ -33,12 +33,29 @@ export interface NodeType {
   disabled: boolean;
   region: 'fr-par';
 }
+export interface DeploymentEndpoint {
+  id: string;
+  url: string;
+  authentication: 'iam' | 'disabled';
+  network: 'public' | 'private';
+  privateNetworkId?: string;
+}
+export interface DeploymentInfo {
+  projectId: string;
+  region: 'fr-par';
+  fetchedAt: string;
+  modelId?: string;
+  modelName?: string;
+  nodeTypeName?: string;
+  endpoints: DeploymentEndpoint[] | undefined;
+}
 export interface ListedModel {
   id: string;
   label: string;
   kind: 'serverless' | 'dedicated' | 'dedicated-catalog';
   status?: string;
   dedicatedInfo?: DedicatedModelInfo;
+  deploymentInfo?: DeploymentInfo;
 }
 export const uuid = (v: unknown): v is string =>
   typeof v === 'string' &&
@@ -81,6 +98,10 @@ export const getJSON: GetJSON = (origin, path, key, signal) => {
       ) && uuid(url.pathname.split('/')[4]);
     const projectRoute = url.pathname === '/account/v3/projects';
     const modelRoute = url.pathname === '/inference/v1/regions/fr-par/models';
+    const deploymentDetailRoute =
+      /^\/inference\/v1\/regions\/fr-par\/deployments\/[0-9a-f-]{36}$/i.test(
+        url.pathname,
+      ) && uuid(url.pathname.split('/').at(-1));
     const nodeRoute =
       url.pathname === '/inference/v1/regions/fr-par/node-types';
     const deploymentRoute =
@@ -100,6 +121,13 @@ export const getJSON: GetJSON = (origin, path, key, signal) => {
       (projectRoute || uuid(url.searchParams.get('project_id'))) &&
       /^[1-5]$/.test(url.searchParams.get('page') ?? '') &&
       url.searchParams.get('page_size') === '100';
+    if (deploymentDetailRoute)
+      allowed =
+        url.origin === 'https://api.scaleway.com' &&
+        !url.hash &&
+        !url.search &&
+        !url.username &&
+        !url.password;
     if (nodeRoute)
       allowed =
         url.origin === 'https://api.scaleway.com' &&
@@ -416,22 +444,7 @@ export async function listDedicated(
     signal,
     get,
   );
-  const result = rows.map((value) => {
-    const row = record(value);
-    if (
-      !uuid(row.id) ||
-      !text(row.name) ||
-      row.project_id !== project.id ||
-      row.region !== 'fr-par'
-    )
-      throw new ReadError('foreign_or_invalid_scope');
-    return {
-      id: row.id,
-      label: row.name,
-      kind: 'dedicated' as const,
-      status: text(row.status) ? row.status : 'unknown',
-    };
-  });
+  const result = rows.map((value) => parseDeployment(value, project));
   if (new Set(result.map((m) => m.id)).size !== result.length)
     throw new ReadError('duplicate_id');
   return result;
@@ -535,4 +548,126 @@ export async function listNodeTypes(
   if (new Set(result.map((row) => row.name)).size !== result.length)
     throw new ReadError('duplicate_id');
   return result;
+}
+
+/** Metadata only: no DNS/TLS/probe, no endpoint request or derived endpoint URL. */
+export function parseDeployment(
+  value: unknown,
+  project: Project,
+  now = new Date(),
+): ListedModel {
+  const row = record(value);
+  if (
+    !uuid(row.id) ||
+    !text(row.name) ||
+    row.project_id !== project.id ||
+    row.region !== 'fr-par'
+  )
+    throw new ReadError('foreign_or_invalid_scope');
+  if (
+    (row.model_id !== undefined && !uuid(row.model_id)) ||
+    (row.model_name !== undefined && !text(row.model_name)) ||
+    (row.node_type_name !== undefined && !text(row.node_type_name))
+  )
+    throw new ReadError('invalid_response');
+  let endpoints: DeploymentEndpoint[] | undefined;
+  if (row.endpoints !== undefined) {
+    if (!Array.isArray(row.endpoints) || row.endpoints.length > 32)
+      throw new ReadError('invalid_response');
+    endpoints = row.endpoints.map((value) => {
+      const endpoint = record(value);
+      if (
+        !uuid(endpoint.id) ||
+        typeof endpoint.url !== 'string' ||
+        endpoint.url.length > 2048 ||
+        typeof endpoint.disable_auth !== 'boolean'
+      )
+        throw new ReadError('invalid_endpoint');
+      let url: URL;
+      try {
+        url = new URL(endpoint.url);
+      } catch {
+        throw new ReadError('invalid_endpoint');
+      }
+      if (
+        url.protocol !== 'https:' ||
+        url.username ||
+        url.password ||
+        url.hash ||
+        url.search
+      )
+        throw new ReadError('invalid_endpoint');
+      const hasPublic =
+        endpoint.public_network !== undefined &&
+        endpoint.public_network !== null;
+      const hasPrivate =
+        endpoint.private_network !== undefined &&
+        endpoint.private_network !== null;
+      if (hasPublic === hasPrivate)
+        throw new ReadError('ambiguous_endpoint_network');
+      const privateNetworkId = hasPrivate
+        ? record(endpoint.private_network).private_network_id
+        : undefined;
+      if (hasPrivate && !uuid(privateNetworkId))
+        throw new ReadError('invalid_endpoint');
+      if (hasPublic) record(endpoint.public_network);
+      return {
+        id: endpoint.id,
+        url: endpoint.url,
+        authentication: endpoint.disable_auth
+          ? ('disabled' as const)
+          : ('iam' as const),
+        network: hasPrivate ? ('private' as const) : ('public' as const),
+        ...(hasPrivate ? { privateNetworkId: privateNetworkId as string } : {}),
+      };
+    });
+    if (
+      new Set(endpoints.map((endpoint) => endpoint.id)).size !==
+      endpoints.length
+    )
+      throw new ReadError('duplicate_id');
+  }
+  return {
+    id: row.id,
+    label: row.name,
+    kind: 'dedicated',
+    status: text(row.status) ? row.status : 'unknown',
+    deploymentInfo: {
+      projectId: project.id,
+      region: 'fr-par',
+      fetchedAt: now.toISOString(),
+      ...(row.model_id !== undefined
+        ? { modelId: row.model_id as string }
+        : {}),
+      ...(row.model_name !== undefined
+        ? { modelName: row.model_name as string }
+        : {}),
+      ...(row.node_type_name !== undefined
+        ? { nodeTypeName: row.node_type_name as string }
+        : {}),
+      endpoints,
+    },
+  };
+}
+export async function getDeployment(
+  project: Project,
+  deploymentId: string,
+  key: string,
+  signal: AbortSignal,
+  get: GetJSON = getJSON,
+): Promise<ListedModel> {
+  if (!uuid(project.id) || !uuid(project.organizationId) || !uuid(deploymentId))
+    throw new ReadError('invalid_scope');
+  if (signal.aborted) throw new ReadError('cancelled');
+  const row = parseDeployment(
+    await get(
+      'control',
+      `/inference/v1/regions/fr-par/deployments/${deploymentId}`,
+      key,
+      signal,
+    ),
+    project,
+  );
+  if (row.id !== deploymentId) throw new ReadError('foreign_or_invalid_scope');
+  return row;
 }

@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import { browserLogin, parseSession, type UserSession } from './browserLogin';
 import { deploymentWizard } from './deploymentWizard';
 import {
+  getDeployment,
   type ListedModel,
   listDedicated,
   listDedicatedCatalog,
@@ -509,6 +510,37 @@ export class Connection implements vscode.Disposable {
       await this.report(error);
     } finally {
       this.busy = false;
+      this.changed();
+    }
+  }
+  async deploymentDetails(id: string): Promise<ListedModel | undefined> {
+    if (!uuid(id) || !(await this.ensureProject())) return;
+    const project = this.project;
+    if (!project || !this.dedicated.some((row) => row.id === id)) return;
+    this.busy = true;
+    const generation = this.generation;
+    const abort = new AbortController();
+    this.abort = abort;
+    try {
+      const row = await getDeployment(project, id, this.token(), abort.signal);
+      if (
+        generation !== this.generation ||
+        abort.signal.aborted ||
+        !this.connected ||
+        !vscode.workspace.isTrusted ||
+        this.disposed
+      )
+        return;
+      this.dedicated = this.dedicated.map((previous) =>
+        previous.id === id ? row : previous,
+      );
+      return row;
+    } catch (error) {
+      if (generation === this.generation) await this.report(error);
+      return;
+    } finally {
+      this.busy = false;
+      if (this.abort === abort) this.abort = undefined;
       this.changed();
     }
   }

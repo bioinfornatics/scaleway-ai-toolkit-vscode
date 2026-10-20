@@ -81,8 +81,11 @@ export function activate(context: vscode.ExtensionContext): void {
       label: m.label,
       icon: 'symbol-method',
       description: m.status,
-      command: 'scalewayAI.modelInfo',
-      args: [kind, m.id],
+      command:
+        kind === 'dedicated'
+          ? 'scalewayAI.deploymentDetails'
+          : 'scalewayAI.modelInfo',
+      args: kind === 'dedicated' ? [m.id] : [kind, m.id],
     }));
   };
   const resources = (): Node[] => [
@@ -458,6 +461,29 @@ export function activate(context: vscode.ExtensionContext): void {
       publicStatus: connection.serverlessState,
       panelOpened: !!catalogPanel,
     };
+  });
+  register('scalewayAI.deploymentDetails', async (id: unknown) => {
+    if (typeof id !== 'string') return;
+    const row = await connection.deploymentDetails(id);
+    if (!row) return;
+    const document = await vscode.workspace.openTextDocument({
+      language: 'json',
+      content: JSON.stringify(
+        {
+          mode: 'read-only-deployment-details',
+          resource: row,
+          notes: [
+            'Données retournées par le contrôle Scaleway ; endpoints non sondés.',
+            'Un déploiement existant n’est pas nécessairement ready ou joignable.',
+            'Aucune requête vers les endpoints, aucune inférence ni création.',
+            'authentication disabled signifie endpoint sans protection IAM ; ne pas supposer protégé.',
+          ],
+        },
+        null,
+        2,
+      ),
+    });
+    await vscode.window.showTextDocument(document, { preview: false });
   });
   register('scalewayAI.disconnect', () => connection.disconnect());
   register('scalewayAI.modelInfo', (kind: unknown, id: unknown) => {
