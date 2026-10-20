@@ -1,0 +1,14 @@
+{
+  "record_id": "vscode-silent-models-preview-v10",
+  "verified_at": "2026-10-20T21:19:46.928277+00:00",
+  "issue": "scaleway_ai_vscode-jgh.3.17",
+  "artifact": "artifacts/scaleway-ai-toolkit-preview-0.0.10.vsix",
+  "sha256": "f27d73d18241f7c864c216a526c1baec7f90a307ae852675e1becc5883baf37d",
+  "tests_passed": 27,
+  "strict_typescript": "passed",
+  "isolated_install": "passed",
+  "package_audit": "dedicated list has no confirmation or progress popup; inline loading state and abort/generation guards retained",
+  "scope": "selected project/organization fr-par max5 sequential GET; no retries/inference/writes",
+  "manual_v10_journey": "not_run",
+  "authenticated_requests_by_agent": 0
+}

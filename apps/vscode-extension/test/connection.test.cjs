@@ -83,3 +83,19 @@ test('expired session reconnects through action gate; direct project switch also
  s.connection.session.expiresAt=Date.now()-1;await s.connection.switchProject();assert.equal(s.logins(),3);assert.ok(s.connection.connected);
  }finally{s.connection.dispose();s.restore();}
 });
+
+test('Models action silently loads dedicated resources without confirmation or progress popup',async()=>{
+ const s=setup();try {
+ await s.connection.ensureProject();const before=s.requests();
+ s.vscode.window.showInformationMessage=async()=>{assert.fail('no dedicated-list confirmation');};
+ s.vscode.window.withProgress=async()=>{assert.fail('no dedicated loading popup');};
+ await s.connection.loadModels();assert.equal(s.requests(),before+1);assert.equal(s.connection.dedicatedState,'Aucun déploiement');
+ }finally{s.connection.dispose();s.restore();}
+});
+test('disconnect during silent dedicated load aborts request and prevents stale results',async()=>{
+ const s=setup();const old=provider.listDedicated;try {
+ await s.connection.ensureProject();
+ provider.listDedicated=async(_p,_t,signal)=>{await s.connection.disconnect();assert.ok(signal.aborted);return [{id,label:'stale',kind:'dedicated'}];};
+ await s.connection.loadModels();assert.equal(s.connection.dedicated.length,0);assert.equal(s.connection.project,undefined);assert.equal(s.connection.dedicatedState,'Non chargés');
+ }finally{provider.listDedicated=old;s.connection.dispose();s.restore();}
+});

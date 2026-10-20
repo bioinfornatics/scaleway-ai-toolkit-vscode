@@ -93,14 +93,10 @@ export class Connection implements vscode.Disposable {
     this.busy=true;
     try {
       const operation=this.generation;this.token();
-      const consent=await vscode.window.showInformationMessage('Lister les déploiements dédiés du projet en fr-par ? Jusqu’à 5 GET, aucune inférence. Serverless non interrogé : acceptation JWT non établie.',{modal:true},'Charger les modèles');
-      if(consent!=='Charger les modèles'||operation!==this.generation||!vscode.workspace.isTrusted)return;
+      // The Models action requests bounded read-only discovery; no redundant modal.
       const token=this.token();const project=this.project;if(!project)return;
       const abort=new AbortController();this.abort=abort;this.dedicatedState='Chargement…';this.changed();
-      const rows=await vscode.window.withProgress({location:vscode.ProgressLocation.Notification,title:'Scaleway : déploiements dédiés',cancellable:true},async(_,cancel)=>{
-        const sub=cancel.onCancellationRequested(()=>abort.abort());
-        try{return await listDedicated(project,token,abort.signal);}finally{sub.dispose();}
-      });
+      const rows=await listDedicated(project,token,abort.signal);
       if(operation!==this.generation||abort.signal.aborted||!vscode.workspace.isTrusted)return;
       this.token();this.dedicated=rows;this.dedicatedState=rows.length?'fr-par · projet sélectionné':'Aucun déploiement';
     }catch(error){this.dedicatedState='Erreur · non vérifié';await this.report(error);}finally{this.busy=false;this.changed();}
