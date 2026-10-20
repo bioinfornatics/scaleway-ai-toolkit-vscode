@@ -1,4 +1,4 @@
-# Scaleway AI Toolkit — Preview 0.0.4
+# Scaleway AI Toolkit — Preview 0.0.5
 
 Experimental community VS Code extension; no Scaleway affiliation. Real **read-only
 connection/project/model discovery** plus a separate **offline** playground.
@@ -6,7 +6,7 @@ No real inference, cloud writes, telemetry, OAuth browser login or Python runtim
 
 ## Install
 
-    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.4.vsix --force
+    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.5.vsix --force
 
 Reload Window after updating. Run **Scaleway AI: Open Offline Preview** to open the
 sidebar (legacy command name retained).
@@ -74,3 +74,11 @@ those tests. Native Extension Host startup is separately checked without keys.
 Next increment is selected-real-model playground under explicit bounded spend,
 not another hosted-agent spike. Production/design/value gates remain separate
 from the requested experimental incremental implementation.
+
+## Brand asset notice
+
+Scaleway mark sourced from official website favicon assets; rights remain with
+Scaleway. Used at maintainer request for local experimental identification, not
+endorsement or official extension. Publication requires separate brand review.
+ai-PULSE event branding not used. Source/hash provenance is recorded in the repo
+at evidence/documentation/scaleway-icon-preview-v1.json.

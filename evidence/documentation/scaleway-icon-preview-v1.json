@@ -1,0 +1,34 @@
+{
+  "record_id": "scaleway-icon-preview-v1",
+  "issue": "scaleway_ai_vscode-jgh.3.12",
+  "method": "Official public website icons downloaded; PNG visually inspected; SVG geometry reused as native mask",
+  "sources": [
+    {
+      "url": "https://www.scaleway.com/favicon/website/favicon.svg",
+      "path": "apps/vscode-extension/media/scaleway-mark.svg",
+      "sha256": "51c7ffa592c55e6801f218d9a5ee7072cffb716438e2d09702f50cc582a25f3b",
+      "retrieved_at": "2026-10-20T20:45:58.495022+00:00"
+    },
+    {
+      "url": "https://www.scaleway.com/favicon/website/apple-touch-icon-180x180.png",
+      "path": "apps/vscode-extension/media/scaleway-icon.png",
+      "sha256": "38cad084b987bcc3a012e948f95835e9f3d2c989f32c54d33dd488abf29c356d",
+      "retrieved_at": "2026-10-20T20:45:58.495050+00:00"
+    }
+  ],
+  "derived_activity_icon": {
+    "path": "apps/vscode-extension/media/toolkit.svg",
+    "sha256": "7b6a7337efafe252bfa578b86e0d807ee528e078e0cff005cdb3773c5a80c5e7",
+    "changes": "Added viewBox, removed favicon media stylesheet, fills currentColor; path geometry unchanged"
+  },
+  "alternative": "ai-PULSE event branding on https://www.ai-pulse.eu/ not selected",
+  "rights": "Scaleway trademark/asset rights retained by owner; download is not license grant or endorsement. User-requested local experimental VSIX only; external publication requires brand permission review.",
+  "validation": {
+    "tests_passed": 17,
+    "artifact": "artifacts/scaleway-ai-toolkit-preview-0.0.5.vsix",
+    "artifact_sha256": "43f621c34483b200772a2ae6e51fdc1dace751af4201dd8f4fc2d5a7b14ce087",
+    "package_icon_and_activity_asset_present": true,
+    "png_visual_inspection": "passed",
+    "native_theme_visual_test": "not_run"
+  }
+}
