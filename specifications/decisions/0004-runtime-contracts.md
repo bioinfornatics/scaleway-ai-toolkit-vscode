@@ -1,8 +1,8 @@
 # ADR 0004 — Versioned model targets and advanced Strands runtime protocol
 
-Date 2026-10-20. Owner: requesting stakeholder/maintainer; .1.5. Contract-first
-procedure accepted by stakeholder; this artifact is the resulting engineering
-proposal/review baseline, not independent stakeholder acceptance of every new field.
+Date 2026-10-20. Owner: requesting stakeholder/maintainer; .1.5. Contract-first procedure and summarized contract decisions accepted by stakeholder
+on 2026-10-20 21:48 +02:00. Design baseline approval only, not production proof or
+new cloud-spending/provisioning authority.
 
 ## Decision
 
