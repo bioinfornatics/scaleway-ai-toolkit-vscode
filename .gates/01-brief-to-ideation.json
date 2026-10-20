@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 2,
+  "gate": "G1",
+  "status": "validated",
+  "owner": "requesting stakeholder/project maintainer",
+  "scope": "SC1 model experiment and portable export; planning-only",
+  "timestamp": "2026-10-20T14:27:51.520792+00:00",
+  "verdict": "experiment",
+  "score": 67,
+  "scoreBasis": {
+    "problemClarity": 4,
+    "userImportance": 3,
+    "outcome": 4,
+    "productValue": 3,
+    "measurableSuccess": 3,
+    "evidence": 2,
+    "constraintsRisks": 4,
+    "ideationScope": 4
+  },
+  "confidence": "low",
+  "problem": "Cross-tool useful-task effort may be material",
+  "targetUser": "VS Code AI developer and operator",
+  "outcome": "Saved experiment and exported runnable example",
+  "productValue": "Lower useful-task effort without unsafe effects, unvalidated",
+  "successCriterion": "Complete SC1 independently with no secret leakage",
+  "reviewFramework": "VS Code-native conceptual sources; disposable Vite/React only if approved",
+  "productionDestination": "TypeScript VS Code extension and proposed Python runtime",
+  "designSystem": "VS Code native controls/tokens/icons; unofficial provisional branding",
+  "evidenceLabels": [
+    "stakeholder-input",
+    "external-research",
+    "inference",
+    "assumption"
+  ],
+  "conditions": [
+    {
+      "boundary": "ideation",
+      "disposition": "accepted-risk",
+      "detail": "Unvalidated benefit; future exploration explicit experiment, not requested now"
+    },
+    {
+      "boundary": "build",
+      "disposition": "blocked",
+      "detail": "No complete source approval or G4 scope"
+    },
+    {
+      "boundary": "industrialization",
+      "disposition": "blocked",
+      "detail": "No observed value evidence or production mandate"
+    }
+  ],
+  "evidencePath": "/home/jmercier/Codes/me/scaleway_ai_vscode/.gates/01-brief-to-ideation.md",
+  "evidenceHash": "bd88c004875abb31d7eb49e003588a02c7e4ef34636598d9c8ca9094f61cad65",
+  "screenSetApproved": false,
+  "buildApproved": false,
+  "statusMeaning": "Plugin G1 enum: structurally valid brief declarations only; experiment verdict, no user validation or action approval"
+}
