@@ -68,16 +68,12 @@ export class Connection implements vscode.Disposable {
     this.busy=true;
     try {
       const operation=this.generation;this.token();
-      const org=await vscode.window.showInputBox({title:'Scaleway : organisation des projets',prompt:'UUID de l’organisation autorisée pour limiter les lectures. Aucun secret à saisir.',value:this.metadata?.organizationId,validateInput:v=>uuid(v.trim())?undefined:'UUID requis.'});
+      const org=await vscode.window.showInputBox({title:'Scaleway : organisation des projets',prompt:'UUID de l’organisation : valider charge ses projets en lecture seule. Aucun secret à saisir.',value:this.metadata?.organizationId,validateInput:v=>uuid(v.trim())?undefined:'UUID requis.'});
       if(org===undefined||operation!==this.generation||!vscode.workspace.isTrusted)return;
       if(!uuid(org.trim()))throw new ReadError('invalid_scope');
-      const consent=await vscode.window.showInformationMessage('Lister les projets de cette organisation ? Jusqu’à 5 GET séquentiels, lecture seule.',{modal:true},'Lister les projets');
-      if(consent!=='Lister les projets'||operation!==this.generation||!vscode.workspace.isTrusted)return;
+      // UUID submission explicitly requests this bounded scoped read; no redundant modal.
       const token=this.token();this.clear();const generation=this.generation;const abort=new AbortController();this.abort=abort;
-      const projects=await vscode.window.withProgress({location:vscode.ProgressLocation.Notification,title:'Scaleway : projets',cancellable:true},async(_,cancel)=>{
-        const sub=cancel.onCancellationRequested(()=>abort.abort());
-        try{return await listProjects(org.trim(),token,abort.signal);}finally{sub.dispose();}
-      });
+      const projects=await listProjects(org.trim(),token,abort.signal);
       if(generation!==this.generation||abort.signal.aborted||!vscode.workspace.isTrusted)return;
       this.token();this.metadata={name:'Utilisateur connecté',organizationId:org.trim()};
       await this.pickProject(projects,generation);

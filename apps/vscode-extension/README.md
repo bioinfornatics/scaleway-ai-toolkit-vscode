@@ -1,4 +1,4 @@
-# Scaleway AI Toolkit — Preview 0.0.7
+# Scaleway AI Toolkit — Preview 0.0.8
 
 Experimental community VS Code extension; no Scaleway affiliation. **User browser
 login without API keys**, scoped read-only projects/dedicated deployments and a
@@ -6,7 +6,7 @@ separate **offline synthetic** playground. No real inference or cloud writes.
 
 ## Install and try
 
-    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.7.vsix --force
+    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.8.vsix --force
 
 Reload Window, then **Scaleway AI: Open Offline Preview** (legacy command name).
 
@@ -15,7 +15,8 @@ Reload Window, then **Scaleway AI: Open Offline Preview** (legacy command name).
 3. The browser returns the user JWT automatically to a temporary local callback.
    Return to VS Code; no token/password/key to copy or paste.
 4. Enter the UUID of the organization you authorize for project reads. This is
-   scope metadata, not a credential. Confirm up to 5 GET, then select a project.
+   scope metadata, not a credential. Submitting it silently loads the projects
+   (up to 5 sequential GET), then opens the project selector.
 5. Charger les modèles lists existing dedicated deployments of that project in
    **fr-par**, after a separate confirmation (up to 5 GET). No inference.
 

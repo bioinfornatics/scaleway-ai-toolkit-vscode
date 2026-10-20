@@ -50,3 +50,20 @@ test('late browser result after disconnect cannot restore session',async()=>{
  auth.browserLogin=async()=>{await s.connection.disconnect();return {token,expiresAt:Date.now()+3600000,userId:org};};
  try{await s.connection.login();assert.equal(s.requests(),0);assert.equal(s.connection.metadata,undefined);}finally{auth.browserLogin=old;s.connection.dispose();s.restore();}
 });
+
+test('UUID submission silently loads projects with no modal or progress notification',async()=>{
+ const s=setup();try {
+ await s.connection.login();const before=s.requests();
+ s.vscode.window.showInformationMessage=async()=>{assert.fail('no project-list confirmation');};
+ s.vscode.window.withProgress=async()=>{assert.fail('no project loading notification');};
+ await s.connection.switchProject();assert.equal(s.requests(),before+1);assert.equal(s.connection.project.id,id);
+ }finally{s.connection.dispose();s.restore();}
+});
+test('cancelled UUID, invalid UUID or disconnect during entry prevents project reads',async()=>{
+ const s=setup();try {
+ await s.connection.login();const before=s.requests();
+ s.vscode.window.showInputBox=async()=>undefined;await s.connection.switchProject();assert.equal(s.requests(),before);
+ s.vscode.window.showInputBox=async()=> 'invalid';await s.connection.switchProject();assert.equal(s.requests(),before);
+ s.vscode.window.showInputBox=async()=>{await s.connection.disconnect();return org;};await s.connection.switchProject();assert.equal(s.requests(),before);assert.equal(s.connection.project,undefined);
+ }finally{s.connection.dispose();s.restore();}
+});
