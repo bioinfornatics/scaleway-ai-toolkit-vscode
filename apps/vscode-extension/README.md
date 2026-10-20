@@ -1,4 +1,4 @@
-# Scaleway AI Toolkit — Preview 0.0.10
+# Scaleway AI Toolkit — Preview 0.0.11
 
 Experimental community VS Code extension; no Scaleway affiliation. **User browser
 login without API keys**, scoped read-only projects/dedicated deployments and a
@@ -6,7 +6,7 @@ separate **offline synthetic** playground. No real inference or cloud writes.
 
 ## Install and try
 
-    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.10.vsix --force
+    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.11.vsix --force
 
 Reload Window, then **Scaleway AI: Open Offline Preview** (legacy command name).
 
@@ -39,13 +39,36 @@ APIs. References and pinned hashes: evidence/documentation/scaleway-user-login-v
 This is called **Scaleway user login**, not a verified OAuth authorization-code/
 PKCE integration. No undocumented OAuth parameters or renewal endpoint invented.
 
-JWT is retained **only in extension-host memory**, never in files, globalState,
-SecretStorage, logs, webview, or chat. renewToken and browser metadata are discarded.
-Shape and expiry are checked locally, not signature authenticity: the Scaleway API
-validates authenticity and IAM on each request. Expiry is the earlier of JWT exp
-and envelope expiresAt; session drops 30s before expiry. Reconnect after expiry,
-Reload Window or extension restart. Disconnect clears the local session and cancels
-pending work; it does **not** revoke the token or sign out of Scaleway in the browser.
+JWT, user ID and expiration are persisted through **VS Code SecretStorage**.
+No JWT in plaintext config, globalState, logs, webview or chat. renewToken is still
+discarded; persistence does not extend token lifetime. Shape and expiry are checked
+locally, not signature authenticity: Scaleway validates authenticity/IAM on requests.
+Session drops 30s before the earlier of JWT exp and envelope expiry.
+
+On activation in local VS Code, a valid saved session is restored without HTTP.
+The selected organization UUID and project ID/name are stored in globalState,
+bound to the connected user ID, never Settings Sync-enrolled by this extension.
+They are preferences, not proof of current access: API reads still enforce IAM.
+Project names may be stale until the next explicit project refresh. Changing
+project pre-fills the saved organization UUID; dynamic organization enumeration
+is not implemented pending a verified provider endpoint. Organization name itself
+is not available from the current scoped project API and is not invented.
+
+Reload/restart preserves session and choices. Expiry/401/403 deletes the saved JWT;
+explicit Disconnect removes JWT and current-user preferences. Shutdown only clears
+memory. Disconnect does not revoke the provider token or log out of the browser.
+Storage failure reports a safe error; no plaintext-file fallback is attempted.
+
+On Linux use a real keyring backend compatible with freedesktop **Secret Service**
+(e.g. GNOME Keyring). VS Code supports password-store gnome-libsecret. The basic
+backend is obfuscation, not secure encryption, and is not suitable for tokens.
+SecretStorage abstracts platform storage: this extension cannot verify the actual
+backend or guarantee the token appears as an individual Secret Service item.
+We do not silently modify VS Code runtime arguments or call D-Bus directly.
+See https://code.visualstudio.com/docs/configure/settings-sync#_troubleshoot-credentialstore-issues
+and https://code.visualstudio.com/api/references/vscode-api#SecretStorage.
+Backend correctness on your machine remains a manual check; secrets are not synced
+across machines by SecretStorage. Real-keyring persistence has not been tested here.
 
 Callback: IPv4 loopback only, OS-selected port, localhost redirect, random 192-bit
 path correlation inside redirectToUrl, exact path/Host/peer/method, no Origin or
@@ -70,8 +93,8 @@ drops the local session; check IAM/organization and reconnect, no key fallback.
 Local minimum projections are not full production wire-schema validation.
 
 **Serverless JWT audience/header support is not established.** This preview sends
-no JWT to api.scaleway.ai and displays that limitation explicitly. No project/model
-API acceptance has been verified with a real user account yet. Dedicated entries
+no JWT to api.scaleway.ai and displays that limitation explicitly. User reports that browser login works in v0.0.7. Precise project/dedicated
+API acceptance has not been independently verified by the agent. Dedicated entries
 are deployments, not the dedicated model catalog. Clicking a real entry shows
 information only; **real models cannot run in this playground yet**.
 

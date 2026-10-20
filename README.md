@@ -6,10 +6,10 @@ A community extension concept for discovering, testing, building, evaluating and
 
 ## Try the first VSIX
 
-Artifact: `artifacts/scaleway-ai-toolkit-preview-0.0.10.vsix` (generated locally).
+Artifact: `artifacts/scaleway-ai-toolkit-preview-0.0.11.vsix` (generated locally).
 
 ```sh
-code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.10.vsix
+code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.11.vsix
 ```
 
 Run **Scaleway AI: Open Offline Preview**, select a synthetic model, then
@@ -17,7 +17,7 @@ Run **Scaleway AI: Open Offline Preview**, select a synthetic model, then
 from the Command Palette. [Extension instructions and build](apps/vscode-extension/README.md).
 The offline demo requires no credentials or Python. Real discovery is opt-in:
 Mes ressources -> Projet -> Se connecter à Scaleway in the browser, then scoped project selection and dedicated deployments.
-JWT stays in memory only; Serverless JWT access remains unverified and disabled. No inference or resource writes.
+JWT persists via VS Code SecretStorage; organization/project preferences are user-bound; Serverless JWT access remains unverified and disabled. No inference or resource writes.
 
 ## Product authority
 

@@ -1,0 +1,22 @@
+{
+  "record_id": "vscode-persistent-session-preview-v11",
+  "verified_at": "2026-10-20T21:29:08.205738+00:00",
+  "issue": "scaleway_ai_vscode-jgh.3.18",
+  "artifact": "artifacts/scaleway-ai-toolkit-preview-0.0.11.vsix",
+  "sha256": "e63e1e033fedac63d388bcdeff0dcc71a8a268d5c266eca18e0c20fc41df1b39",
+  "tests_passed": 31,
+  "strict_typescript": "passed",
+  "isolated_install": "passed",
+  "package_audit": "SecretStorage session get/store/delete, user-bound globalState preferences, no refresh-token persistence",
+  "storage_contract": "VS Code SecretStorage; actual Linux backend not verified; no plaintext fallback implemented",
+  "restoration": "no HTTP during startup; valid token restores last same-user project/organization; API enforces IAM on subsequent explicit reads",
+  "expiry_logout": "expire/access_denied removes JWT; logout removes JWT+current user preference; dispose memory only",
+  "not_run": [
+    "Real keyring backend inspection/security",
+    "Real account login/restart persistence through installed v11",
+    "Dynamic organization enumeration endpoint",
+    "Provider renewal/revocation",
+    "Production acceptance"
+  ],
+  "authenticated_requests_by_agent": 0
+}

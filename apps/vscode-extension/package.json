@@ -2,7 +2,7 @@
   "name": "scaleway-ai-toolkit-preview",
   "displayName": "Scaleway AI Toolkit — Preview",
   "description": "Scaleway user browser login, read-only project resources and offline playground.",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "publisher": "scaleway-ai-community-preview",
   "private": true,
   "license": "UNLICENSED",
@@ -129,7 +129,7 @@
   "scripts": {
     "build": "tsc -p .",
     "test": "npm run build && node --test test/*.test.cjs",
-    "package": "npm test && vsce package --allow-missing-repository --skip-license --out ../../artifacts/scaleway-ai-toolkit-preview-0.0.10.vsix"
+    "package": "npm test && vsce package --allow-missing-repository --skip-license --out ../../artifacts/scaleway-ai-toolkit-preview-0.0.11.vsix"
   },
   "devDependencies": {
     "@types/vscode": "1.96.0",

@@ -12,19 +12,19 @@ function setup() {
   withProgress:async(_opts,fn)=>fn({}, {onCancellationRequested:()=>({dispose(){}})}),
  }};
  const context={globalState:{get:k=>state.get(k),update:async(k,v)=>v===undefined?state.delete(k):state.set(k,v)},
- secrets:{get:async()=>{throw Error('must never import API key');},store:async()=>{throw Error('memory only');},delete:async k=>secrets.delete(k)}};
+ secrets:{get:async k=>{assert.equal(k,'scalewayAI.userSession.v1');return secrets.get(k);},store:async(k,v)=>secrets.set(k,v),delete:async k=>secrets.delete(k)}};
  const original=Module._load;Module._load=function(name,...rest){return name==='vscode'?vscode:original.call(this,name,...rest);};
  delete require.cache[require.resolve('../dist/connection')];let Connection;try{Connection=require('../dist/connection').Connection;}finally{Module._load=original;}
  const old=provider.listProjects,oldAuth=auth.browserLogin,oldDedicated=provider.listDedicated;
  provider.listProjects=async(o,k)=>{requests++;assert.equal(o,org);assert.equal(k,token);return [{id,name:'Project',organizationId:org}];};
  provider.listDedicated=async(p,k)=>{requests++;assert.equal(k,token);return [];};
  auth.browserLogin=async open=>{logins++;await open('https://account.scaleway.com/authenticate?redirectToUrl=synthetic');return {token,expiresAt:Date.now()+3600000,userId:org};};
- return {connection:new Connection(context,()=>{}),secrets,state,inputs,vscode,requests:()=>requests,opened:()=>opened,logins:()=>logins,restore:()=>{provider.listProjects=old;auth.browserLogin=oldAuth;provider.listDedicated=oldDedicated;}};
+ return {connection:new Connection(context,()=>{}),newConnection:()=>new Connection(context,()=>{}),context,secrets,state,inputs,vscode,requests:()=>requests,opened:()=>opened,logins:()=>logins,restore:()=>{provider.listProjects=old;auth.browserLogin=oldAuth;provider.listDedicated=oldDedicated;}};
 }
-test('user browser login receives JWT, reads projects, no secret input/store; removes legacy key',async()=>{
+test('user browser login receives JWT, reads projects, stores JWT only in SecretStorage; removes legacy key',async()=>{
  const s=setup();try {
  assert.equal(s.requests(),0);assert.equal(s.connection.metadata,undefined);await s.connection.login();assert.equal(s.opened(),1);assert.equal(s.requests(),1);assert.equal(s.connection.project.id,id);
- assert.equal(s.inputs.length,1);assert.ok(!s.inputs[0].password);assert.equal(s.secrets.size,0);assert.equal(s.state.size,0);assert.ok(!JSON.stringify(s.connection.metadata).includes(token));
+ assert.equal(s.inputs.length,1);assert.ok(!s.inputs[0].password);assert.equal(s.secrets.size,1);assert.equal(JSON.parse(s.secrets.get('scalewayAI.userSession.v1')).token,token);assert.ok(!JSON.stringify([...s.state]).includes(token));assert.ok(!JSON.stringify(s.connection.metadata).includes(token));
  await s.connection.loadModels();assert.equal(s.requests(),2);assert.equal(s.connection.serverless.length,0);
  await s.connection.switchProject();assert.equal(s.logins(),1);
  await s.connection.disconnect();assert.equal(s.connection.project,undefined);assert.equal(s.connection.metadata,undefined);
@@ -98,4 +98,37 @@ test('disconnect during silent dedicated load aborts request and prevents stale 
  provider.listDedicated=async(_p,_t,signal)=>{await s.connection.disconnect();assert.ok(signal.aborted);return [{id,label:'stale',kind:'dedicated'}];};
  await s.connection.loadModels();assert.equal(s.connection.dedicated.length,0);assert.equal(s.connection.project,undefined);assert.equal(s.connection.dedicatedState,'Non chargés');
  }finally{provider.listDedicated=old;s.connection.dispose();s.restore();}
+});
+
+test('restart restores valid JWT and user-bound scope without HTTP or browser',async()=>{
+ const s=setup();let restored;try {
+ await s.connection.login();const before=s.requests();s.connection.dispose();
+ restored=s.newConnection();await restored.ready;assert.ok(restored.connected);assert.equal(restored.project.id,id);assert.equal(restored.metadata.organizationId,org);
+ assert.equal(s.requests(),before);assert.equal(s.logins(),1);assert.equal(await restored.ensureProject(),true);assert.equal(s.requests(),before);
+ await restored.disconnect();assert.equal(s.secrets.size,0);assert.equal(s.state.size,0);
+ }finally{restored?.dispose();s.connection.dispose();s.restore();}
+});
+test('expired/malformed persisted JWT deleted without HTTP, no preference crossover',async()=>{
+ const s=setup();let restored;try {
+ await s.connection.ready;
+ s.secrets.set('scalewayAI.userSession.v1',JSON.stringify({token,userId:org,expiresAt:Date.now()-1}));
+ restored=s.newConnection();await restored.ready;await restored.storage;assert.ok(!restored.connected);assert.equal(s.secrets.has('scalewayAI.userSession.v1'),false);assert.equal(s.requests(),0);restored.dispose();
+ s.secrets.set('scalewayAI.userSession.v1','invalid json');restored=s.newConnection();await restored.ready;await restored.storage;assert.equal(s.secrets.has('scalewayAI.userSession.v1'),false);restored.dispose();
+ s.state.set('scalewayAI.preferences.v1.'+id,{organizationId:org,project:{id,name:'Another user',organizationId:org}});
+ await s.connection.login();assert.equal(s.connection.project.name,'Project');assert.equal(s.inputs.length,1);
+ }finally{restored?.dispose();s.connection.dispose();s.restore();}
+});
+test('secure storage failure prevents session persistence and no plaintext fallback',async()=>{
+ const s=setup();try {
+ await s.connection.ready;s.context.secrets.store=async()=>{throw Error('backend unavailable');};
+ await s.connection.login();assert.ok(!s.connection.connected);assert.equal(s.requests(),0);assert.ok(!JSON.stringify([...s.state]).includes(token));assert.equal(s.secrets.has('scalewayAI.userSession.v1'),false);
+ }finally{s.connection.dispose();s.restore();}
+});
+test('logout during delayed secret write removes late credential and prevents resurrection',async()=>{
+ const s=setup();try {
+ await s.connection.ready;let entered;const started=new Promise(r=>entered=r);let release;const blocked=new Promise(r=>release=r);
+ s.context.secrets.store=async(k,v)=>{entered();await blocked;s.secrets.set(k,v);};
+ const login=s.connection.login();await started;const logout=s.connection.disconnect();release();await Promise.all([login,logout]);
+ assert.ok(!s.connection.connected);assert.equal(s.secrets.has('scalewayAI.userSession.v1'),false);assert.equal(s.requests(),0);
+ }finally{s.connection.dispose();s.restore();}
 });
