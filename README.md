@@ -6,10 +6,10 @@ A community extension concept for discovering, testing, building, evaluating and
 
 ## Try the first VSIX
 
-Artifact: `artifacts/scaleway-ai-toolkit-preview-0.0.18.vsix` (generated locally).
+Artifact: `artifacts/scaleway-ai-toolkit-preview-0.0.19.vsix` (generated locally).
 
 ```sh
-code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.18.vsix
+code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.19.vsix
 ```
 
 Run **Scaleway AI: Open Offline Preview**, select a synthetic model, then

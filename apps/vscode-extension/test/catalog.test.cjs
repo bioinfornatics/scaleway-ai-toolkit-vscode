@@ -56,3 +56,115 @@ test('implemented navigation separates discover, build, recent and local demo; p
     ),
   );
 });
+
+test('details IPC accepts bounded identity only, no routes or extra fields', () => {
+  assert.deepEqual(
+    parseCatalogInput({ type: 'details', kind: 'serverless', id: 'model' }),
+    { type: 'details', kind: 'serverless', id: 'model' },
+  );
+  for (const value of [
+    { type: 'details', kind: 'dedicated', id: 'model' },
+    { type: 'details', kind: 'serverless', id: '' },
+    { type: 'details', kind: 'serverless', id: 'a'.repeat(257) },
+    { type: 'details', kind: 'serverless', id: 'model', endpoint: 'evil' },
+  ])
+    assert.equal(parseCatalogInput(value), undefined);
+});
+test('details resolved from host catalog, not browser-provided metadata', () => {
+  const { catalogDetails } = require('../dist/catalogDetails');
+  const rows = [
+    { id: 'a', label: 'Actual model', kind: 'serverless', status: 'preview' },
+    { id: 'b', label: 'Old', kind: 'serverless', status: 'retired' },
+  ];
+  assert.equal(
+    catalogDetails(rows, 'serverless', 'missing', 'scope'),
+    undefined,
+  );
+  assert.equal(catalogDetails(rows, 'serverless', 'b', 'scope'), undefined);
+  assert.equal(
+    catalogDetails(rows, 'dedicated-catalog', 'a', 'scope'),
+    undefined,
+  );
+  const details = catalogDetails(rows, 'serverless', 'a', 'scope');
+  assert.equal(details.label, 'Actual model');
+  assert.match(details.limits, /hors ligne/);
+  assert.ok(!('token' in details));
+});
+
+test('card click sends identity; details render text, focus and return to trigger', () => {
+  const vm = require('node:vm');
+  let focused;
+  class Element {
+    constructor() {
+      this.children = [];
+      this.events = {};
+      this.value = '';
+      this.isConnected = true;
+    }
+    append(child) {
+      this.children.push(child);
+    }
+    replaceChildren() {
+      this.children = [];
+    }
+    addEventListener(type, handler) {
+      this.events[type] = handler;
+    }
+    setAttribute(name, value) {
+      this[name] = value;
+    }
+    focus() {
+      focused = this;
+    }
+  }
+  const elements = new Map();
+  const get = (id) => {
+    if (!elements.has(id)) elements.set(id, new Element());
+    return elements.get(id);
+  };
+  const sent = [];
+  let receive;
+  vm.runInNewContext(fs.readFileSync('media/catalog.js', 'utf8'), {
+    acquireVsCodeApi: () => ({ postMessage: (value) => sent.push(value) }),
+    document: { getElementById: get, createElement: () => new Element() },
+    window: {
+      addEventListener: (_event, handler) => {
+        receive = handler;
+      },
+    },
+  });
+  receive({
+    data: {
+      type: 'catalog-state',
+      serverless: [{ id: 'a', label: 'Model', status: 'preview' }],
+      dedicated: [],
+      publicStatus: 'OK',
+      dedicatedStatus: 'None',
+      scope: 'Public',
+    },
+  });
+  const button = get('public-list').children[0].children.at(-1);
+  assert.equal(button.textContent, 'Voir les détails');
+  assert.equal(button['aria-label'], 'Voir les détails de Model');
+  button.events.click();
+  assert.equal(
+    JSON.stringify(sent.at(-1)),
+    JSON.stringify({ type: 'details', kind: 'serverless', id: 'a' }),
+  );
+  receive({
+    data: {
+      type: 'catalog-details',
+      label: '<unsafe>',
+      status: 'preview',
+      source: 'public',
+      scope: 'fr-par',
+      limits: 'No inference',
+    },
+  });
+  assert.equal(get('detail-title').textContent, '<unsafe>');
+  assert.equal(get('model-details').hidden, false);
+  assert.equal(focused, get('detail-title'));
+  get('close-details').events.click();
+  assert.equal(get('model-details').hidden, true);
+  assert.equal(focused, button);
+});

@@ -8,6 +8,7 @@
     dedicatedStatus: 'Sélectionnez un projet',
     scope: 'Catalogue public',
   };
+  let detailTrigger;
   function renderRows(id, rows, kind) {
     const root = document.getElementById(id);
     root.replaceChildren();
@@ -29,6 +30,19 @@
           ? 'Offre publique · accès inférence non vérifié'
           : 'Modèle à déployer · aucun déploiement créé';
       card.append(note);
+      const details = document.createElement('button');
+      details.type = 'button';
+      details.textContent = 'Voir les détails';
+      details.setAttribute('aria-label', `Voir les détails de ${row.label}`);
+      details.addEventListener('click', () => {
+        detailTrigger = details;
+        vscode.postMessage({
+          type: 'details',
+          kind: kind === 'public' ? 'serverless' : 'dedicated-catalog',
+          id: row.id,
+        });
+      });
+      card.append(details);
       root.append(card);
     }
     if (rows.length && !shown.length) {
@@ -47,12 +61,36 @@
     renderRows('dedicated-list', state.dedicated, 'dedicated');
   }
   window.addEventListener('message', (event) => {
+    if (
+      event.data?.type === 'catalog-details' ||
+      event.data?.type === 'catalog-detail-unavailable'
+    ) {
+      const data = event.data;
+      document.getElementById('model-details').hidden = false;
+      const unavailable = data.type === 'catalog-detail-unavailable';
+      document.getElementById('detail-title').textContent = unavailable
+        ? 'Modèle indisponible'
+        : data.label;
+      for (const field of ['status', 'source', 'scope', 'limits'])
+        document.getElementById(`detail-${field}`).textContent = unavailable
+          ? ''
+          : data[field];
+      if (unavailable)
+        document.getElementById('detail-limits').textContent =
+          'Cette offre n’est plus dans le catalogue visible. Actualisez le catalogue.';
+      document.getElementById('detail-title').focus();
+    }
     if (event.data?.type === 'catalog-state') {
       state = event.data;
       render();
     }
   });
   search.addEventListener('input', render);
+  document.getElementById('close-details').addEventListener('click', () => {
+    document.getElementById('model-details').hidden = true;
+    if (detailTrigger?.isConnected) detailTrigger.focus();
+    else search.focus();
+  });
   document
     .getElementById('refresh')
     .addEventListener('click', () => vscode.postMessage({ type: 'refresh' }));

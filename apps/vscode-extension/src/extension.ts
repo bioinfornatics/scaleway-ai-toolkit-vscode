@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { catalogHtml, parseCatalogInput } from './catalog';
+import { catalogDetails } from './catalogDetails';
 import { visibleCatalogModels } from './catalogVisibility';
 import { Connection } from './connection';
 import { type DemoModel, type Experiment, models, runDemo } from './demo';
@@ -392,6 +393,22 @@ export function activate(context: vscode.ExtensionContext): void {
           const input = parseCatalogInput(value);
           if (!input) return;
           if (input.type === 'ready') updateCatalog();
+          if (input.type === 'details') {
+            const details = catalogDetails(
+              input.kind === 'serverless'
+                ? connection.serverless
+                : connection.dedicatedCatalog,
+              input.kind,
+              input.id,
+              connection.project
+                ? `Projet : ${connection.project.name} · fr-par`
+                : 'Projet non sélectionné',
+            );
+            await origin.webview.postMessage(
+              details ?? { type: 'catalog-detail-unavailable' },
+            );
+          }
+
           if (input.type === 'refresh') {
             await connection.loadCatalogs();
             updateCatalog();

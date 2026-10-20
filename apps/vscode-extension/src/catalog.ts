@@ -1,17 +1,26 @@
 import { randomBytes } from 'node:crypto';
 import * as vscode from 'vscode';
-export type CatalogInput = { type: 'ready' | 'refresh' | 'project' };
+import { text } from './provider';
+export type CatalogInput =
+  | { type: 'ready' | 'refresh' | 'project' }
+  | { type: 'details'; kind: 'serverless' | 'dedicated-catalog'; id: string };
 export function parseCatalogInput(value: unknown): CatalogInput | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return;
+  const message = value as Record<string, unknown>;
   if (
-    !value ||
-    typeof value !== 'object' ||
-    Array.isArray(value) ||
-    Object.keys(value).length !== 1
+    Object.keys(message).length === 1 &&
+    (message.type === 'ready' ||
+      message.type === 'refresh' ||
+      message.type === 'project')
   )
-    return;
-  const type = (value as { type?: unknown }).type;
-  if (type === 'ready' || type === 'refresh' || type === 'project')
-    return { type };
+    return { type: message.type };
+  if (
+    message.type === 'details' &&
+    Object.keys(message).length === 3 &&
+    (message.kind === 'serverless' || message.kind === 'dedicated-catalog') &&
+    text(message.id)
+  )
+    return { type: 'details', kind: message.kind, id: message.id };
 }
 export function catalogHtml(webview: vscode.Webview, root: vscode.Uri): string {
   const nonce = randomBytes(24).toString('hex');
@@ -35,6 +44,7 @@ export function catalogHtml(webview: vscode.Webview, root: vscode.Uri): string {
     '<div class="actions"><button id="refresh">Actualiser</button><button id="project">Choisir le projet Scaleway</button></div>' +
     '<p id="scope" role="status">Catalogue public disponible sans connexion. Projet dédié non sélectionné.</p>' +
     '<label for="search">Rechercher un modèle</label><input id="search" type="search" placeholder="Nom du modèle ou statut">' +
+    '<section id="model-details" hidden aria-labelledby="detail-title"><h2 id="detail-title" tabindex="-1"></h2><p id="detail-status"></p><p id="detail-source"></p><p id="detail-scope"></p><p id="detail-limits"></p><button id="close-details">Fermer les détails</button></section>' +
     '<h2>Serverless · offres publiques</h2><p id="public-status" role="status">Chargement du catalogue public…</p><div id="public-list" class="grid"></div>' +
     '<h2>Modèles dédiés à déployer · fr-par</h2><p id="dedicated-status" role="status">Sélectionnez un projet pour le catalogue dédié.</p><div id="dedicated-list" class="grid"></div>' +
     '<p class="note">Source Serverless : catalogue commercial public Scaleway, variantes regroupées par produit. Le statut catalogue ne garantit pas l’accès à l’inférence. Les offres retirées (retired / end_of_life) sont masquées par défaut. Les déploiements existants sont dans Mes ressources.</p>' +

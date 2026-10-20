@@ -80,3 +80,13 @@ article p:last-child {
     grid-template-columns: 1fr;
   }
 }
+
+#model-details {
+  border: 1px solid var(--vscode-panel-border);
+  padding: 16px;
+  margin-top: 20px;
+  overflow-wrap: anywhere;
+}
+#model-details h2 {
+  margin-top: 0;
+}

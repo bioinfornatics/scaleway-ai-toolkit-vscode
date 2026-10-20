@@ -1,0 +1,12 @@
+{
+  "version": "0.0.19",
+  "biome": "passed, zero diagnostics",
+  "strict_typescript": "passed",
+  "tests": 45,
+  "interaction_test": "renderer DOM mock executes card click, IPC, text-only details, focus and close/return",
+  "IPC": "bounded kind/id only; host lookup excludes retired/missing/foreign-kind offers",
+  "inference_or_cloud_writes": false,
+  "visual_keyboard_host_QA": "not_run",
+  "user_feedback": "user now observes card grid; no further service worker failure reported, root cause not proven",
+  "sha256": "2240e2e334bdd4e22f4d789daecc4e178f0a6bcc2a471a5d388da4d75d5e055a"
+}
