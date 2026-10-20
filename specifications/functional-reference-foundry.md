@@ -89,3 +89,54 @@ existing .3.3/.3.6 API observations; .3.23 aligns native resources vs discovery
 vs build and Local Resources; .3.24 defines Switch/default-project selector and
 separately guarded Create project. No empty advanced actions or write authorization
 from a menu label. Public/help/offline access and silent explicit bounded GET remain.
+
+
+## Eight outcome-oriented journeys — stakeholder reference 2026-10-21 01:09
+
+Provenance: the stakeholder supplied the descriptions and links below in conversation.
+These additions have not been independently recaptured or verified against an installed
+Foundry version. They guide developer outcomes, not Azure/Scaleway service parity,
+visual-source approval, billable operations or license acceptance. Earlier source
+hashes above do not identify these new pages.
+
+| Journey / intended result | Scaleway mapping and current boundary | Existing Beads authority |
+|---|---|---|
+| 1. Choose a model and test an idea → accessible model and first behavior assessment | Public Serverless offers, dedicated model catalog and existing deployments are separate. Dedicated path: catalog → compatible infrastructure → reviewed creation → returned endpoint → real model playground. Serverless need not allocate dedicated GPU. Only catalog/details, deployment preparation/explorer and synthetic playground are delivered; real invocation/comparison remains incomplete. | .3.3, .3.4, .3.6, .5.1 |
+| 2. Prototype an agent locally → reusable local configuration and generated integration code | Strands portable spec/instructions/model/tool refs; local configuration can call a distant model. Bounded JSON prompting + local validation/repair is our accepted baseline, not native structured-output parity. No Strands prerequisite for model-only workflow. | .4.1–.4.5; contracts under .1.5; repair .1.10 |
+| 3. Configure a managed prompt agent → versioned service-side agent | No verified native Scaleway managed prompt-agent/version/session service. A local declarative Strands spec or our hosted application is a different product boundary, not a renamed equivalent. Saving a version does not publish a stable endpoint. Do not expose an assumed cloud-agent CRUD menu. | .4.1/.4.2 and .5.3 for our application only; provider feasibility remains unestablished |
+| 4. Develop an agent in code and host it → repository source running remotely | Generate/maintain Strands application code, debug locally, package a portable image, explicitly deploy to reviewed hosting and inspect via hosted playground. Scaleway Containers is a candidate; Azure ZIP/ACR/Foundry scaling are not assumed. Dedicated model allocation and agent-app hosting are separate effects. | .4.2/.4.4/.4.5, .5.2–.5.6, hosting .1.6 |
+| 5. Connect business data/actions → authenticated useful tool execution | Approved MCP configuration and pre-effect policy first. OpenAPI, A2A and Toolbox have distinct roles; no automatic adapter/service parity. A localhost MCP server cannot simply be reused by cloud execution: reachability/auth and grants must be re-reviewed. | .4.3 and .4.2; retrieval .6.1 |
+| 6. Measure quality/regressions → comparable versioned metrics | Distinguish scoring recorded outputs from live dataset execution. Local evaluations can invoke distant models and consume budget. Dataset/version/metric/judge provenance, concurrency/cancellation and partial/error exclusions required. | .4.6/.4.7, product/value .2.5 |
+| 7. Inspect failure/latency → identify responsible step and verify fix | Live correlated inspector differs from retained traces. Strands run/model/tool events plus optional approved local tracing; Cockpit ingestion/auth/linking requires its own verification, not Application Insights parity. | .4.5/.4.7, .5.5 |
+| 8. Adapt/optimize a model → measured optimized model or adapter | Conversion/quantification/fine-tuning require provider/platform feasibility, datasets and comparison. Selecting an API-supported quantization for deployment is NOT conversion/training. Windows ONNX/Phi Silica/LoRA tooling is not a Linux/Scaleway promise. | .6.2/.6.3 (research), compatibility .5.1 |
+
+### Supplied reference links (not independently fetched in this update)
+
+- Project/resources navigation: https://learn.microsoft.com/en-us/azure/foundry/how-to/develop/get-started-projects-vs-code
+- Model catalog and destinations: https://code.visualstudio.com/docs/intelligentapps/models
+- Local/managed agent configuration: https://code.visualstudio.com/docs/intelligentapps/agentbuilder
+- Prompt vs hosted agent: https://code.visualstudio.com/docs/intelligentapps/create-agents
+- Hosted code/application: https://code.visualstudio.com/docs/intelligentapps/hosted-agents
+- Optional Copilot-assisted development: https://code.visualstudio.com/docs/intelligentapps/copilot-tools
+- MCP/OpenAPI/A2A/Toolbox reference: https://code.visualstudio.com/docs/intelligentapps/tool-catalog
+- Evaluation: https://code.visualstudio.com/docs/intelligentapps/evaluation
+- Inspector: https://code.visualstudio.com/docs/intelligentapps/agent-inspector
+- Tracing: https://code.visualstudio.com/docs/intelligentapps/tracing
+- Conversion: https://code.visualstudio.com/docs/intelligentapps/modelconversion
+- Fine-tuning: https://code.visualstudio.com/docs/intelligentapps/finetune
+
+### Product invariants carried into delivery
+
+My Resources answers “what exists and in what state?”; Developer Tools answers
+“what action can I take?”. A catalog entry is not deployment, ready catalog is not
+ready endpoint, local config is not local inference, a saved version is not a
+published application, and a prepared plan is not executed allocation. Resources
+must not be fabricated to make the journey look complete. Use the same verified
+model selection/context through model and advanced-agent workflows, without merging
+catalog UUIDs, deployment UUIDs and inference IDs by guessed name matching.
+
+The eight journeys describe coverage, not eight MVP dependencies. Keep the accepted
+sequence: model exploration/use → reviewed dedicated deployment → advanced local
+Strands agents → optional hosted application. Retain explicit unsupported/unknown
+states and expose only working actions. Source-generated examples, executed examples,
+locally saved specs and remotely deployed versions need distinct labels/evidence.

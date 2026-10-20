@@ -149,3 +149,18 @@ Remaining release boundaries are not treated as missing-code checkboxes:
 - advanced .4/.5 hosting and .6 research retain approved sequencing and external gates.
 Code behind project creation is explicit and testable, but live JWT/IAM conformance
 has not been observed. The full roadmap is not declared completed.
+
+
+## Journey-oriented coverage — stakeholder reference 2026-10-21 01:09
+
+[Eight-journey mapping](functional-reference-foundry.md#eight-outcome-oriented-journeys--stakeholder-reference-2026-10-21-0109)
+now binds the supplied Foundry examples/source links to the existing Beads tasks.
+This is stakeholder reference, not newly verified Azure behavior or Scaleway parity.
+The immediate useful outcome remains journey1: actually accessible selected model,
+then testing and export, not only a visible catalog. Dedicated preparation cannot
+substitute for creation/endpoint use. Journeys2/4 are our local Strands and hosted
+application paths; journey3 has no verified native managed prompt-agent equivalent.
+Tools, evaluation, inspector/tracing and model optimization retain their specific
+contracts and later gates. No dependency or cloud authority was broadened by this
+reference update. Existing resources vs actionable developer tools remains the UI
+invariant; no dead menu parity.
