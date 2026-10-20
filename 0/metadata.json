@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.11.5",
+  "checkpoint_id": "01M5DPSNFPXZX9V2HQDHT42A3Z",
+  "session_id": "20261020_59",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-20T22:27:16.927512845Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "apps/vscode-extension/src/connection.ts"
+  ],
+  "agent": "Goose",
+  "model": "gpt-6.1-sol",
+  "turn_id": "24982d56e341",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 6
+  },
+  "session_metrics": {
+    "turn_count": 1
+  }
+}
