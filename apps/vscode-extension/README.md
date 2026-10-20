@@ -1,4 +1,4 @@
-# Scaleway AI Toolkit — Preview 0.0.15
+# Scaleway AI Toolkit — Preview 0.0.16
 
 Experimental community VS Code extension; no Scaleway affiliation. **User browser
 login without API keys**, scoped read-only projects/dedicated deployments and a
@@ -6,7 +6,7 @@ separate **offline synthetic** playground. No real inference or cloud writes.
 
 ## Install and try
 
-    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.15.vsix --force
+    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.16.vsix --force
 
 Reload Window, then **Scaleway AI: Open Offline Preview** (legacy command name).
 
@@ -161,7 +161,7 @@ Scaleway; local experimental identification only, not endorsement. Publication
 requires separate brand review. ai-PULSE event branding not used. Asset provenance:
 evidence/documentation/scaleway-icon-preview-v1.json.
 
-## Preview 0.0.15 navigation and catalog visibility fix
+## Preview 0.0.16 navigation and catalog visibility fix
 
 Resources now separate **Projet Scaleway**, **Modèles**, **Récents**, and
 **Ressources locales** (synthetic demo). Developer tools separate **Découvrir**
@@ -177,7 +177,20 @@ and do not wait for pending SecretStorage. Untrusted workspace displays an expli
 explanation; approve the workspace for HTTP. Dedicated errors do not hide public
 offers. No credentials or provider endpoint input in the catalog webview.
 
-Packaged extension host catalog command (0.0.14 and final0.0.15) verified live public
+Packaged extension host catalog command (0.0.14 and final0.0.16) verified live public
 33 offerings in isolated trusted test workspace. This is stronger than standalone
 adapter testing, but it does not prove screenshot card rendering, keyboard/theme
 review or actual-account dedicated acceptance; those checks remain outstanding.
+
+## Qualité du code
+
+Biome 2.5.15 (dépendance de développement épinglée) contrôle les sources TypeScript,
+les scripts/CSS des webviews, les tests et les JSON du projet. Les sorties générées,
+le lockfile, les dépendances et les logos sont hors périmètre.
+
+- npm run check : formatage, lint recommandé et imports, sans modification ; avertissements bloquants.
+- npm run lint : lint seul, sans modification.
+- npm run format : appliquer le formatage.
+- npm run package : contrôle Biome, compilation stricte et tests avant génération du VSIX.
+
+Biome et sa configuration ne sont pas embarqués dans le VSIX.

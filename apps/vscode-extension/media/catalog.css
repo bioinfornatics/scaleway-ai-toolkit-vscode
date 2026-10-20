@@ -1,1 +1,82 @@
-body{color:var(--vscode-foreground);background:var(--vscode-editor-background);font-family:var(--vscode-font-family);padding:24px}main{max-width:1200px;margin:auto}h1{font-size:26px}h2{margin-top:28px}p{line-height:1.5}.actions{display:flex;gap:12px;margin:20px 0;flex-wrap:wrap}button{background:var(--vscode-button-background);color:var(--vscode-button-foreground);border:0;padding:9px 14px;cursor:pointer}button:hover{background:var(--vscode-button-hoverBackground)}label{display:block;margin-bottom:8px}input{box-sizing:border-box;width:100%;max-width:600px;padding:10px;background:var(--vscode-input-background);color:var(--vscode-input-foreground);border:1px solid var(--vscode-input-border,var(--vscode-panel-border))}:focus-visible{outline:2px solid var(--vscode-focusBorder);outline-offset:3px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}article{border:1px solid var(--vscode-panel-border);border-radius:4px;padding:16px}article h3{margin:0;overflow-wrap:anywhere}article p,.note{color:var(--vscode-descriptionForeground);font-size:13px}article p:last-child{margin-bottom:0}@media(max-width:500px){body{padding:12px}.grid{grid-template-columns:1fr}}
+body {
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
+  font-family: var(--vscode-font-family);
+  padding: 24px;
+}
+main {
+  max-width: 1200px;
+  margin: auto;
+}
+h1 {
+  font-size: 26px;
+}
+h2 {
+  margin-top: 28px;
+}
+p {
+  line-height: 1.5;
+}
+.actions {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+button {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: 0;
+  padding: 9px 14px;
+  cursor: pointer;
+}
+button:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+label {
+  display: block;
+  margin-bottom: 8px;
+}
+input {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 600px;
+  padding: 10px;
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border: 1px solid var(--vscode-input-border, var(--vscode-panel-border));
+}
+:focus-visible {
+  outline: 2px solid var(--vscode-focusBorder);
+  outline-offset: 3px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+article {
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 4px;
+  padding: 16px;
+}
+article h3 {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+article p,
+.note {
+  color: var(--vscode-descriptionForeground);
+  font-size: 13px;
+}
+article p:last-child {
+  margin-bottom: 0;
+}
+@media (max-width: 500px) {
+  body {
+    padding: 12px;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

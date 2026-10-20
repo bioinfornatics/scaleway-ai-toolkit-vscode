@@ -1,8 +1,8 @@
 {
   "name": "scaleway-ai-toolkit-preview",
-  "displayName": "Scaleway AI Toolkit — Preview",
+  "displayName": "Scaleway AI Toolkit \u2014 Preview",
   "description": "Scaleway user browser login, read-only project resources and offline playground.",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "publisher": "scaleway-ai-community-preview",
   "private": true,
   "license": "UNLICENSED",
@@ -36,7 +36,7 @@
       },
       {
         "command": "scalewayAI.playground",
-        "title": "Scaleway AI: Ouvrir le playground modèle",
+        "title": "Scaleway AI: Ouvrir le playground mod\u00e8le",
         "icon": "$(play)"
       },
       {
@@ -50,12 +50,12 @@
       },
       {
         "command": "scalewayAI.catalog",
-        "title": "Scaleway AI: Catalogue de démonstration",
+        "title": "Scaleway AI: Catalogue de d\u00e9monstration",
         "icon": "$(library)"
       },
       {
         "command": "scalewayAI.getStarted",
-        "title": "Scaleway AI: Bien démarrer"
+        "title": "Scaleway AI: Bien d\u00e9marrer"
       },
       {
         "command": "scalewayAI.documentation",
@@ -63,7 +63,7 @@
       },
       {
         "command": "scalewayAI.login",
-        "title": "Scaleway AI: Se connecter à Scaleway",
+        "title": "Scaleway AI: Se connecter \u00e0 Scaleway",
         "icon": "$(account)"
       },
       {
@@ -73,25 +73,25 @@
       },
       {
         "command": "scalewayAI.loadModels",
-        "title": "Scaleway AI: Charger les modèles (lecture seule)",
+        "title": "Scaleway AI: Charger les mod\u00e8les (lecture seule)",
         "icon": "$(refresh)"
       },
       {
         "command": "scalewayAI.disconnect",
-        "title": "Scaleway AI: Se déconnecter"
+        "title": "Scaleway AI: Se d\u00e9connecter"
       },
       {
         "command": "scalewayAI.openCatalog",
-        "title": "Scaleway AI: Catalogue de modèles"
+        "title": "Scaleway AI: Catalogue de mod\u00e8les"
       },
       {
         "command": "scalewayAI.refreshModels",
-        "title": "Scaleway AI: Actualiser catalogues et déploiements",
+        "title": "Scaleway AI: Actualiser catalogues et d\u00e9ploiements",
         "icon": "$(refresh)"
       },
       {
         "command": "scalewayAI.setProject",
-        "title": "Scaleway AI: Définir le projet Scaleway",
+        "title": "Scaleway AI: D\u00e9finir le projet Scaleway",
         "icon": "$(organization)"
       }
     ],
@@ -112,7 +112,7 @@
         },
         {
           "id": "scalewayAI.tools",
-          "name": "Outils de développement"
+          "name": "Outils de d\u00e9veloppement"
         },
         {
           "id": "scalewayAI.help",
@@ -143,13 +143,17 @@
   "scripts": {
     "build": "tsc -p .",
     "test": "npm run build && node --test test/*.test.cjs",
-    "package": "npm test && vsce package --allow-missing-repository --skip-license --out ../../artifacts/scaleway-ai-toolkit-preview-0.0.15.vsix"
+    "package": "npm run check && npm test && vsce package --allow-missing-repository --skip-license --out ../../artifacts/scaleway-ai-toolkit-preview-0.0.16.vsix",
+    "check": "biome check --error-on-warnings .",
+    "lint": "biome lint --error-on-warnings .",
+    "format": "biome format --write ."
   },
   "devDependencies": {
-    "@types/vscode": "1.96.0",
+    "@biomejs/biome": "2.5.15",
     "@types/node": "22.19.0",
-    "typescript": "5.9.3",
-    "@vscode/vsce": "3.7.1"
+    "@types/vscode": "1.96.0",
+    "@vscode/vsce": "3.7.1",
+    "typescript": "5.9.3"
   },
   "icon": "media/scaleway-icon.png"
 }

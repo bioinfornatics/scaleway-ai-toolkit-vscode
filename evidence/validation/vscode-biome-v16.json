@@ -1,0 +1,20 @@
+{
+  "version": "0.0.16",
+  "biome": "2.5.15",
+  "preset": "recommended",
+  "check": "passed, no diagnostics",
+  "lint": "passed",
+  "tests": 40,
+  "typescript": "strict build passed",
+  "vsix": "artifacts/scaleway-ai-toolkit-preview-0.0.16.vsix",
+  "sha256": "b8ab518aca43ec74cf9e0bfd46e939bc199c0baec0b25a5ae8528654b4951848",
+  "packaging_exclusions": "verified: no source/tests/node_modules/biome config",
+  "live_account_tests": "not_run",
+  "visual_QA": "not_run",
+  "dependency_audit": {
+    "high": 6,
+    "scope": "dev tooling vsce dependency chain; excluded from VSIX",
+    "automatic_force_fix": false
+  },
+  "isolated_install": "passed via code CLI"
+}
