@@ -30,24 +30,11 @@ export class Connection implements vscode.Disposable {
     this.busy = true;
     const operation=this.generation;
     try {
-      const method = await vscode.window.showQuickPick([
-        {label:'Se connecter dans le navigateur',description:'Console officielle Scaleway, puis retour manuel avec une clé API',id:'browser'},
-        {label:'Utiliser une clé API existante',description:'Saisie masquée dans VS Code',id:'key'},
-      ], {title:'Se connecter à Scaleway',placeHolder:'Authentification API par clé : aucun mot de passe collecté par l’extension.'});
-      if (!method || operation!==this.generation) return;
-      if (method.id === 'browser') {
-        const opened=await vscode.env.openExternal(vscode.Uri.parse('https://console.scaleway.com/iam/users'));
-        if (!opened) {await vscode.window.showWarningMessage('Impossible d’ouvrir la console officielle. Utilisez une clé API existante.');return;}
-        const resume=await vscode.window.showInformationMessage(
-          'Dans la console Scaleway : connectez-vous, choisissez l’organisation, puis IAM & API keys → API keys. Utilisez une clé appropriée ou créez-en une vous-même si autorisé. Revenez ici avec son secret et l’UUID d’organisation. Aucun token de session web n’est récupéré automatiquement.',
-          {modal:true},'Continuer avec ma clé API');
-        if(resume!=='Continuer avec ma clé API'||operation!==this.generation)return;
-      }
-      const name = await vscode.window.showInputBox({title:'Connexion Scaleway — nom',value:this.metadata?.name ?? 'Scaleway',validateInput:v=>v.trim().length<1||v.length>80?'Nom de 1 à 80 caractères.':undefined});
+      const name = await vscode.window.showInputBox({title:'Configurer une clé API Scaleway — 1/3 : nom',value:this.metadata?.name ?? 'Scaleway',validateInput:v=>v.trim().length<1||v.length>80?'Nom de 1 à 80 caractères.':undefined});
       if (name === undefined) return;
-      const org = await vscode.window.showInputBox({title:'Organisation Scaleway',prompt:'UUID de l’organisation autorisée. Nécessaire pour limiter la liste des projets.',value:this.metadata?.organizationId,validateInput:v=>uuid(v.trim())?undefined:'UUID requis.'});
+      const org = await vscode.window.showInputBox({title:'Configurer une clé API Scaleway — 2/3 : organisation',prompt:'UUID de l’organisation autorisée. Nécessaire pour limiter la liste des projets.',value:this.metadata?.organizationId,validateInput:v=>uuid(v.trim())?undefined:'UUID requis.'});
       if (org === undefined) return;
-      const key = await vscode.window.showInputBox({title:'Clé secrète API Scaleway',password:true,ignoreFocusOut:true,prompt:'Conservée dans SecretStorage VS Code, jamais dans les fichiers ou la webview.',validateInput:v=>validateKey(v.trim())?undefined:'Format de clé invalide.'});
+      const key = await vscode.window.showInputBox({title:'Configurer une clé API Scaleway — 3/3 : secret',password:true,ignoreFocusOut:true,prompt:'Conservée dans SecretStorage VS Code, jamais dans les fichiers ou la webview.',validateInput:v=>validateKey(v.trim())?undefined:'Format de clé invalide.'});
       if (key === undefined) return;
       if (!vscode.workspace.isTrusted) return;
       const consent = await vscode.window.showInformationMessage('Autoriser jusqu’à 5 GET pour lister les projets de cette organisation ? Pas d’inférence, pas de modification de ressource.',{modal:true},'Lister les projets');
@@ -85,7 +72,7 @@ export class Connection implements vscode.Disposable {
       const operation=this.generation;
       const key=await this.context.secrets.get(SECRET);
       if(operation!==this.generation)return;
-      if (!key) {await vscode.window.showInformationMessage('Clé absente : utilisez Se connecter / changer de connexion.');return;}
+      if (!key) {await vscode.window.showInformationMessage('Clé absente : utilisez Configurer une clé API.');return;}
       const consent=await vscode.window.showInformationMessage('Lister les projets de l’organisation configurée (jusqu’à 5 GET, lecture seule) ?',{modal:true},'Lister les projets');
       if(consent!=='Lister les projets'||operation!==this.generation||!vscode.workspace.isTrusted)return;
       this.clear();const generation=this.generation;const abort=new AbortController();this.abort=abort;

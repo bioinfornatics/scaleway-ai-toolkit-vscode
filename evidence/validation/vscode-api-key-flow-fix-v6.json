@@ -1,0 +1,16 @@
+{
+  "record_id": "vscode-api-key-flow-fix-v6",
+  "issue": "scaleway_ai_vscode-jgh.3.13",
+  "verified_at": "2026-10-20T20:48:43.284760+00:00",
+  "method": "16 offline/mock tests,strict TS build,packaged connection audit and isolated VSIX installation",
+  "artifact": "artifacts/scaleway-ai-toolkit-preview-0.0.6.vsix",
+  "sha256": "8146eb120810833f1ab0c6c8e554b5f637d6fd265c0c8c677a3c1e6c75bd332c",
+  "tests_passed": 16,
+  "finding": "Single native API-key configuration; no browser OAuth choice. Key-help documentation separate. SecretStorage unchanged.",
+  "supersedes_flow": "vscode-console-login-preview-v4",
+  "not_run": [
+    "Real account/project login",
+    "Manual visual interaction"
+  ],
+  "provider_requests_by_agent": 0
+}

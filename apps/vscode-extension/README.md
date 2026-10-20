@@ -1,4 +1,4 @@
-# Scaleway AI Toolkit — Preview 0.0.5
+# Scaleway AI Toolkit — Preview 0.0.6
 
 Experimental community VS Code extension; no Scaleway affiliation. Real **read-only
 connection/project/model discovery** plus a separate **offline** playground.
@@ -6,37 +6,31 @@ No real inference, cloud writes, telemetry, OAuth browser login or Python runtim
 
 ## Install
 
-    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.5.vsix --force
+    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.6.vsix --force
 
 Reload Window after updating. Run **Scaleway AI: Open Offline Preview** to open the
 sidebar (legacy command name retained).
 
 ## Connect and switch project
 
-1. Mes ressources -> **Projet : sélectionner** -> native connection wizard.
-2. Choose **Se connecter dans le navigateur** to open the official Scaleway console.
-   Authenticate there (password/MFA/passkey handled by Scaleway). In IAM & API keys,
-   use an appropriate key or manually generate one only if authorized. Return to
-   VS Code and click **Continuer avec ma clé API**. Alternatively choose an
-   existing API key directly. This is **console-assisted API-key setup**, not
-   OAuth: no automatic JWT/session exchange, cookie access or callback listener.
-3. Enter connection name, **organization UUID**, then **secret API key** in the
-   masked field. Obtain these yourself from Scaleway console; never paste keys
-   into chat/workspace/settings. Use a narrowly scoped key, not full owner rights.
-4. Confirm bounded read-only listing of that organization’s projects (max 5 GET).
-5. Select an accessible project then **fr-par** for dedicated resources.
-6. Under Modèles click **Charger / actualiser les modèles** and confirm the
-   read-only request scope (max 6 GET: 1 global serverless + up to 5 dedicated pages).
+1. Mes ressources -> **Configurer une clé API**, ou **Projet : sélectionner** si aucune connexion configurée.
+2. Saisir le nom, l’UUID d’organisation puis le secret API dans le champ masqué.
+3. Confirmer la lecture limitée des projets, puis choisir le projet et fr-par.
+4. Modèles -> Charger / actualiser les modèles et confirmer les lectures.
 
-**Changer de projet** reuses the saved key. **Se connecter / changer de connexion**
-replaces it through the same wizard. **Se déconnecter** deletes the saved key and
-connection metadata, cancels pending reads and clears resource lists. Workspace
-Trust is required for network connection; expanding native trees/startup never
-fetches. Only one connection is stored in this increment. Project/region selection
-is session-only; after reload select the project again. Name and organization ID
-are saved in extension globalState, outside workspace; key only in SecretStorage.
-With remote VS Code, extension runs in workspace host and uses its SecretStorage;
-this is not a claim of local-machine isolation.
+**Un seul mécanisme : clé API.** Aucun navigateur n’est ouvert par ce parcours,
+aucune connexion OAuth, récupération JWT/cookie ou mot de passe Scaleway.
+L’action séparée **Aide et retours -> Comment obtenir une clé API** ouvre uniquement
+la documentation officielle. Elle ne connecte pas l’extension et n’attend aucun
+retour navigateur. Une session console Scaleway n’est pas une connexion API VS Code.
+
+La clé est conservée dans SecretStorage uniquement ; nom et organisation dans
+globalState, pas le workspace. Projet session-only. Changer de projet réutilise la
+clé ; Supprimer la connexion API efface la clé/métadonnées et annule les lectures.
+Une seule connexion dans cette version. Workspace Trust requis pour les lectures.
+Les arbres ne chargent rien automatiquement. Utilisez une clé à droits limités et
+ne la transmettez jamais dans le chat/fichiers. Sur VS Code distant, stockage et
+transport suivent l’extension host distant, pas une garantie d’isolation locale.
 
 The Serverless list is **global and accessible to the key**, not proven project
 availability. Dedicated entries are existing deployments filtered by selected

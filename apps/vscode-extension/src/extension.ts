@@ -31,7 +31,7 @@ export function activate(context: vscode.ExtensionContext): void {
       command: 'scalewayAI.modelInfo', args: [kind, m.id]}));
   };
   const resources = (): Node[] => [
-    {id: 'connection', label: connection.metadata ? 'Connexion : ' + connection.metadata.name : 'Se connecter à Scaleway', icon: 'account', command: 'scalewayAI.login'},
+    {id: 'connection', label: connection.metadata ? 'Clé API : ' + connection.metadata.name : 'Configurer une clé API', icon: 'account', command: 'scalewayAI.login'},
     {id: 'project', label: connection.project ? 'Projet : ' + connection.project.name : 'Projet : sélectionner', icon: 'organization', command: 'scalewayAI.switchProject'},
     ...(connection.project ? [{id:'region',label:'Région dédiée : fr-par',icon:'globe'}] : []),
     {id: 'real-models', label: 'Modèles', icon: 'library', children: [
@@ -49,7 +49,8 @@ export function activate(context: vscode.ExtensionContext): void {
   const help = (): Node[] => [
     {id: 'start', label: 'Bien démarrer', icon: 'book', command: 'scalewayAI.getStarted'},
     {id: 'docs', label: 'Documentation Scaleway', icon: 'link-external', command: 'scalewayAI.documentation'},
-    {id:'logout',label:'Se déconnecter (supprimer la clé)',icon:'sign-out',command:'scalewayAI.disconnect'},
+    {id:'key-help',label:'Comment obtenir une clé API',icon:'link-external',command:'scalewayAI.apiKeyHelp'},
+    {id:'logout',label:'Supprimer la connexion API',icon:'sign-out',command:'scalewayAI.disconnect'},
   ];
   const createView = (id: string, roots: () => Node[]) => {
     const provider: vscode.TreeDataProvider<Node> = {
@@ -133,6 +134,7 @@ export function activate(context: vscode.ExtensionContext): void {
     const doc = await vscode.workspace.openTextDocument({language: 'markdown', content: '# Bien démarrer — Scaleway AI\n\n1. Sélectionnez un modèle dans Mes ressources.\n2. Ouvrez Playground modèle dans Construire et tester.\n3. Saisissez une instruction puis Exécuter (Ctrl+Entrée).\n4. Arrêter conserve une réponse partielle.\n5. Ouvrir l’expérience JSON permet un enregistrement manuel.\n\nMode hors ligne : aucun appel API ni facturation.'});
     await vscode.window.showTextDocument(doc);
   });
+  register('scalewayAI.apiKeyHelp', () => vscode.env.openExternal(vscode.Uri.parse('https://www.scaleway.com/en/docs/iam/credentials/create-api-keys/')));
   register('scalewayAI.documentation', () => vscode.env.openExternal(vscode.Uri.parse('https://www.scaleway.com/en/docs/generative-apis/')));
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 20);
   status.text = '$(beaker) Scaleway AI: Offline'; status.command = 'scalewayAI.open'; status.show();
