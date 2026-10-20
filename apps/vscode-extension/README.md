@@ -1,4 +1,4 @@
-# Scaleway AI Toolkit — Preview 0.0.13
+# Scaleway AI Toolkit — Preview 0.0.15
 
 Experimental community VS Code extension; no Scaleway affiliation. **User browser
 login without API keys**, scoped read-only projects/dedicated deployments and a
@@ -6,11 +6,13 @@ separate **offline synthetic** playground. No real inference or cloud writes.
 
 ## Install and try
 
-    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.13.vsix --force
+    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.15.vsix --force
 
 Reload Window, then **Scaleway AI: Open Offline Preview** (legacy command name).
 
-1. Click **Projet : sélectionner**, **Modèles**, or **Catalogue de modèles**.
+1. Click **Définir le projet Scaleway** -> **Changer de projet** for cloud resources.
+   **Catalogue de modèles** opens immediately without login; its project button
+   enables dedicated discovery. **Modèles** retains account-required resource loading.
    Account-required commands trigger login automatically when disconnected. There
    is no standalone login/session row in the sidebar. Login remains available in
    the Command Palette; documentation and offline demo do not require an account.
@@ -96,7 +98,7 @@ Local minimum projections are not full production wire-schema validation.
 
 ## Model catalogs versus deployments
 
-**Catalogue de modèles** now opens a real native searchable catalog, not the
+**Catalogue de modèles** now opens a persistent searchable central editor catalog, not the
 existing deployment list. Mes ressources -> Modèles separates:
 
 - **Serverless · catalogue**: public commercial Generative APIs offerings in fr-par,
@@ -115,11 +117,12 @@ existing deployment list. Mes ressources -> Modèles separates:
 
 Model refresh loads public catalog, dedicated catalog then existing deployments
 sequentially, at most 5 pages per collection (15 GET total), only on explicit action.
-Catalogue de modèles loads catalogs only (max10 GET), then opens a QuickPick.
+Catalogue de modèles loads catalogs only (max10 GET), then updates the catalog panel.
 Each catalog has independent loading/error/empty states. Public route sends **no
 credential**, even when logged in; user JWT is used only for reviewed control routes.
-The navigation retains the account/project login gate to preserve the selected
-journey, although the public Serverless catalog itself needs no authentication.
+Public catalog opens immediately without an account/project gate. It loads independently
+of pending secure storage or account work. Selecting a project from the catalog
+initiates the browser/organization/project journey for dedicated discovery.
 
 Public catalog was checked with unauthenticated HTTP and the actual extension
 adapter. Dedicated catalog/deployment JWT access remains unverified live in this
@@ -157,3 +160,24 @@ Scaleway mark comes from official website favicon assets. Rights remain with
 Scaleway; local experimental identification only, not endorsement. Publication
 requires separate brand review. ai-PULSE event branding not used. Asset provenance:
 evidence/documentation/scaleway-icon-preview-v1.json.
+
+## Preview 0.0.15 navigation and catalog visibility fix
+
+Resources now separate **Projet Scaleway**, **Modèles**, **Récents**, and
+**Ressources locales** (synthetic demo). Developer tools separate **Découvrir**
+(real model catalog) and **Construire** (model playground). No advanced empty
+agent/tools/knowledge/evaluation/monitor menus. Project chooser offers Switch;
+Create project is unavailable until its guarded write workflow is implemented.
+See specifications/project-selection.md for design and limits.
+
+The catalog is a persistent editor with searchable text-only cards, independent
+public and dedicated status, refresh and project controls. It opens before HTTP,
+not after waiting for account/project/dedicated reads. Public requests coalesce
+and do not wait for pending SecretStorage. Untrusted workspace displays an explicit
+explanation; approve the workspace for HTTP. Dedicated errors do not hide public
+offers. No credentials or provider endpoint input in the catalog webview.
+
+Packaged extension host catalog command (0.0.14 and final0.0.15) verified live public
+33 offerings in isolated trusted test workspace. This is stronger than standalone
+adapter testing, but it does not prove screenshot card rendering, keyboard/theme
+review or actual-account dedicated acceptance; those checks remain outstanding.

@@ -1,0 +1,42 @@
+{
+  "recorded_at": "2026-10-20T22:26:50.720997+00:00",
+  "artifact": "artifacts/scaleway-ai-toolkit-preview-0.0.15.vsix",
+  "sha256": "0122dcc2cdb481a04e13695c3ea072acfbf3281bd551ab13d6144b90ccb03e00",
+  "tests_passed": 39,
+  "strict_typescript": "passed",
+  "isolated_install_final_artifact": "passed",
+  "packaged_host": {
+    "status": "passed",
+    "version": "0.0.15",
+    "hostVersion": "1.142.0",
+    "packagedPath": "/tmp/scw-v15-packaged/extensions/scaleway-ai-community-preview.scaleway-ai-toolkit-preview-0.0.15",
+    "catalogCommand": {
+      "publicCount": 33,
+      "publicStatus": "Offres publiques \u00b7 acc\u00e8s inf\u00e9rence non v\u00e9rifi\u00e9",
+      "panelOpened": true
+    },
+    "authentication": "none",
+    "method": "actual packaged extension host command with live public adapter"
+  },
+  "host_scope": "identical executable build to final artifact; final repack changed README only",
+  "diagnosis": [
+    "v13 public discovery gated by project/account",
+    "UI opened only after dedicated request completion",
+    "busy account silently skipped loading",
+    "workspace trust block lacked visible state"
+  ],
+  "user_incident_root_cause": "not uniquely confirmed",
+  "implemented": [
+    "immediate persistent catalog editor with search",
+    "independent public loader coalesces requests",
+    "account/dedicated error and trust states separate",
+    "resource/discover/build/recent/local navigation",
+    "default-project action chooser and creation design only"
+  ],
+  "not_run": [
+    "visual rendered cards inspection and keyboard/theme accessibility acceptance",
+    "user session dedicated catalog and resources",
+    "real inference or cloud creation"
+  ],
+  "authenticated_account_requests": 0
+}

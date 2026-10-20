@@ -134,20 +134,34 @@ export class Connection implements vscode.Disposable {
       await this.pickProject(projects,generation);
     }catch(error){await this.report(error);}finally{this.busy=false;this.changed();}
   }
+  private publicAbort:AbortController|undefined;
+  private publicPending:Promise<void>|undefined;
+  async loadPublicCatalog():Promise<void> {
+    if(this.publicPending)return this.publicPending;
+    if(!vscode.workspace.isTrusted){this.serverlessState='Workspace non approuvé · approuvez cet espace pour charger les offres';this.changed();return;}
+    const abort=new AbortController();this.publicAbort=abort;
+    this.publicPending=(async()=>{
+      this.serverlessState='Chargement…';this.changed();
+      try {
+        const rows=await listServerless('',abort.signal);
+        if(!abort.signal.aborted&&!this.disposed&&vscode.workspace.isTrusted){this.serverless=rows;this.serverlessState=rows.length?'Offres publiques · accès inférence non vérifié':'Aucune offre retournée';}
+      }catch(error){if(!abort.signal.aborted&&!this.disposed)this.serverlessState='Erreur · '+(error instanceof ReadError?error.code:'local_error');}
+      finally{this.changed();}
+    })();
+    try{await this.publicPending;}finally{this.publicPending=undefined;}
+  }
   async loadCatalogs():Promise<void> {
+    // Public catalog must not wait on SecretStorage/login/project/dedicated failures.
+    await this.loadPublicCatalog();
     await this.ready;
-    if(this.busy||!vscode.workspace.isTrusted)return;
+    if(this.busy||!vscode.workspace.isTrusted||!this.connected||!this.project){this.dedicatedCatalogState=this.busy?'Opération de compte en cours':'Sélectionnez un projet pour le catalogue dédié';this.changed();return;}
     this.busy=true;const operation=this.generation;const abort=new AbortController();this.abort=abort;
     try {
-      this.serverless=[];this.serverlessState='Chargement…';this.dedicatedCatalog=[];this.dedicatedCatalogState='Chargement…';this.changed();
-      try{const rows=await listServerless('',abort.signal);if(operation===this.generation&&!abort.signal.aborted){this.serverless=rows;this.serverlessState=rows.length?'Offres publiques · accès inférence non vérifié':'Aucune offre retournée';}}
-      catch(error){if(operation===this.generation)this.serverlessState='Erreur · '+(error instanceof ReadError?error.code:'local_error');}
-      if(operation!==this.generation||abort.signal.aborted||!vscode.workspace.isTrusted)return;
-      if(this.connected&&this.project){
-        try{const rows=await listDedicatedCatalog(this.project,this.token(),abort.signal);if(operation===this.generation&&!abort.signal.aborted){this.dedicatedCatalog=rows;this.dedicatedCatalogState=rows.length?'Modèles à déployer · fr-par':'Aucun modèle retourné';}}
-        catch(error){if(operation===this.generation)this.dedicatedCatalogState='Erreur · '+(error instanceof ReadError?error.code:'local_error');}
-      }else this.dedicatedCatalogState='Sélectionnez un projet';
-    }finally{this.busy=false;this.changed();}
+      this.dedicatedCatalog=[];this.dedicatedCatalogState='Chargement…';this.changed();
+      const rows=await listDedicatedCatalog(this.project,this.token(),abort.signal);
+      if(operation===this.generation&&!abort.signal.aborted){this.dedicatedCatalog=rows;this.dedicatedCatalogState=rows.length?'Modèles à déployer · fr-par':'Aucun modèle retourné';}
+    }catch(error){if(operation===this.generation)this.dedicatedCatalogState='Erreur · '+(error instanceof ReadError?error.code:'local_error');}
+    finally{this.busy=false;this.changed();}
   }
   async loadModels():Promise<void> {
     await this.ready;
@@ -174,6 +188,6 @@ export class Connection implements vscode.Disposable {
   }
   dispose(){
     // Shutdown clears memory only. Explicit logout/expiry removes persisted JWT.
-    this.disposed=true;clearTimeout(this.expiry);this.expiry=undefined;this.session=undefined;this.metadata=undefined;this.clear();
+    this.disposed=true;this.publicAbort?.abort();clearTimeout(this.expiry);this.expiry=undefined;this.session=undefined;this.metadata=undefined;this.clear();
   }
 }

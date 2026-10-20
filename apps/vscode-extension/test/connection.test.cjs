@@ -153,3 +153,11 @@ test('catalog loading separates public offerings/models from existing deployment
  await s.connection.loadCatalogs();assert.equal(s.connection.serverless.length,1);assert.equal(s.connection.dedicatedCatalog.length,0);assert.ok(s.connection.dedicatedCatalogState.includes('access_denied'));
  }finally{provider.listServerless=old;provider.listDedicatedCatalog=oldCatalog;s.connection.dispose();s.restore();}
 });
+
+test('public catalog is independent from busy account and pending SecretStorage, duplicate reads coalesce',async()=>{
+ const s=setup();const old=provider.listServerless;try {
+ s.connection.ready=new Promise(()=>{});s.connection.busy=true;
+ let count=0;provider.listServerless=async()=>{count++;await new Promise(r=>setTimeout(r,5));return [{id:'public',label:'Public',kind:'serverless'}];};
+ await Promise.all([s.connection.loadPublicCatalog(),s.connection.loadPublicCatalog()]);assert.equal(count,1);assert.equal(s.connection.serverless.length,1);assert.equal(s.logins(),0);
+ }finally{provider.listServerless=old;s.connection.dispose();s.restore();}
+});

@@ -61,3 +61,16 @@ Project creation is not model deployment. Both require explicit scoped cloud-wri
 ## Evidence language
 
 Use four separate statements: implemented in source, tested with fixtures, verified in packaged Extension Host, verified by user/live account. Do not substitute one for another. Catalog invisibility is unresolved until its own acceptance evidence is recorded. Current request authorizes roadmap/Beads planning, not authenticated account calls, inference or cloud writes. Local commits remain allowed by standing instruction; no push or remote sync.
+
+## Incremental follow-through — 2026-10-21
+
+.3.22 implementation/packaged-host slice completed: catalog editor opens immediately,
+public offers load independently from account/trust/storage/dedicated work, trust
+and errors are visible states. Actual packaged command returns33 public offers;
+original user-specific failure path not uniquely identified. Visual/manual user
+acceptance remains explicit follow-up, not claimed from adapter/host alone.
+
+.3.23 source navigation implemented in0.0.15: project/models/recent/local resources,
+discover catalog/build playground. Full visual/theme/keyboard acceptance remains
+open. .3.24.1 delivers default-project chooser and guarded creation design;
+.3.24 full production/creation scope remains open, no cloud writes authorized.

@@ -1,0 +1,27 @@
+{
+  "recorded_at": "2026-10-20T22:25:07.978418+00:00",
+  "issue": "scaleway_ai_vscode-jgh.3.22",
+  "host": {
+    "status": "passed",
+    "version": "0.0.14",
+    "hostVersion": "1.142.0",
+    "packagedPath": "/tmp/scw-v14-packaged/extensions/scaleway-ai-community-preview.scaleway-ai-toolkit-preview-0.0.14",
+    "catalogCommand": {
+      "publicCount": 33,
+      "publicStatus": "Offres publiques \u00b7 acc\u00e8s inf\u00e9rence non v\u00e9rifi\u00e9",
+      "panelOpened": true
+    },
+    "authentication": "none",
+    "method": "actual packaged extension host command with live public adapter"
+  },
+  "code_findings": [
+    "openCatalog0.0.13 blocked by account/project gate",
+    "selector waited for dedicated reads",
+    "busy account could short-circuit catalogs",
+    "untrusted workspace public fetch blocked without visible reason"
+  ],
+  "cause_of_user_specific_incident": "not uniquely established; gate/loading/UI issues corrected",
+  "visual_verification": "not claimed; screenshot tool result not sufficient to confirm rendered cards",
+  "tests_passed": 38,
+  "authenticated_calls": 0
+}
