@@ -1,8 +1,8 @@
 {
   "name": "scaleway-ai-toolkit-preview",
-  "displayName": "Scaleway AI Toolkit — Offline Preview",
+  "displayName": "Scaleway AI Toolkit \u2014 Offline Preview",
   "description": "Experimental community toolkit: native model browser and offline streaming playground. No cloud calls.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "scaleway-ai-community-preview",
   "private": true,
   "license": "UNLICENSED",
@@ -14,7 +14,9 @@
   ],
   "main": "./dist/extension.js",
   "activationEvents": [
-    "onView:scalewayAI.models"
+    "onView:scalewayAI.models",
+    "onView:scalewayAI.tools",
+    "onView:scalewayAI.help"
   ],
   "extensionKind": [
     "workspace"
@@ -34,15 +36,30 @@
       },
       {
         "command": "scalewayAI.playground",
-        "title": "Scaleway AI: Run Offline Playground"
+        "title": "Scaleway AI: Ouvrir le playground mod\u00e8le",
+        "icon": "$(play)"
       },
       {
         "command": "scalewayAI.cancel",
-        "title": "Scaleway AI: Cancel Demo"
+        "title": "Scaleway AI: Cancel Demo",
+        "icon": "$(debug-stop)"
       },
       {
         "command": "scalewayAI.experiment",
         "title": "Scaleway AI: Open Last Experiment"
+      },
+      {
+        "command": "scalewayAI.catalog",
+        "title": "Scaleway AI: Catalogue de d\u00e9monstration",
+        "icon": "$(library)"
+      },
+      {
+        "command": "scalewayAI.getStarted",
+        "title": "Scaleway AI: Bien d\u00e9marrer"
+      },
+      {
+        "command": "scalewayAI.documentation",
+        "title": "Scaleway AI: Documentation Scaleway"
       }
     ],
     "viewsContainers": {
@@ -58,7 +75,15 @@
       "scalewayAI": [
         {
           "id": "scalewayAI.models",
-          "name": "Models — Offline Demo"
+          "name": "Mes ressources"
+        },
+        {
+          "id": "scalewayAI.tools",
+          "name": "Outils de d\u00e9veloppement"
+        },
+        {
+          "id": "scalewayAI.help",
+          "name": "Aide et retours"
         }
       ]
     },
@@ -71,7 +96,7 @@
         },
         {
           "command": "scalewayAI.cancel",
-          "when": "view == scalewayAI.models",
+          "when": "view == scalewayAI.models && scalewayAI.running",
           "group": "navigation"
         }
       ]
@@ -80,7 +105,7 @@
   "scripts": {
     "build": "tsc -p .",
     "test": "npm run build && node --test test/*.test.cjs",
-    "package": "npm test && vsce package --allow-missing-repository --skip-license --out ../../artifacts/scaleway-ai-toolkit-preview-0.0.1.vsix"
+    "package": "npm test && vsce package --allow-missing-repository --skip-license --out ../../artifacts/scaleway-ai-toolkit-preview-0.0.2.vsix"
   },
   "devDependencies": {
     "@types/vscode": "1.96.0",

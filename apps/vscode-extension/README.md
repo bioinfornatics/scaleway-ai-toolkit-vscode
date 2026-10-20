@@ -1,52 +1,43 @@
-# Scaleway AI Toolkit — Offline Preview 0.0.1
+# Scaleway AI Toolkit — Offline Preview 0.0.2
 
-First **installable experimental VS Code extension**. Community project, no
-Scaleway affiliation. Local-only evaluation artifact, not Marketplace release or
-production provider compatibility. No cloud requests, credentials, Python or tools.
+Experimental community VS Code extension, no Scaleway affiliation. No real model
+connection, account calls, credentials, telemetry or Python dependency.
 
-## Try the VSIX
+## Install and try
 
-From the repository root:
+    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.2.vsix --force
 
-    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.1.vsix
+Reload Window after updating. Command Palette: **Scaleway AI: Open Offline Preview**.
 
-Alternatively: Extensions -> ... -> Install from VSIX, select the file.
-Reload VS Code if requested. Open Command Palette and run
-**Scaleway AI: Open Offline Preview**. The activity bar view lists two clearly
-synthetic models. Click one to select it, then:
+- **Mes ressources**: offline context, synthetic models, last experiment.
+- **Outils de développement**: Découvrir / demo catalogue; Construire et tester /
+  model playground. Catalogue uses native Quick Pick, not a separate catalog page.
+- **Aide et retours**: getting started and official documentation (opens browser
+  only when clicked; extension itself makes no provider requests).
 
-1. Run **Scaleway AI: Run Offline Playground** (palette or view title).
-2. Enter a short prompt. Watch the simulated stream in the Output panel.
-3. Cancel via the progress notification or **Scaleway AI: Cancel Demo**.
-4. Run **Scaleway AI: Open Last Experiment** to inspect JSON in an untitled editor;
-   Save As only if you choose to persist your prompt/output.
+Select a model then open **Playground modèle** in the central editor. Enter an
+instruction, press **Exécuter** or Ctrl+Enter. Response streams in the same editor.
+**Arrêter** stops the synthetic stream; partial output is preserved.
+**Ouvrir l’expérience JSON** opens an untitled editor; save only if you choose.
+Closing the playground cancels its current run. No prompt/output automatically
+saved; no state survives extension reload. Model selection alone never executes.
 
-Prompts/last experiment remain in memory until reload/deactivation. No automatic
-workspace/globalState persistence or telemetry. Output does not echo the prompt.
-One demo at a time. Selection does not execute a model. All results explicitly
-say synthetic/offline; no fake provider prices, quota, usage or deployment status.
+Resources/actions/help match the approved Foundry-inspired organization, not Azure
+service parity. Agents/deployment/evaluation menus are absent until implemented.
+UI uses VS Code theme tokens, native trees and keyboard controls. Webview has
+nonce CSP, no network, textContent-only output and strict closed host messages.
+This preview IPC is separate from advanced versioned runtime contracts.
 
-## Development
+## Build
 
     cd apps/vscode-extension
     npm ci --ignore-scripts
-    npm test
     npm run package
 
-Node 22 tooling; TypeScript; npm lockfile. VSIX has only compiled JS, manifest,
-icon and documentation; build dependencies and tests excluded. Private npm package;
-no npm/Marketplace publication, release tag or push configured.
+Private package, pinned tooling/npm lock; runtime uses VS Code/Node only. VSIX
+excludes sources/tests/build dependencies. No publication, tag or push.
 
-Development host without installing into your normal profile:
-
-    code --new-window --extensionDevelopmentPath=/absolute/path/to/apps/vscode-extension
-
-## Incremental direction
-
-This delivers a visible model-first slice, not advanced agent hosting. Next useful
-increment: real connection via host SecretStorage and scoped read-only model list;
-then bounded, explicitly authorized real model streaming. Saved experiments and
-standalone export follow. Cloud hosting and Python agents are not prerequisites.
-No webview is needed yet: native views, input, progress, Output and editors reuse
-VS Code accessibility/themes. Existing production/design/value acceptance remains
-separate from this explicitly requested experimental VSIX.
+Next increment: real connection through SecretStorage and scoped model catalogue,
+then explicitly bounded real inference. Optional Python agents/cloud hosting do
+not gate this model-first workflow. Production/design/value approval remains
+separate from this user-authorized incremental experimental implementation.

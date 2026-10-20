@@ -6,14 +6,14 @@ A community extension concept for discovering, testing, building, evaluating and
 
 ## Try the first VSIX
 
-Artifact: `artifacts/scaleway-ai-toolkit-preview-0.0.1.vsix` (generated locally).
+Artifact: `artifacts/scaleway-ai-toolkit-preview-0.0.2.vsix` (generated locally).
 
 ```sh
-code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.1.vsix
+code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.2.vsix
 ```
 
 Run **Scaleway AI: Open Offline Preview**, select a synthetic model, then
-**Scaleway AI: Run Offline Playground**. Cancel and inspect the last experiment
+**Scaleway AI: Ouvrir le playground modèle**. Run/stop and inspect the last experiment in the central editor
 from the Command Palette. [Extension instructions and build](apps/vscode-extension/README.md).
 No credentials, network calls, charges or Python runtime required.
 

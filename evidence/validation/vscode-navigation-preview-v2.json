@@ -1,0 +1,41 @@
+{
+  "record_id": "vscode-navigation-preview-v2",
+  "issue": "scaleway_ai_vscode-jgh.3.9",
+  "verified_at": "2026-10-20T20:28:25.526775+00:00",
+  "method": "Strict TypeScript build,6 offline unit/static tests, VSIX inventory, isolated installation and real Extension Host smoke",
+  "authority": "User procede approves proposed menu and central playground experimental slice; commit no push",
+  "artifact": "artifacts/scaleway-ai-toolkit-preview-0.0.2.vsix",
+  "sha256": "84dd8f455afdb975b7ceb416a2fb5f4852ea2ae96a0eec443d0c2f7e758f797f",
+  "bytes": 10921,
+  "package_files": [
+    "extension.vsixmanifest",
+    "[Content_Types].xml",
+    "extension/package.json",
+    "extension/readme.md",
+    "extension/media/toolkit.svg",
+    "extension/media/playground.js",
+    "extension/media/playground.css",
+    "extension/dist/webview.js",
+    "extension/dist/ipc.js",
+    "extension/dist/extension.js",
+    "extension/dist/demo.js"
+  ],
+  "tests_passed": 6,
+  "extension_host": {
+    "status": "passed",
+    "hostVersion": "1.142.0",
+    "activation": true,
+    "commands": true,
+    "nativeViewOpen": true,
+    "centralPlaygroundCommand": true,
+    "manualPlayground": "not_run"
+  },
+  "host_scope": "Development build matching packaged source; installed VSIX activation not separately asserted",
+  "not_run": [
+    "Visual screenshot comparison in real VS Code",
+    "Manual webview prompt/run/cancel/JSON journey",
+    "Full production security/CSP/IPC penetration checks",
+    "Real provider/catalog/inference and cloud hosting"
+  ],
+  "provider_requests": 0
+}

@@ -53,6 +53,19 @@ an agent creation screen, completed agent, or required onboarding order. Tree or
 is not execution dependency order. Deploy to Microsoft Foundry is a visible label;
 its target/operation cannot be determined from screenshot alone.
 
+## Approved experimental navigation — 2026-10-20
+
+Stakeholder rejected the minimal two-model-only sidebar after viewing installed
+VSIX0.0.1 and approved the proposed Foundry-inspired three native sections:
+Mes ressources, Outils de développement, Aide et retours. VSIX0.0.2 implements
+offline context/models/last experiment; Découvrir/demo catalogue (Quick Pick);
+Construire et tester/central model playground; getting started/documentation.
+No advanced placeholders. Central editor owns prompt/run/stop/response/JSON action;
+sidebar is navigation, not response surface. Theme tokens and text-only rendering
+remain provisional native styling, not copied Foundry code/assets or brand.
+This is scoped incremental build approval, not production/value validation.
+Owning implementation apps/vscode-extension; evidence/validation/vscode-navigation-preview-v2.json.
+
 Scaleway navigation should preserve resources vs actions separation and contextual
 project selection. Labels/services such as Classic, Foundry project and Ask Copilot
 are not automatic equivalents. Expose only implemented, verified slice capabilities;
