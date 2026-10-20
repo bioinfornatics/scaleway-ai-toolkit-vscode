@@ -9,7 +9,11 @@ advanced local agents. No Python dependency added to model MVP.
 
 Current maintainer request authorizes documentation and local tests (streaming,
 duration, concurrency, authentication, sessions), commits when necessary, **no push**.
-No provisioning, credential access, inference or new spend is authorized.
+No provisioning, credential access, inference or new spend was authorized by that
+first slice. The later request accepts doing the spike and local commits, no push;
+[the executable transport spike and cloud envelope](../../../tooling/hosting-spike/README.md)
+now exist. Exact target/budget/credentials and reviewed hosted image remain missing,
+so no cloud write or live hosting test has executed.
 
 Ten public Scaleway pages are pinned to docs-content commit
 **d3f08c7b3d7b60a982572ca6ce5e18b91b1ce811** in

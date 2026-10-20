@@ -1,0 +1,51 @@
+{
+  "record_id": "hosting-transport-v1",
+  "issue": "scaleway_ai_vscode-jgh.1.6.2",
+  "verified_at": "2026-10-20T20:07:19.517496+00:00",
+  "method": "Node HTTP client -> synthetic Python loopback fixture; no VS Code host/cloud execution",
+  "command": "node --test tests/hosting/transport.test.mjs",
+  "status": "passed",
+  "tests_run": 13,
+  "failed": 0,
+  "environment": {
+    "node": "v22.22.2",
+    "python": "Python 3.14.8"
+  },
+  "inputs_sha256": {
+    "tooling/hosting-spike/transport.mjs": "b83c7978d168b32130e4d14a1810aa800f4e6c9b5beae3c96090dd74361a7ec2",
+    "tooling/hosting-spike/README.md": "ef445091e4b8751a88286f08f885c2c67281aa632c960be0836e251b27631d0c",
+    "tests/hosting/transport.test.mjs": "3973fdda1a19f785cc1144f69d7a1bfb1316859da80c1f1bb4feb021088d96ad",
+    "tests/hosting/node_fixture.py": "9844e5f0d8d79f0dfdf6b95586605d2aa62ab74d306cbfc1fb50ec83072551ae",
+    "tests/hosting/local_probe.py": "b2dbd06f5b57c79c6fb02e7c5e93f7e034008c2eebfd27b1bde76ed3258dd6c5"
+  },
+  "cases": [
+    "Node -> Python authenticated SSE delivered before terminal",
+    "Node -> Python unauthorized response never becomes success",
+    "deadline interrupts rather than waits for full stream",
+    "AbortSignal interrupts an open stream",
+    "pre-aborted operation performs no request",
+    "replay read has one request and no launch",
+    "redirect never followed and secrets never returned",
+    "response bytes are bounded",
+    "stream truncation not successful",
+    "fragmented CRLF frames and comment heartbeat",
+    "gaps, wrong version/event and post-terminal data rejected",
+    "oversized frame rejected",
+    "unsafe destinations/routes rejected before dispatch"
+  ],
+  "cloud_status": "not_run",
+  "cloud_blockers": [
+    "Exact test project/region confirmation",
+    "Owner cost ceiling and exact provisioning/cleanup scope",
+    "Secure scoped IAM access",
+    "Reviewed hardened hosted listener and immutable container image digest"
+  ],
+  "provider_requests": 0,
+  "cloud_resources_created": 0,
+  "not_run": [
+    "VS Code extension activation/UI integration",
+    "HTTPS/IAM gateway/header forwarding",
+    "Cloud request timeout/buffering/scaling/network/cleanup",
+    "Full runtime v1 and durable tenant/session/ledger authorization"
+  ]
+}

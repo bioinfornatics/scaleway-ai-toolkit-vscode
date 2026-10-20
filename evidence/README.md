@@ -30,6 +30,8 @@ Store public source material and synthetic/sanitized records only. Never commit 
 - [Hosting public source manifest](documentation/hosting-sources-v1.json) and
   [synthetic loopback HTTP results](validation/hosting-local-v1.json): first .1.6
   slice only, no hosted runtime or production security acceptance.
+- [Node-to-Python hosting transport spike](validation/hosting-transport-v1.json):
+  13 local tests; cloud execution explicitly not_run with remaining blockers.
 
 These update historical no-live statements; old source snapshots and matrix v1 are
 not rewritten. Validation tooling's not_run list describes its offline check scope,

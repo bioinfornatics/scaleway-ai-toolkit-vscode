@@ -15,6 +15,7 @@ A community extension concept for discovering, testing, building, evaluating and
 - [Serverless research](specifications/providers/scaleway/serverless.md), [dedicated API research](specifications/providers/scaleway/dedicated.md) and [proposed comparative protocol](specifications/validation/developer-scenario.md).
 - [Offline verification results](evidence/validation/offline-discovery.json) and [acceptance review](evidence/reviews/discovery-review.md).
 - [Runtime hosting limits: public documentation and local HTTP tests](specifications/providers/scaleway/hosting.md); cloud streaming/auth/durable sessions remain unverified.
+- [Executable Node-to-Python hosting transport spike](tooling/hosting-spike/README.md): extension-host transport checks and bounded cloud proposal; no deployment executed.
 - [Selected agent SDK: Strands Python](specifications/decisions/0001-strands-agent-sdk.md): accepted SDK choice, not tested integration or build approval.
 - [G1 discovery decision](.gates/01-brief-to-ideation.md): experiment, not validated value or build approval.
 
