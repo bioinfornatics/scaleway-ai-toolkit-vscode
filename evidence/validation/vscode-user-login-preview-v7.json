@@ -1,0 +1,73 @@
+{
+  "record_id": "vscode-user-login-preview-v7",
+  "verified_at": "2026-10-20T21:07:28.199902+00:00",
+  "issue": "scaleway_ai_vscode-jgh.3.14.1",
+  "artifact": "artifacts/scaleway-ai-toolkit-preview-0.0.7.vsix",
+  "sha256": "cc4e0939c2ea035ed526feaaad398d9d66ebb962e930847145dea17369a5d366",
+  "bytes": 30469,
+  "package_files": [
+    "extension.vsixmanifest",
+    "[Content_Types].xml",
+    "extension/package.json",
+    "extension/readme.md",
+    "extension/media/toolkit.svg",
+    "extension/media/scaleway-mark.svg",
+    "extension/media/scaleway-icon.png",
+    "extension/media/playground.js",
+    "extension/media/playground.css",
+    "extension/dist/webview.js",
+    "extension/dist/provider.js",
+    "extension/dist/ipc.js",
+    "extension/dist/extension.js",
+    "extension/dist/demo.js",
+    "extension/dist/connection.js",
+    "extension/dist/browserLogin.js"
+  ],
+  "tests_passed": 20,
+  "methods": [
+    "strict TypeScript build",
+    "synthetic JWT callback real loopback HTTP tests",
+    "mock VS Code connection/provider tests",
+    "VSIX content audit",
+    "isolated install of final rebuilt artifact",
+    "real development Extension Host smoke"
+  ],
+  "extension_host": {
+    "status": "passed",
+    "hostVersion": "1.142.0",
+    "activation": true,
+    "commands": true,
+    "nativeViewOpen": true,
+    "centralPlaygroundCommand": true,
+    "manualPlayground": "not_run"
+  },
+  "host_scope": "development source matching package; packaged activation not separately asserted",
+  "input_hashes": {
+    "apps/vscode-extension/src/demo.ts": "295c0744f48c1dfd0d8b9cd9d227449c94e0db8f53346b2f75b81b6b3f9327e2",
+    "apps/vscode-extension/src/extension.ts": "06af1e925660daf0f14ad7e3c929a36f4215bf24c906d54d704122ffc2749867",
+    "apps/vscode-extension/src/ipc.ts": "6249dafa9ae0740c60cdf83ab94bb5f50f89c48886a53cd5fccded5fc6eb1f12",
+    "apps/vscode-extension/src/webview.ts": "3c43733fe7592939975710ecf2f0014cf9dc31cd59ce040f97f2c9244bca9ff1",
+    "apps/vscode-extension/src/provider.ts": "22bf0ad88134da8a133b2cd2678f04a7a1398db91cebaa9eca2252a30b1305b2",
+    "apps/vscode-extension/src/connection.ts": "a9f834a2bffc8f4ca06cfca4fc943794788c9b2878960abe7056562579c29820",
+    "apps/vscode-extension/src/browserLogin.ts": "2200be96639a1d87742b1a5468ce7db02cbcaee8caadb866908e4affbbdf5106",
+    "apps/vscode-extension/test/demo.test.cjs": "cf183b4dc4b1b3009fe31a04069698991b28b8eb2bd2e30f3723d4c4e7726e12",
+    "apps/vscode-extension/test/ipc.test.cjs": "14098e958c5f31ec7de5eee8327a99d1a6bfad2b9cae57d851d1d9fb511c2b26",
+    "apps/vscode-extension/test/provider.test.cjs": "67002ed9a3e645f25f5311e384fa784ab45291e2377bf84c010e5fb0d4e6f73b",
+    "apps/vscode-extension/test/connection.test.cjs": "861055edf487423fbfb8fadca3c4d7fe9e06a2f13efb11c31ea97c1b3f9f5e56",
+    "apps/vscode-extension/test/browserLogin.test.cjs": "d2101e78560579c9b8e5d411c743bbc2a78a69f9bf50895f4a34abfde9cddb89",
+    "apps/vscode-extension/package.json": "6c0bbc33d49605fba51330e214879bb7b2de2a5564b28428a66a3e89f2c4be7d",
+    "apps/vscode-extension/package-lock.json": "712255071a75252b1cdb1539e74b56dbc081eca946e078e9af205ca1d803d202"
+  },
+  "scaleway_authenticated_requests_by_agent": 0,
+  "real_credentials_used": false,
+  "not_run": [
+    "Real browser sign-in and randomized callback acceptance by Scaleway",
+    "JWT acceptance for project/dedicated API listing",
+    "Manual user login/project/model/logout journey",
+    "Serverless JWT support, deliberately disabled",
+    "OAuth PKCE, provider-backed refresh/revocation",
+    "Real inference, resource writes, production acceptance"
+  ],
+  "storage": "memory-only JWT; no refresh token retained",
+  "source_record": "evidence/documentation/scaleway-user-login-v1.json"
+}

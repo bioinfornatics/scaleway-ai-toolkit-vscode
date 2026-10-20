@@ -1,8 +1,8 @@
 {
   "name": "scaleway-ai-toolkit-preview",
-  "displayName": "Scaleway AI Toolkit \u2014 Preview",
-  "description": "Experimental Scaleway project connection, read-only models and offline playground.",
-  "version": "0.0.6",
+  "displayName": "Scaleway AI Toolkit — Preview",
+  "description": "Scaleway user browser login, read-only project resources and offline playground.",
+  "version": "0.0.7",
   "publisher": "scaleway-ai-community-preview",
   "private": true,
   "license": "UNLICENSED",
@@ -36,7 +36,7 @@
       },
       {
         "command": "scalewayAI.playground",
-        "title": "Scaleway AI: Ouvrir le playground mod\u00e8le",
+        "title": "Scaleway AI: Ouvrir le playground modèle",
         "icon": "$(play)"
       },
       {
@@ -50,12 +50,12 @@
       },
       {
         "command": "scalewayAI.catalog",
-        "title": "Scaleway AI: Catalogue de d\u00e9monstration",
+        "title": "Scaleway AI: Catalogue de démonstration",
         "icon": "$(library)"
       },
       {
         "command": "scalewayAI.getStarted",
-        "title": "Scaleway AI: Bien d\u00e9marrer"
+        "title": "Scaleway AI: Bien démarrer"
       },
       {
         "command": "scalewayAI.documentation",
@@ -63,7 +63,7 @@
       },
       {
         "command": "scalewayAI.login",
-        "title": "Scaleway AI: Configurer une cl\u00e9 API",
+        "title": "Scaleway AI: Se connecter à Scaleway",
         "icon": "$(account)"
       },
       {
@@ -73,16 +73,12 @@
       },
       {
         "command": "scalewayAI.loadModels",
-        "title": "Scaleway AI: Charger les mod\u00e8les (lecture seule)",
+        "title": "Scaleway AI: Charger les modèles (lecture seule)",
         "icon": "$(refresh)"
       },
       {
         "command": "scalewayAI.disconnect",
-        "title": "Scaleway AI: Supprimer la connexion API"
-      },
-      {
-        "command": "scalewayAI.apiKeyHelp",
-        "title": "Scaleway AI: Comment obtenir une cl\u00e9 API"
+        "title": "Scaleway AI: Se déconnecter"
       }
     ],
     "viewsContainers": {
@@ -102,7 +98,7 @@
         },
         {
           "id": "scalewayAI.tools",
-          "name": "Outils de d\u00e9veloppement"
+          "name": "Outils de développement"
         },
         {
           "id": "scalewayAI.help",
@@ -133,7 +129,7 @@
   "scripts": {
     "build": "tsc -p .",
     "test": "npm run build && node --test test/*.test.cjs",
-    "package": "npm test && vsce package --allow-missing-repository --skip-license --out ../../artifacts/scaleway-ai-toolkit-preview-0.0.6.vsix"
+    "package": "npm test && vsce package --allow-missing-repository --skip-license --out ../../artifacts/scaleway-ai-toolkit-preview-0.0.7.vsix"
   },
   "devDependencies": {
     "@types/vscode": "1.96.0",

@@ -1,115 +1,110 @@
 import * as vscode from 'vscode';
-import {Project, ListedModel, listProjects, listServerless, listDedicated, uuid, validateKey, ReadError} from './provider';
-const SECRET = 'scalewayAI.apiKey.v1';
-interface Metadata {name: string; organizationId: string;}
+import {Project, ListedModel, listProjects, listDedicated, uuid, ReadError} from './provider';
+import {browserLogin, UserSession} from './browserLogin';
+interface Metadata {name:string; organizationId:string;}
 export class Connection implements vscode.Disposable {
-  metadata: Metadata | undefined;
-  project: Project | undefined;
-  serverless: ListedModel[] = [];
-  dedicated: ListedModel[] = [];
-  serverlessState = 'Non chargés'; dedicatedState = 'Non chargés';
-  busy = false;
-  private generation = 0;
-  private abort: AbortController | undefined;
-  constructor(private context: vscode.ExtensionContext, private changed: () => void) {
-    // No automatic network at startup; only nonsecret connection metadata restored.
-    const saved = context.globalState.get<Metadata>('scalewayAI.connection');
-    if (saved && typeof saved.name === 'string' && saved.name.length <= 80 && uuid(saved.organizationId)) this.metadata = saved;
-  }
+  metadata:Metadata|undefined;
+  project:Project|undefined;
+  serverless:ListedModel[]=[];dedicated:ListedModel[]=[];
+  serverlessState='JWT Serverless non établi';dedicatedState='Non chargés';
+  busy=false;
+  private session:UserSession|undefined;
+  private generation=0;
+  private abort:AbortController|undefined;
+  private expiry:ReturnType<typeof setTimeout>|undefined;
+  constructor(private context:vscode.ExtensionContext,private changed:()=>void) {}
   private clear() {
-    this.generation++; this.abort?.abort(); this.project = undefined;
-    this.serverless = []; this.dedicated = []; this.serverlessState = 'Non chargés'; this.dedicatedState = 'Non chargés'; this.changed();
+    this.generation++;this.abort?.abort();this.abort=undefined;this.project=undefined;
+    this.serverless=[];this.dedicated=[];this.dedicatedState='Non chargés';this.changed();
   }
-  private async report(error: unknown) {
-    const code = error instanceof ReadError ? error.code : 'local_error';
-    if (code !== 'cancelled') await vscode.window.showErrorMessage('Scaleway : ' + code + '. Aucun appel d’inférence effectué. Vérifiez clé, organisation et permissions IAM.');
+  private dropSession(){clearTimeout(this.expiry);this.expiry=undefined;this.session=undefined;this.metadata=undefined;this.clear();}
+  private token():string {
+    if(!this.session||this.session.expiresAt<=Date.now()+30000){this.dropSession();throw new ReadError('session_expired');}
+    return this.session.token;
   }
-  async login(): Promise<void> {
-    if (this.busy) return;
-    if (!vscode.workspace.isTrusted) {await vscode.window.showWarningMessage('Connexion disponible uniquement dans un espace de travail approuvé.');return;}
-    this.busy = true;
-    const operation=this.generation;
+  private async report(error:unknown) {
+    const code=error instanceof ReadError?error.code:'local_error';
+    if(code==='access_denied')this.dropSession();
+    if(code!=='cancelled')await vscode.window.showErrorMessage('Scaleway : '+code+'. Reconnectez-vous si nécessaire ; vérifiez organisation et permissions. Aucune inférence effectuée.');
+  }
+  async login():Promise<void> {
+    if(this.busy)return;
+    if(!vscode.workspace.isTrusted){await vscode.window.showWarningMessage('Connexion disponible uniquement dans un espace de travail approuvé.');return;}
+    if(vscode.env.remoteName){await vscode.window.showWarningMessage('Connexion navigateur disponible uniquement dans VS Code local pour cette preview (callback loopback).');return;}
+    this.busy=true;const operation=this.generation;
     try {
-      const name = await vscode.window.showInputBox({title:'Configurer une clé API Scaleway — 1/3 : nom',value:this.metadata?.name ?? 'Scaleway',validateInput:v=>v.trim().length<1||v.length>80?'Nom de 1 à 80 caractères.':undefined});
-      if (name === undefined) return;
-      const org = await vscode.window.showInputBox({title:'Configurer une clé API Scaleway — 2/3 : organisation',prompt:'UUID de l’organisation autorisée. Nécessaire pour limiter la liste des projets.',value:this.metadata?.organizationId,validateInput:v=>uuid(v.trim())?undefined:'UUID requis.'});
-      if (org === undefined) return;
-      const key = await vscode.window.showInputBox({title:'Configurer une clé API Scaleway — 3/3 : secret',password:true,ignoreFocusOut:true,prompt:'Conservée dans SecretStorage VS Code, jamais dans les fichiers ou la webview.',validateInput:v=>validateKey(v.trim())?undefined:'Format de clé invalide.'});
-      if (key === undefined) return;
-      if (!vscode.workspace.isTrusted) return;
-      const consent = await vscode.window.showInformationMessage('Autoriser jusqu’à 5 GET pour lister les projets de cette organisation ? Pas d’inférence, pas de modification de ressource.',{modal:true},'Lister les projets');
-      if (consent !== 'Lister les projets'||operation!==this.generation||!vscode.workspace.isTrusted) return;
-      this.clear(); const generation = this.generation;
-      const abort = new AbortController(); this.abort = abort;
-      const projects = await vscode.window.withProgress({location:vscode.ProgressLocation.Notification,title:'Scaleway : vérification et projets',cancellable:true},async (_,token)=> {
-        const cancel=token.onCancellationRequested(()=>abort.abort());
-        try{return await listProjects(org.trim(),key.trim(),abort.signal);}finally{cancel.dispose();}
+      const consent=await vscode.window.showInformationMessage('Ouvrir la connexion utilisateur Scaleway dans votre navigateur ? JWT en mémoire uniquement ; aucune clé API créée. Délai : 3 minutes.',{modal:true},'Se connecter');
+      if(consent!=='Se connecter'||operation!==this.generation||!vscode.workspace.isTrusted)return;
+      this.dropSession();const generation=this.generation;const abort=new AbortController();this.abort=abort;
+      const session=await vscode.window.withProgress({location:vscode.ProgressLocation.Notification,title:'Scaleway : connexion dans le navigateur',cancellable:true},async(_,cancel)=>{
+        const sub=cancel.onCancellationRequested(()=>abort.abort());
+        try{return await browserLogin(async url=>await vscode.env.openExternal(vscode.Uri.parse(url)),abort.signal);}finally{sub.dispose();}
       });
-      if (generation !== this.generation || abort.signal.aborted) return;
-      await this.context.secrets.store(SECRET,key.trim());
-      if(generation !== this.generation) {await this.context.secrets.delete(SECRET);return;}
-      this.metadata = {name:name.trim(),organizationId:org.trim()};
-      await this.context.globalState.update('scalewayAI.connection',this.metadata);
-      if(generation !== this.generation) {this.metadata=undefined;await this.context.globalState.update('scalewayAI.connection',undefined);return;}
-      this.changed();
-      await this.pickProject(projects,generation);
-    } catch(error) {await this.report(error);}
-    finally {this.busy=false;this.changed();}
+      if(generation!==this.generation||abort.signal.aborted||!vscode.workspace.isTrusted)return;
+      // Migration: remove old API-key storage; never read/import it as a fallback.
+      await this.context.secrets.delete('scalewayAI.apiKey.v1');
+      await this.context.globalState.update('scalewayAI.connection',undefined);
+      if(generation!==this.generation||abort.signal.aborted||!vscode.workspace.isTrusted)return;
+      this.session=session;
+      this.metadata={name:'Utilisateur connecté',organizationId:''};
+      const expire=()=>{
+        if(this.session!==session)return;
+        if(session.expiresAt<=Date.now()+30000){this.dropSession();void vscode.window.showInformationMessage('Session Scaleway expirée. Reconnectez-vous dans le navigateur.');}
+        else this.expiry=setTimeout(expire,Math.min(session.expiresAt-Date.now()-30000,2147483647));
+      };
+      expire();this.changed();
+    }catch(error){await this.report(error);}finally{this.busy=false;this.changed();}
+    if(this.session&&!this.project)await this.switchProject();
   }
-  private async pickProject(projects: Project[], generation: number) {
-    if (!projects.length) {await vscode.window.showInformationMessage('Aucun projet accessible dans cette organisation.');return;}
-    const pick=await vscode.window.showQuickPick(projects.map(p=>({label:p.name,description:p.id,project:p})),{title:'Changer de projet Scaleway',placeHolder:'Sélectionner un projet accessible'});
-    if (!pick || generation !== this.generation) return;
-    const region=await vscode.window.showQuickPick([{label:'fr-par',description:'Région vérifiée pour les déploiements dédiés'}],{title:'Région des ressources dédiées',placeHolder:'Le catalogue serverless est global, pas régional.'});
-    if (!region || generation !== this.generation) return;
-    this.project=pick.project;this.changed();
+  private async pickProject(projects:Project[],generation:number) {
+    if(!projects.length){await vscode.window.showInformationMessage('Aucun projet accessible dans cette organisation.');return;}
+    const pick=await vscode.window.showQuickPick(projects.map(project=>({label:project.name,description:project.id,project})),{title:'Changer de projet Scaleway'});
+    if(!pick||generation!==this.generation)return;
+    this.token();this.project=pick.project;this.changed();
   }
   async switchProject():Promise<void> {
-    if (!this.metadata) return this.login();
-    if(this.busy || !vscode.workspace.isTrusted)return;
-    this.busy=true;
-    try {
-      const operation=this.generation;
-      const key=await this.context.secrets.get(SECRET);
-      if(operation!==this.generation)return;
-      if (!key) {await vscode.window.showInformationMessage('Clé absente : utilisez Configurer une clé API.');return;}
-      const consent=await vscode.window.showInformationMessage('Lister les projets de l’organisation configurée (jusqu’à 5 GET, lecture seule) ?',{modal:true},'Lister les projets');
-      if(consent!=='Lister les projets'||operation!==this.generation||!vscode.workspace.isTrusted)return;
-      this.clear();const generation=this.generation;const abort=new AbortController();this.abort=abort;
-      const projects=await listProjects(this.metadata.organizationId,key,abort.signal);
-      if(generation===this.generation&&!abort.signal.aborted)await this.pickProject(projects,generation);
-    }catch(error){await this.report(error);}finally{this.busy=false;this.changed();}
-  }
-  async loadModels():Promise<void> {
-    if(!this.metadata||!this.project)return this.switchProject();
+    if(!this.session)return this.login();
     if(this.busy||!vscode.workspace.isTrusted)return;
     this.busy=true;
     try {
-      const operation=this.generation;
-      const consent=await vscode.window.showInformationMessage('Charger le catalogue serverless global accessible à cette clé et les déploiements dédiés du projet en fr-par ? Jusqu’à 6 GET ; aucune inférence.',{modal:true},'Charger les modèles');
-      if(consent!=='Charger les modèles'||operation!==this.generation||!vscode.workspace.isTrusted)return;
-      const key=await this.context.secrets.get(SECRET);if(!key)throw new ReadError('missing_key');
-      if(operation!==this.generation||!this.project)return;
-      const generation=this.generation;const project=this.project;
-      const abort=new AbortController();this.abort=abort;
-      this.serverless=[];this.dedicated=[];this.serverlessState='Chargement…';this.dedicatedState='Chargement…';this.changed();
-      await vscode.window.withProgress({location:vscode.ProgressLocation.Notification,title:'Scaleway : modèles (lecture seule)',cancellable:true},async(_,token)=>{
-        const subscription=token.onCancellationRequested(()=>abort.abort());
-        try {
-          try {const rows=await listServerless(key,abort.signal);if(generation===this.generation&&!abort.signal.aborted){this.serverless=rows;this.serverlessState=rows.length?'Global · accès clé API':'Aucun modèle retourné';}}
-          catch(error){if(generation===this.generation)this.serverlessState='Erreur · non vérifié';await this.report(error);}
-          if(abort.signal.aborted||generation!==this.generation)return;
-          try {const rows=await listDedicated(project,key,abort.signal);if(generation===this.generation&&!abort.signal.aborted){this.dedicated=rows;this.dedicatedState=rows.length?'fr-par · projet sélectionné':'Aucun déploiement';}}
-          catch(error){if(generation===this.generation)this.dedicatedState='Erreur · non vérifié';await this.report(error);}
-        } finally {subscription.dispose();}
+      const operation=this.generation;this.token();
+      const org=await vscode.window.showInputBox({title:'Scaleway : organisation des projets',prompt:'UUID de l’organisation autorisée pour limiter les lectures. Aucun secret à saisir.',value:this.metadata?.organizationId,validateInput:v=>uuid(v.trim())?undefined:'UUID requis.'});
+      if(org===undefined||operation!==this.generation||!vscode.workspace.isTrusted)return;
+      if(!uuid(org.trim()))throw new ReadError('invalid_scope');
+      const consent=await vscode.window.showInformationMessage('Lister les projets de cette organisation ? Jusqu’à 5 GET séquentiels, lecture seule.',{modal:true},'Lister les projets');
+      if(consent!=='Lister les projets'||operation!==this.generation||!vscode.workspace.isTrusted)return;
+      const token=this.token();this.clear();const generation=this.generation;const abort=new AbortController();this.abort=abort;
+      const projects=await vscode.window.withProgress({location:vscode.ProgressLocation.Notification,title:'Scaleway : projets',cancellable:true},async(_,cancel)=>{
+        const sub=cancel.onCancellationRequested(()=>abort.abort());
+        try{return await listProjects(org.trim(),token,abort.signal);}finally{sub.dispose();}
       });
-      if(abort.signal.aborted&&generation===this.generation){this.serverlessState='Annulé · recharger';this.dedicatedState='Annulé · recharger';}
+      if(generation!==this.generation||abort.signal.aborted||!vscode.workspace.isTrusted)return;
+      this.token();this.metadata={name:'Utilisateur connecté',organizationId:org.trim()};
+      await this.pickProject(projects,generation);
     }catch(error){await this.report(error);}finally{this.busy=false;this.changed();}
   }
+  async loadModels():Promise<void> {
+    if(!this.session||!this.project)return this.switchProject();
+    if(this.busy||!vscode.workspace.isTrusted)return;
+    this.busy=true;
+    try {
+      const operation=this.generation;this.token();
+      const consent=await vscode.window.showInformationMessage('Lister les déploiements dédiés du projet en fr-par ? Jusqu’à 5 GET, aucune inférence. Serverless non interrogé : acceptation JWT non établie.',{modal:true},'Charger les modèles');
+      if(consent!=='Charger les modèles'||operation!==this.generation||!vscode.workspace.isTrusted)return;
+      const token=this.token();const project=this.project;if(!project)return;
+      const abort=new AbortController();this.abort=abort;this.dedicatedState='Chargement…';this.changed();
+      const rows=await vscode.window.withProgress({location:vscode.ProgressLocation.Notification,title:'Scaleway : déploiements dédiés',cancellable:true},async(_,cancel)=>{
+        const sub=cancel.onCancellationRequested(()=>abort.abort());
+        try{return await listDedicated(project,token,abort.signal);}finally{sub.dispose();}
+      });
+      if(operation!==this.generation||abort.signal.aborted||!vscode.workspace.isTrusted)return;
+      this.token();this.dedicated=rows;this.dedicatedState=rows.length?'fr-par · projet sélectionné':'Aucun déploiement';
+    }catch(error){this.dedicatedState='Erreur · non vérifié';await this.report(error);}finally{this.busy=false;this.changed();}
+  }
   async disconnect():Promise<void> {
-    this.clear();this.metadata=undefined;this.changed();
-    await this.context.secrets.delete(SECRET);
+    this.dropSession();
+    await this.context.secrets.delete('scalewayAI.apiKey.v1');
     await this.context.globalState.update('scalewayAI.connection',undefined);
   }
-  dispose(){this.clear();}
+  dispose(){this.dropSession();}
 }

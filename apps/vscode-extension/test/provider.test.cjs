@@ -1,8 +1,8 @@
 const assert=require("node:assert/strict");
 const {test}=require("node:test");
-const {listProjects,listServerless,listDedicated,getJSON,ReadError}=require("../dist/provider");
+const {listProjects,listServerless,listDedicated,getJSON,ReadError,sessionHeaders}=require("../dist/provider");
 const org="11111111-1111-1111-1111-111111111111", id="22222222-2222-2222-2222-222222222222";
-const key="synthetic_key_not_a_real_secret_123";
+const key="eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjQwMDAwMDAwMDB9.c3ludGhldGlj";
 const signal=()=>new AbortController().signal;
 test("projects scoped GET and normalized safe fields",async()=>{
  let count=0;const rows=await listProjects(org,key,signal(),async(origin,path,k)=>{count++;assert.equal(origin,"control");assert.ok(path.includes("organization_id="+org));assert.equal(k,key);return {projects:[{id,name:"Test",organization_id:org,secret:"omit"}],total_count:1};});
@@ -10,11 +10,13 @@ test("projects scoped GET and normalized safe fields",async()=>{
 });
 test("foreign project and malformed response reject instead of empty",async()=>{
  await assert.rejects(listProjects(org,key,signal(),async()=>({projects:[{id,name:"Test",organization_id:id}],total_count:1})),{code:"foreign_or_invalid_scope"});
- await assert.rejects(listServerless(key,signal(),async()=>({error:"private error"})),{code:"invalid_response"});
+ await assert.rejects(listServerless(key,signal(),async()=>({error:"private error"})),{code:"serverless_jwt_unverified"});
 });
-test("serverless global catalog normalized without feature promises",async()=>{
- const rows=await listServerless(key,signal(),async(o,p)=>{assert.equal(o,"models");assert.equal(p,"/v1/models");return {data:[{id:"real-model-id",feature:"unknown"}]};});
- assert.deepEqual(rows,[{id:"real-model-id",label:"real-model-id",kind:"serverless"}]);
+test("serverless JWT dispatch disabled; control JWT uses SDK session header",async()=>{
+ let sends=0;await assert.rejects(listServerless(key,signal(),async()=>{sends++;}),{code:'serverless_jwt_unverified'});assert.equal(sends,0);
+ assert.deepEqual(sessionHeaders(key),{'X-Session-Token':key,Accept:'application/json'});
+ await assert.rejects(getJSON('models','/v1/models',key,signal()),{code:'invalid_request'});
+ assert.throws(()=>sessionHeaders('api_key'),{code:'invalid_request'});
 });
 test("dedicated deployments require exact project and region",async()=>{
  const project={id,name:"Test",organizationId:org};
