@@ -1,0 +1,12 @@
+{
+  "retrieved_source": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-go/25895fc5ce562db9b94242f507ffbb553347a73f/api/inference/v1/inference_sdk.go",
+  "commit": "25895fc5ce562db9b94242f507ffbb553347a73f",
+  "sha256": "55d4ec88ddc038ab76be3522d633cf222d53090d0650d077369a25f208b6642c",
+  "snapshot": "evidence/documentation/dedicated-create-sdk-current.go",
+  "findings": [
+    "CreateDeployment route POST /inference/v1/regions/{region}/deployments and body confirmed",
+    "GetModelEula mentioned in comment but not exposed as generated operation in this file",
+    "new max_size comment no longer declares autoscaling unsupported; implementation intentionally fixes min/max to1; no autoscaling claim"
+  ],
+  "scope": "public source only; no account calls or live allocation, price/quota/EULA verification"
+}

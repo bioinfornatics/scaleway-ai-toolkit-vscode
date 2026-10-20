@@ -194,6 +194,22 @@ export function activate(context: vscode.ExtensionContext): void {
       label: 'Construire',
       children: [
         {
+          id: 'follow-deployment',
+          label: 'Suivre un déploiement existant',
+          icon: 'sync',
+          command: 'scalewayAI.followDeployment',
+        },
+        ...(connection.followingDeployment
+          ? [
+              {
+                id: 'stop-follow',
+                label: 'Arrêter le suivi du déploiement',
+                icon: 'debug-stop',
+                command: 'scalewayAI.stopDeploymentFollow',
+              },
+            ]
+          : []),
+        {
           id: 'prepare-deployment',
           label: 'Préparer un déploiement dédié',
           icon: 'server',
@@ -425,6 +441,12 @@ export function activate(context: vscode.ExtensionContext): void {
     if (connection.connected && connection.project)
       await connection.loadModels();
   });
+  register('scalewayAI.followDeployment', (id: unknown) =>
+    connection.followDeployment(typeof id === 'string' ? id : undefined),
+  );
+  register('scalewayAI.stopDeploymentFollow', () =>
+    connection.cancelFollowDeployment(),
+  );
   register('scalewayAI.prepareDeployment', (id: unknown) =>
     connection.prepareDeployment(typeof id === 'string' ? id : undefined),
   );

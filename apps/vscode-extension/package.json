@@ -2,7 +2,7 @@
   "name": "scaleway-ai-toolkit-preview",
   "displayName": "Scaleway AI Toolkit \u2014 Preview",
   "description": "Scaleway user browser login, read-only project resources and offline playground.",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "publisher": "scaleway-ai-community-preview",
   "private": true,
   "license": "UNLICENSED",
@@ -115,6 +115,14 @@
       {
         "command": "scalewayAI.exportExperiment",
         "title": "Scaleway AI: Exporter Python / TypeScript (hors ligne)"
+      },
+      {
+        "command": "scalewayAI.followDeployment",
+        "title": "Scaleway AI: Suivre un d\u00e9ploiement existant"
+      },
+      {
+        "command": "scalewayAI.stopDeploymentFollow",
+        "title": "Scaleway AI: Arr\u00eater le suivi (ne supprime rien)"
       }
     ],
     "viewsContainers": {
@@ -165,7 +173,7 @@
   "scripts": {
     "build": "tsc -p .",
     "test": "npm run build && node --test test/*.test.cjs",
-    "package": "npm run check && npm test && vsce package --allow-missing-repository --skip-license --out ../../artifacts/scaleway-ai-toolkit-preview-0.0.25.vsix",
+    "package": "npm run check && npm test && vsce package --allow-missing-repository --skip-license --out ../../artifacts/scaleway-ai-toolkit-preview-0.0.26.vsix",
     "check": "biome check --error-on-warnings .",
     "lint": "biome lint --error-on-warnings .",
     "format": "biome format --write ."

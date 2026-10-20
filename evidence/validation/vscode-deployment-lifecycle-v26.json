@@ -1,0 +1,42 @@
+{
+  "version": "0.0.26",
+  "biome": "passed",
+  "strict_typescript": "passed",
+  "tests": 89,
+  "audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "packaged_renderer": {
+    "status": "passed",
+    "version": "0.0.26",
+    "hostVersion": "1.142.0",
+    "packagedPath": "/tmp/scw-v26-install-ext/scaleway-ai-community-preview.scaleway-ai-toolkit-preview-0.0.26",
+    "catalogCommand": {
+      "publicCount": 33,
+      "publicStatus": "Offres publiques \u00b7 acc\u00e8s inf\u00e9rence non v\u00e9rifi\u00e9",
+      "panelOpened": true
+    },
+    "renderer": {
+      "panelOpened": true,
+      "rendererReady": true,
+      "rendered": true,
+      "publicCards": 17,
+      "dedicatedCards": 0,
+      "expectedPublicCards": 17,
+      "expectedDedicatedCards": 0
+    },
+    "authentication": "none",
+    "method": "actual packaged extension host and webview DOM acknowledgement with live public adapter"
+  },
+  "deployment_engine": "review/state/payload with injected-only creation; no production POST transport wired",
+  "follow": "explicit selected-project existing-resource up to5 GET,15s delay; cancel stops reads only",
+  "live_account_reads": 0,
+  "cloud_creation": 0,
+  "visual_keyboard_QA": "not_run",
+  "sha256": "d6ccaf9d4b93e39ca7ce52644e00724a9dbd02c428069f4261ef9ae6014dac0a"
+}

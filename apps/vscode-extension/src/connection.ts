@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer';
 import * as vscode from 'vscode';
 import { browserLogin, parseSession, type UserSession } from './browserLogin';
+import { followDeployment } from './deploymentLifecycle';
 import { deploymentWizard } from './deploymentWizard';
 import { createProject } from './projectCreation';
 import {
@@ -655,6 +656,101 @@ export class Connection implements vscode.Disposable {
     } finally {
       this.busy = false;
       if (this.abort === abort) this.abort = undefined;
+      this.changed();
+    }
+  }
+  get followingDeployment(): boolean {
+    return !!this.followAbort;
+  }
+  cancelFollowDeployment(): void {
+    this.followAbort?.abort();
+  }
+  private followAbort: AbortController | undefined;
+  async followDeployment(id?: string): Promise<void> {
+    if (id !== undefined && !uuid(id)) return;
+    if (!(await this.ensureProject())) return;
+    const project = this.project;
+    if (!project) return;
+    let selectedId = id;
+    if (!selectedId) {
+      const pick = await vscode.window.showQuickPick(
+        this.dedicated.map((row) => ({
+          label: row.label,
+          description: row.status,
+          id: row.id,
+        })),
+        {
+          title: 'Suivre un déploiement existant',
+          placeHolder:
+            '5 lectures maximum, 15 secondes entre lectures ; aucun endpoint sondé',
+        },
+      );
+      selectedId = pick?.id;
+    }
+    if (
+      !selectedId ||
+      this.project !== project ||
+      this.busy ||
+      !this.dedicated.some((row) => row.id === selectedId) ||
+      !this.connected ||
+      !vscode.workspace.isTrusted
+    )
+      return;
+    this.busy = true;
+    const generation = this.generation;
+    const abort = new AbortController();
+    this.abort = abort;
+    this.followAbort = abort;
+    const current = () =>
+      generation === this.generation &&
+      !this.disposed &&
+      this.connected &&
+      vscode.workspace.isTrusted &&
+      this.project === project;
+    try {
+      this.dedicatedState =
+        'Suivi en cours · 5 GET maximum · arrêter via Construire';
+      this.changed();
+      const result = await followDeployment(
+        project,
+        selectedId,
+        abort.signal,
+        async (scope, resourceId, signal) => {
+          if (!current()) {
+            abort.abort();
+            throw new ReadError('cancelled');
+          }
+          return getDeployment(scope, resourceId, this.token(), signal);
+        },
+        (row) => {
+          if (current()) {
+            this.dedicated = this.dedicated.map((old) =>
+              old.id === row.id ? row : old,
+            );
+            this.changed();
+          }
+        },
+      );
+      if (current())
+        this.dedicatedState =
+          result.state === 'ready'
+            ? 'Déploiement ready · endpoint non sondé, inférence non vérifiée'
+            : result.state === 'pending'
+              ? 'Encore en cours · limite de suivi atteinte ; actualisez pour reprendre'
+              : result.state === 'cancelled'
+                ? 'Suivi arrêté · aucune ressource annulée/supprimée'
+                : `État : ${result.state} · voir les détails`;
+    } catch (error) {
+      if (current()) {
+        this.dedicatedState =
+          'Suivi en erreur · dernier état conservé, potentiellement périmé';
+        if (error instanceof ReadError && error.code === 'access_denied')
+          this.dropSession();
+      }
+    } finally {
+      this.busy = false;
+      if (this.abort === abort) this.abort = undefined;
+      if (this.followAbort === abort) this.followAbort = undefined;
       this.changed();
     }
   }

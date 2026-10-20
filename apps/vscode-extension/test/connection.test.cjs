@@ -743,3 +743,82 @@ test('trust revoked during created-project preference write restores previous de
     s.restore();
   }
 });
+
+test('explicit follow updates selected resources and ready never claims endpoint reachability', async () => {
+  const s = setup();
+  const previous = provider.getDeployment;
+  try {
+    await s.connection.ensureProject();
+    s.connection.dedicated = [
+      { id, label: 'Known', kind: 'dedicated', status: 'creating' },
+    ];
+    let reads = 0;
+    provider.getDeployment = async (project, deploymentId, jwt) => {
+      reads++;
+      assert.equal(project.id, id);
+      assert.equal(deploymentId, id);
+      assert.equal(jwt, token);
+      return {
+        id,
+        label: 'Known',
+        kind: 'dedicated',
+        status: 'ready',
+        deploymentInfo: {
+          projectId: id,
+          region: 'fr-par',
+          fetchedAt: new Date().toISOString(),
+          endpoints: [],
+        },
+      };
+    };
+    await s.connection.followDeployment(org);
+    assert.equal(reads, 0);
+    await s.connection.followDeployment(id);
+    assert.equal(reads, 1);
+    assert.equal(s.connection.dedicated[0].status, 'ready');
+    assert.match(s.connection.dedicatedState, /non sondé/);
+    assert.equal(s.connection.followingDeployment, false);
+    assert.equal(s.connection.busy, false);
+  } finally {
+    provider.getDeployment = previous;
+    s.connection.dispose();
+    s.restore();
+  }
+});
+test('stop follow aborts pending read without deleting cloud resources or accepting late update', async () => {
+  const s = setup();
+  const previous = provider.getDeployment;
+  try {
+    await s.connection.ensureProject();
+    s.connection.dedicated = [
+      { id, label: 'Known', kind: 'dedicated', status: 'creating' },
+    ];
+    let entered;
+    const started = new Promise((resolve) => {
+      entered = resolve;
+    });
+    provider.getDeployment = async (_project, _id, _jwt, signal) => {
+      entered();
+      return new Promise((_resolve, reject) =>
+        signal.addEventListener(
+          'abort',
+          () => reject(new provider.ReadError('cancelled')),
+          { once: true },
+        ),
+      );
+    };
+    const pending = s.connection.followDeployment(id);
+    await started;
+    assert.equal(s.connection.followingDeployment, true);
+    s.connection.cancelFollowDeployment();
+    await pending;
+    assert.equal(s.connection.dedicated[0].status, 'creating');
+    assert.match(s.connection.dedicatedState, /aucune ressource/);
+    assert.equal(s.connection.followingDeployment, false);
+    assert.equal(s.connection.busy, false);
+  } finally {
+    provider.getDeployment = previous;
+    s.connection.dispose();
+    s.restore();
+  }
+});

@@ -164,3 +164,16 @@ Tools, evaluation, inspector/tracing and model optimization retain their specifi
 contracts and later gates. No dependency or cloud authority was broadened by this
 reference update. Existing resources vs actionable developer tools remains the UI
 invariant; no dead menu parity.
+
+
+## Continued model deployment lifecycle — 0.0.26
+
+.5.1.2 implements reviewed payload/state engine with injected-only creation
+transport and explicit existing-deployment follow action. Cost/quota/rights/EULA
+reviews must be fresh; plans cannot self-authorize. Write-ahead record, single send,
+unknown-outcome non-resubmission and accepted-versus-ready tested offline.
+Actual allocation transport/UI remains unwired until trustworthy price/quota/EULA
+and exact billable confirmation are available. Public SDK source recaptured at
+25895fc5; EULA method mentioned but absent from generated file, no guessed route.
+Explicit follow performs up to5 GETs with15s intervals; no startup polls or probes.
+.5.1 full creation/cleanup/live acceptance remains open; this is not a deployed model.
