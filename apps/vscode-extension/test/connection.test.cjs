@@ -7,7 +7,7 @@ const token='eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjQwMDAwMDAwMDB9.c3ludGhldGlj';
 function setup() {
  const secrets=new Map([['scalewayAI.apiKey.v1','legacy_do_not_read']]),state=new Map([['scalewayAI.connection',{name:'legacy',organizationId:org}]]);let requests=0,opened=0,logins=0;const inputs=[];
  const vscode={workspace:{isTrusted:true},env:{openExternal:async()=>{opened++;return true;}},Uri:{parse:v=>v},ProgressLocation:{Notification:15},window:{
-  showInputBox:async opts=>{inputs.push(opts);return org;},showInformationMessage:async(_m,opts,action)=>action,
+  showInputBox:async()=>{assert.fail('UUID text input forbidden');},showInformationMessage:async(_m,opts,action)=>action,
   showErrorMessage:async()=>{},showWarningMessage:async()=>{},showQuickPick:async items=>items[0],
   withProgress:async(_opts,fn)=>fn({}, {onCancellationRequested:()=>({dispose(){}})}),
  }};
@@ -15,16 +15,17 @@ function setup() {
  secrets:{get:async k=>{assert.equal(k,'scalewayAI.userSession.v1');return secrets.get(k);},store:async(k,v)=>secrets.set(k,v),delete:async k=>secrets.delete(k)}};
  const original=Module._load;Module._load=function(name,...rest){return name==='vscode'?vscode:original.call(this,name,...rest);};
  delete require.cache[require.resolve('../dist/connection')];let Connection;try{Connection=require('../dist/connection').Connection;}finally{Module._load=original;}
- const old=provider.listProjects,oldAuth=auth.browserLogin,oldDedicated=provider.listDedicated;
+ const old=provider.listProjects,oldAuth=auth.browserLogin,oldDedicated=provider.listDedicated,oldOrganizations=provider.listOrganizations;
+ provider.listOrganizations=async(u,k)=>{assert.equal(u,org);assert.equal(k,token);return [{id:org,name:'Organization',locked:false}];};
  provider.listProjects=async(o,k)=>{requests++;assert.equal(o,org);assert.equal(k,token);return [{id,name:'Project',organizationId:org}];};
  provider.listDedicated=async(p,k)=>{requests++;assert.equal(k,token);return [];};
  auth.browserLogin=async open=>{logins++;await open('https://account.scaleway.com/authenticate?redirectToUrl=synthetic');return {token,expiresAt:Date.now()+3600000,userId:org};};
- return {connection:new Connection(context,()=>{}),newConnection:()=>new Connection(context,()=>{}),context,secrets,state,inputs,vscode,requests:()=>requests,opened:()=>opened,logins:()=>logins,restore:()=>{provider.listProjects=old;auth.browserLogin=oldAuth;provider.listDedicated=oldDedicated;}};
+ return {connection:new Connection(context,()=>{}),newConnection:()=>new Connection(context,()=>{}),context,secrets,state,inputs,vscode,requests:()=>requests,opened:()=>opened,logins:()=>logins,restore:()=>{provider.listProjects=old;auth.browserLogin=oldAuth;provider.listDedicated=oldDedicated;provider.listOrganizations=oldOrganizations;}};
 }
 test('user browser login receives JWT, reads projects, stores JWT only in SecretStorage; removes legacy key',async()=>{
  const s=setup();try {
  assert.equal(s.requests(),0);assert.equal(s.connection.metadata,undefined);await s.connection.login();assert.equal(s.opened(),1);assert.equal(s.requests(),1);assert.equal(s.connection.project.id,id);
- assert.equal(s.inputs.length,1);assert.ok(!s.inputs[0].password);assert.equal(s.secrets.size,1);assert.equal(JSON.parse(s.secrets.get('scalewayAI.userSession.v1')).token,token);assert.ok(!JSON.stringify([...s.state]).includes(token));assert.ok(!JSON.stringify(s.connection.metadata).includes(token));
+ assert.equal(s.inputs.length,0);assert.equal(s.secrets.size,1);assert.equal(JSON.parse(s.secrets.get('scalewayAI.userSession.v1')).token,token);assert.ok(!JSON.stringify([...s.state]).includes(token));assert.ok(!JSON.stringify(s.connection.metadata).includes(token));
  await s.connection.loadModels();assert.equal(s.requests(),2);assert.equal(s.connection.serverless.length,0);
  await s.connection.switchProject();assert.equal(s.logins(),1);
  await s.connection.disconnect();assert.equal(s.connection.project,undefined);assert.equal(s.connection.metadata,undefined);
@@ -51,7 +52,7 @@ test('late browser result after disconnect cannot restore session',async()=>{
  try{await s.connection.login();assert.equal(s.requests(),0);assert.equal(s.connection.metadata,undefined);}finally{auth.browserLogin=old;s.connection.dispose();s.restore();}
 });
 
-test('UUID submission silently loads projects with no modal or progress notification',async()=>{
+test('Organization selection silently loads projects with no modal or progress notification',async()=>{
  const s=setup();try {
  await s.connection.login();const before=s.requests();
  s.vscode.window.showInformationMessage=async()=>{assert.fail('no project-list confirmation');};
@@ -59,12 +60,12 @@ test('UUID submission silently loads projects with no modal or progress notifica
  await s.connection.switchProject();assert.equal(s.requests(),before+1);assert.equal(s.connection.project.id,id);
  }finally{s.connection.dispose();s.restore();}
 });
-test('cancelled UUID, invalid UUID or disconnect during entry prevents project reads',async()=>{
+test('cancelled organization selection or disconnect during picker prevents project reads',async()=>{
  const s=setup();try {
  await s.connection.login();const before=s.requests();
- s.vscode.window.showInputBox=async()=>undefined;await s.connection.switchProject();assert.equal(s.requests(),before);
- s.vscode.window.showInputBox=async()=> 'invalid';await s.connection.switchProject();assert.equal(s.requests(),before);
- s.vscode.window.showInputBox=async()=>{await s.connection.disconnect();return org;};await s.connection.switchProject();assert.equal(s.requests(),before);assert.equal(s.connection.project,undefined);
+ s.vscode.window.showQuickPick=async()=>undefined;await s.connection.switchProject();assert.equal(s.requests(),before);
+ s.vscode.window.showQuickPick=async()=>{await s.connection.disconnect();return {organization:{id:org,name:'Organization',locked:false}};};
+ await s.connection.switchProject();assert.equal(s.requests(),before);assert.equal(s.connection.project,undefined);
  }finally{s.connection.dispose();s.restore();}
 });
 
@@ -115,7 +116,7 @@ test('expired/malformed persisted JWT deleted without HTTP, no preference crosso
  restored=s.newConnection();await restored.ready;await restored.storage;assert.ok(!restored.connected);assert.equal(s.secrets.has('scalewayAI.userSession.v1'),false);assert.equal(s.requests(),0);restored.dispose();
  s.secrets.set('scalewayAI.userSession.v1','invalid json');restored=s.newConnection();await restored.ready;await restored.storage;assert.equal(s.secrets.has('scalewayAI.userSession.v1'),false);restored.dispose();
  s.state.set('scalewayAI.preferences.v1.'+id,{organizationId:org,project:{id,name:'Another user',organizationId:org}});
- await s.connection.login();assert.equal(s.connection.project.name,'Project');assert.equal(s.inputs.length,1);
+ await s.connection.login();assert.equal(s.connection.project.name,'Project');assert.equal(s.inputs.length,0);
  }finally{restored?.dispose();s.connection.dispose();s.restore();}
 });
 test('secure storage failure prevents session persistence and no plaintext fallback',async()=>{
@@ -131,4 +132,13 @@ test('logout during delayed secret write removes late credential and prevents re
  const login=s.connection.login();await started;const logout=s.connection.disconnect();release();await Promise.all([login,logout]);
  assert.ok(!s.connection.connected);assert.equal(s.secrets.has('scalewayAI.userSession.v1'),false);assert.equal(s.requests(),0);
  }finally{s.connection.dispose();s.restore();}
+});
+
+test('named organization selector filters locked entries and persists organization name',async()=>{
+ const s=setup();const old=provider.listOrganizations;try {
+ provider.listOrganizations=async()=>[{id,name:'Locked',locked:true},{id:org,name:'Visible organization',locked:false}];
+ const picks=[];s.vscode.window.showQuickPick=async(items,opts)=>{picks.push({items,opts});return items[0];};
+ await s.connection.login();assert.equal(picks[0].opts.title,'Choisir une organisation Scaleway');assert.equal(picks[0].items.length,1);assert.equal(picks[0].items[0].label,'Visible organization');
+ assert.equal(s.connection.metadata.organizationName,'Visible organization');assert.equal(s.state.get('scalewayAI.preferences.v1.'+org).organizationName,'Visible organization');
+ }finally{provider.listOrganizations=old;s.connection.dispose();s.restore();}
 });

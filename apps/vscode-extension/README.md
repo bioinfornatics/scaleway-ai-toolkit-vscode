@@ -1,4 +1,4 @@
-# Scaleway AI Toolkit — Preview 0.0.11
+# Scaleway AI Toolkit — Preview 0.0.12
 
 Experimental community VS Code extension; no Scaleway affiliation. **User browser
 login without API keys**, scoped read-only projects/dedicated deployments and a
@@ -6,7 +6,7 @@ separate **offline synthetic** playground. No real inference or cloud writes.
 
 ## Install and try
 
-    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.11.vsix --force
+    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.12.vsix --force
 
 Reload Window, then **Scaleway AI: Open Offline Preview** (legacy command name).
 
@@ -17,15 +17,12 @@ Reload Window, then **Scaleway AI: Open Offline Preview** (legacy command name).
 2. Confirm browser opening. Sign in on **account.scaleway.com**, not inside VS Code.
 3. The browser returns the user JWT automatically to a temporary local callback.
    Return to VS Code; no token/password/key to copy or paste.
-4. Enter the UUID of the organization you authorize for project reads. This is
-   scope metadata, not a credential. Submitting it silently loads the projects
-   (up to 5 sequential GET), then opens the project selector.
-5. Charger les modèles lists existing dedicated deployments of that project in
-   **fr-par** silently (up to 5 sequential GET), with loading state in the tree
-   instead of a confirmation/progress popup. No inference.
+4. Select an organization **by name** from the dynamic IAM user-connections list.
+   No UUID input or visit to the console is needed. Select one of its projects.
+5. Charger les modèles silently lists dedicated deployments of that project in
+   **fr-par** (up to 5 sequential GET), with inline loading state. No inference.
 
-The UUID is still necessary to bound reads; automatic organization discovery is
-not implemented. Browser credentials/MFA stay on Scaleway. The extension neither
+Browser credentials/MFA stay on Scaleway. The extension neither
 creates an API key nor imports old keys. Successful login/disconnect deletes the
 legacy preview API-key SecretStorage entry and connection metadata.
 
@@ -50,9 +47,14 @@ The selected organization UUID and project ID/name are stored in globalState,
 bound to the connected user ID, never Settings Sync-enrolled by this extension.
 They are preferences, not proof of current access: API reads still enforce IAM.
 Project names may be stale until the next explicit project refresh. Changing
-project pre-fills the saved organization UUID; dynamic organization enumeration
-is not implemented pending a verified provider endpoint. Organization name itself
-is not available from the current scoped project API and is not invented.
+project lists organizations linked to the user via SDK-backed IAM
+GET /iam/v1alpha1/users/{user_id}/connections (one GET). Names and IDs are shown
+in a native selector; locked organizations are excluded. Names/UUID and selected
+project are persisted per user. No membership creation, joining or user-token
+exchange is performed. Cross-organization project access depends on the current
+JWT/IAM: listing a connection alone does not prove project access. An empty/error
+list is reported, not replaced by a manual UUID prompt. Live acceptance of this
+endpoint remains to be verified with your session.
 
 Reload/restart preserves session and choices. Expiry/401/403 deletes the saved JWT;
 explicit Disconnect removes JWT and current-user preferences. Shutdown only clears

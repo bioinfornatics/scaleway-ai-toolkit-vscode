@@ -1,6 +1,7 @@
 /** Fixed-origin read-only provider adapter. No inference, retries or redirects. */
 import * as https from 'node:https';
 export class ReadError extends Error { constructor(public code: string) {super(code);} }
+export interface Organization {id:string; name:string; locked:boolean;}
 export interface Project {id: string; name: string; organizationId: string;}
 export interface ListedModel {id: string; label: string; kind: 'serverless' | 'dedicated'; status?: string;}
 export const uuid = (v: unknown): v is string => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
@@ -14,6 +15,7 @@ export const getJSON: GetJSON = (origin, path, key, signal) => {
   let allowed = false;
   if(origin === 'control') {
     const url = new URL(path, 'https://api.scaleway.com');
+    const connectionRoute = /^\/iam\/v1alpha1\/users\/[0-9a-f-]{36}\/connections$/i.test(url.pathname) && uuid(url.pathname.split('/')[4]);
     const projectRoute = url.pathname === '/account/v3/projects';
     const deploymentRoute = url.pathname === '/inference/v1/regions/fr-par/deployments';
     const fields = projectRoute ? ['organization_id','page','page_size'] : ['organization_id','project_id','page','page_size'];
@@ -22,6 +24,7 @@ export const getJSON: GetJSON = (origin, path, key, signal) => {
       && fields.every(f => url.searchParams.getAll(f).length === 1)
       && uuid(url.searchParams.get('organization_id')) && (projectRoute || uuid(url.searchParams.get('project_id')))
       && /^[1-5]$/.test(url.searchParams.get('page') ?? '') && url.searchParams.get('page_size') === '100';
+    if(connectionRoute)allowed = url.origin==='https://api.scaleway.com' && !url.search && !url.hash && !url.username && !url.password;
   }
   if(!validateJWT(key)||!allowed)return Promise.reject(new ReadError('invalid_request'));
   return new Promise((resolve,reject) => {
@@ -61,6 +64,20 @@ async function pages(field:string, origin:'control', path:string, key:string, si
     }
   }
   throw new ReadError('page_limit');
+}
+/** One SDK-backed IAM GET; no users/emails retained and no membership mutation. */
+export async function listOrganizations(userId:string,token:string,signal:AbortSignal,get:GetJSON=getJSON):Promise<Organization[]> {
+  if(!uuid(userId))throw new ReadError('invalid_scope');
+  if(signal.aborted)throw new ReadError('cancelled');
+  const body=record(await get('control','/iam/v1alpha1/users/'+userId+'/connections',token,signal));
+  if(!Array.isArray(body.connections)||body.connections.length>500)throw new ReadError('invalid_response');
+  const result=body.connections.map(value=>{
+    const row=record(value);const org=record(row.organization);
+    if(!uuid(org.id)||!text(org.name)||typeof org.locked!=='boolean')throw new ReadError('invalid_response');
+    return {id:org.id,name:org.name,locked:org.locked};
+  });
+  if(new Set(result.map(o=>o.id)).size!==result.length)throw new ReadError('duplicate_id');
+  return result;
 }
 export async function listProjects(org:string,key:string,signal:AbortSignal,get:GetJSON=getJSON):Promise<Project[]> {
   if(!uuid(org))throw new ReadError('invalid_scope');

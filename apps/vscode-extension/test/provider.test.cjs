@@ -1,6 +1,6 @@
 const assert=require("node:assert/strict");
 const {test}=require("node:test");
-const {listProjects,listServerless,listDedicated,getJSON,ReadError,sessionHeaders}=require("../dist/provider");
+const {listProjects,listServerless,listDedicated,getJSON,ReadError,sessionHeaders,listOrganizations}=require("../dist/provider");
 const org="11111111-1111-1111-1111-111111111111", id="22222222-2222-2222-2222-222222222222";
 const key="eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjQwMDAwMDAwMDB9.c3ludGhldGlj";
 const signal=()=>new AbortController().signal;
@@ -32,4 +32,13 @@ test("already cancelled dispatch and unknown routes never send",async()=>{
  await assert.rejects(getJSON("models","/v1/models",key,c.signal),{code:"cancelled"});
  await assert.rejects(getJSON("models","/v1/chat/completions",key,signal()),{code:"invalid_request"});
  await assert.rejects(getJSON("control","/account/v3/projects?evil=x",key,signal()),{code:"invalid_request"});
+});
+
+test('IAM user connections provides organization names/IDs only with one scoped GET',async()=>{
+ let sends=0;const rows=await listOrganizations(id,key,signal(),async(o,p,k)=>{sends++;assert.equal(o,'control');assert.equal(p,'/iam/v1alpha1/users/'+id+'/connections');assert.equal(k,key);return {connections:[{organization:{id:org,name:'Test organization',locked:false},user:{id,email:'never retain'}}]};});
+ assert.equal(sends,1);assert.deepEqual(rows,[{id:org,name:'Test organization',locked:false}]);
+ await assert.rejects(listOrganizations('bad',key,signal(),async()=>{assert.fail('invalid scope must not send');}),{code:'invalid_scope'});
+ await assert.rejects(listOrganizations(id,key,signal(),async()=>({connections:[{organization:{id:org,name:'Test',locked:'no'}}]})),{code:'invalid_response'});
+ await assert.rejects(getJSON('control','/iam/v1alpha1/users/'+id+'/connections?extra=1',key,signal()),{code:'invalid_request'});
+ await assert.rejects(getJSON('control','/iam/v1alpha1/users/not-a-uuid/connections',key,signal()),{code:'invalid_request'});
 });

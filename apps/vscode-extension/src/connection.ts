@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import {Project, ListedModel, listProjects, listDedicated, uuid, ReadError} from './provider';
+import {Project, ListedModel, listProjects, listDedicated, listOrganizations, uuid, ReadError} from './provider';
 import {browserLogin, UserSession, parseSession} from './browserLogin';
-interface Metadata {name:string; organizationId:string;}
+interface Metadata {name:string; organizationId:string; organizationName?:string;}
 const SESSION_SECRET='scalewayAI.userSession.v1';
 const preferenceKey=(userId:string)=>'scalewayAI.preferences.v1.'+userId;
 export class Connection implements vscode.Disposable {
@@ -37,9 +37,10 @@ export class Connection implements vscode.Disposable {
   }
   private installSession(session:UserSession) {
     this.session=session;this.metadata={name:'Utilisateur connecté',organizationId:''};
-    const saved=this.context.globalState.get<{organizationId:unknown;project?:Project}>(preferenceKey(session.userId));
+    const saved=this.context.globalState.get<{organizationId:unknown;organizationName?:string;project?:Project}>(preferenceKey(session.userId));
     if(saved&&uuid(saved.organizationId)) {
       this.metadata.organizationId=saved.organizationId;
+      if(typeof saved.organizationName==='string'&&saved.organizationName.length<=256)this.metadata.organizationName=saved.organizationName;
       const p=saved.project;
       if(p&&uuid(p.id)&&p.organizationId===saved.organizationId&&typeof p.name==='string'&&p.name.length>0&&p.name.length<=256&&!/[\u0000-\u001f\u007f]/.test(p.name))this.project={id:p.id,name:p.name,organizationId:p.organizationId};
     }
@@ -108,7 +109,7 @@ export class Connection implements vscode.Disposable {
     const pick=await vscode.window.showQuickPick(projects.map(project=>({label:project.name,description:project.id,project})),{title:'Changer de projet Scaleway'});
     if(!pick||generation!==this.generation)return;
     const userId=this.session?.userId;this.token();this.project=pick.project;this.changed();
-    if(userId)await this.write(()=>this.context.globalState.update(preferenceKey(userId),{organizationId:pick.project.organizationId,project:{...pick.project}}));
+    if(userId)await this.write(()=>this.context.globalState.update(preferenceKey(userId),{organizationId:pick.project.organizationId,organizationName:this.metadata?.organizationName,project:{...pick.project}}));
   }
   async switchProject():Promise<void> {
     await this.ready;
@@ -116,15 +117,20 @@ export class Connection implements vscode.Disposable {
     if(this.busy||!vscode.workspace.isTrusted)return;
     this.busy=true;
     try {
-      const operation=this.generation;this.token();
-      const org=await vscode.window.showInputBox({title:'Scaleway : organisation des projets',prompt:'UUID de l’organisation : valider charge ses projets en lecture seule. Aucun secret à saisir.',value:this.metadata?.organizationId,validateInput:v=>uuid(v.trim())?undefined:'UUID requis.'});
-      if(org===undefined||operation!==this.generation||!vscode.workspace.isTrusted)return;
-      if(!uuid(org.trim()))throw new ReadError('invalid_scope');
-      // UUID submission explicitly requests this bounded scoped read; no redundant modal.
-      const token=this.token();this.clear();const generation=this.generation;const abort=new AbortController();this.abort=abort;
-      const projects=await listProjects(org.trim(),token,abort.signal);
-      if(generation!==this.generation||abort.signal.aborted||!vscode.workspace.isTrusted)return;
-      this.token();this.metadata={name:'Utilisateur connecté',organizationId:org.trim()};
+      const operation=this.generation;const token=this.token();const userId=this.session!.userId;
+      const abort=new AbortController();this.abort=abort;
+      const organizations=await listOrganizations(userId,token,abort.signal);
+      if(operation!==this.generation||abort.signal.aborted||!vscode.workspace.isTrusted)return;
+      const available=organizations.filter(org=>!org.locked);
+      if(!available.length){await vscode.window.showInformationMessage('Aucune organisation déverrouillée retournée pour cet utilisateur.');return;}
+      const current=this.metadata?.organizationId;
+      const pick=await vscode.window.showQuickPick(available.map(organization=>({label:organization.name,description:organization.id,detail:organization.id===current?'Organisation actuelle':undefined,organization})),{title:'Choisir une organisation Scaleway',placeHolder:'Sélectionner une organisation liée à votre utilisateur',matchOnDescription:true});
+      if(!pick||operation!==this.generation||abort.signal.aborted||!vscode.workspace.isTrusted)return;
+      this.token();const org=pick.organization;
+      this.clear();const generation=this.generation;const readAbort=new AbortController();this.abort=readAbort;
+      const projects=await listProjects(org.id,token,readAbort.signal);
+      if(generation!==this.generation||readAbort.signal.aborted||!vscode.workspace.isTrusted)return;
+      this.token();this.metadata={name:'Utilisateur connecté',organizationId:org.id,organizationName:org.name};
       await this.pickProject(projects,generation);
     }catch(error){await this.report(error);}finally{this.busy=false;this.changed();}
   }

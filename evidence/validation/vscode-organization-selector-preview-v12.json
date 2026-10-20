@@ -1,0 +1,19 @@
+{
+  "record_id": "vscode-organization-selector-preview-v12",
+  "verified_at": "2026-10-20T21:34:28.935563+00:00",
+  "issue": "scaleway_ai_vscode-jgh.3.19",
+  "artifact": "artifacts/scaleway-ai-toolkit-preview-0.0.12.vsix",
+  "sha256": "18b4fffc2cc266b618f5a98dc25d8e97205e412a21edb73893e85e6d52608c8f",
+  "tests_passed": 33,
+  "strict_typescript": "passed",
+  "isolated_install": "passed",
+  "package_audit": "no UUID text input; IAM-backed organization QuickPick",
+  "source": "evidence/documentation/scaleway-organization-selector-v1.json",
+  "reads": "one user-connections GET + max5 scoped project pages; no writes",
+  "not_run": [
+    "Live IAM connections endpoint acceptance",
+    "User v12 selector journey",
+    "Cross-organization access with same JWT"
+  ],
+  "authenticated_requests_by_agent": 0
+}
