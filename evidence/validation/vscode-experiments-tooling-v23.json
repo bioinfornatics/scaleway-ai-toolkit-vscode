@@ -1,0 +1,20 @@
+{
+  "version": "0.0.23",
+  "biome": "passed",
+  "strict_typescript": "passed",
+  "tests": 69,
+  "experiments": "explicit save/native overwrite confirmation, bounded strict load, independent Python/Node script replay",
+  "inference": "offline-synthetic only; real export gate retained",
+  "vsce": "4.0.0 pinned; Node>=22 requirements reviewed; package succeeds with original flags",
+  "dependency_audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "isolated_install": "passed",
+  "sha256": "fde164f8e790b5784990bf3da03da74f1e660e0a0d854abaf615e32844e58e90",
+  "visual_host_QA": "not_run"
+}

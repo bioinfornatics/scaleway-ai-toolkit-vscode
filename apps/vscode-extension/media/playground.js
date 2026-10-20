@@ -29,6 +29,7 @@ window.addEventListener('message', (e) => {
   const message = e.data;
   if (message.type === 'state') {
     model.value = message.model;
+    if (typeof message.prompt === 'string') prompt.value = message.prompt;
     run.disabled = message.running;
     stop.disabled = !message.running;
     model.disabled = message.running;

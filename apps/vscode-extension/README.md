@@ -1,4 +1,4 @@
-# Scaleway AI Toolkit — Preview 0.0.22
+# Scaleway AI Toolkit — Preview 0.0.23
 
 Experimental community VS Code extension; no Scaleway affiliation. **User browser
 login without API keys**, scoped read-only projects/dedicated deployments and a
@@ -6,7 +6,7 @@ separate **offline synthetic** playground. No real inference or cloud writes.
 
 ## Install and try
 
-    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.22.vsix --force
+    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.23.vsix --force
 
 Reload Window, then **Scaleway AI: Open Offline Preview** (legacy command name).
 
@@ -161,7 +161,7 @@ Scaleway; local experimental identification only, not endorsement. Publication
 requires separate brand review. ai-PULSE event branding not used. Asset provenance:
 evidence/documentation/scaleway-icon-preview-v1.json.
 
-## Preview 0.0.22 navigation and catalog visibility fix
+## Preview 0.0.23 navigation and catalog visibility fix
 
 Resources now separate **Projet Scaleway**, **Modèles**, **Récents**, and
 **Ressources locales** (synthetic demo). Developer tools separate **Découvrir**
@@ -177,7 +177,7 @@ and do not wait for pending SecretStorage. Untrusted workspace displays an expli
 explanation; approve the workspace for HTTP. Dedicated errors do not hide public
 offers. No credentials or provider endpoint input in the catalog webview.
 
-Packaged extension host catalog command (0.0.14 and final0.0.22) verified live public
+Packaged extension host catalog command (0.0.14 and final0.0.23) verified live public
 33 offerings in isolated trusted test workspace. This is stronger than standalone
 adapter testing, but it does not prove screenshot card rendering, keyboard/theme
 review or actual-account dedicated acceptance; those checks remain outstanding.
@@ -261,3 +261,21 @@ le nœud, le statut, l’heure de récupération et les endpoints retournés par
 Les endpoints indiquent public/privé et IAM/désactivé. Métadonnées manquantes
 restent inconnues ; les URLs ambiguës ou portant des identifiants sont rejetées.
 Aucun endpoint n’est sondé, aucune inférence, URL construite ou création.
+
+### Sauvegarder, reprendre et exporter une expérience hors ligne
+
+Après une démonstration, Construire propose « Enregistrer l’expérience » et
+« Exporter Python / TypeScript (hors ligne) ». La sauvegarde ouvre le JSON exact
+puis la boîte native Enregistrer sous : VS Code gère les confirmations d’écrasement.
+Il n’y a ni persistance automatique des instructions ni écriture cachée.
+« Reprendre une expérience hors ligne » importe un JSON local (128 Kio maximum),
+valide strictement le schéma, restaure modèle/instruction/réponse sans lancer de run.
+Les champs supplémentaires, modes réels ou secrets structurés sont refusés.
+Les instructions/réponses saisies peuvent contenir des données sensibles : relisez
+le contenu avant d’enregistrer/exporter ; aucun détecteur ne garantit leur absence.
+
+Les scripts Python et TypeScript produits rejouent uniquement les données de cette
+expérience synthétique ; ils ne sont pas des appels au modèle Scaleway réel.
+Exécution indépendante : python3 experiment.py ou
+node --experimental-strip-types experiment.ts (Node >=22.6). L’outillage utilise
+vsce4.0.0 (Node >=22), épinglé après revue : audit npm zéro vulnérabilité à cette date.

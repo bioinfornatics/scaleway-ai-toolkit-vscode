@@ -2,12 +2,13 @@
   "name": "scaleway-ai-toolkit-preview",
   "displayName": "Scaleway AI Toolkit \u2014 Preview",
   "description": "Scaleway user browser login, read-only project resources and offline playground.",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "publisher": "scaleway-ai-community-preview",
   "private": true,
   "license": "UNLICENSED",
   "engines": {
-    "vscode": "^1.96.0"
+    "vscode": "^1.96.0",
+    "node": ">=22.6.0"
   },
   "categories": [
     "Other"
@@ -102,6 +103,18 @@
       {
         "command": "scalewayAI.deploymentDetails",
         "title": "Scaleway AI: D\u00e9tails du d\u00e9ploiement (lecture seule)"
+      },
+      {
+        "command": "scalewayAI.saveExperiment",
+        "title": "Scaleway AI: Enregistrer l\u2019exp\u00e9rience hors ligne"
+      },
+      {
+        "command": "scalewayAI.loadExperiment",
+        "title": "Scaleway AI: Reprendre une exp\u00e9rience hors ligne"
+      },
+      {
+        "command": "scalewayAI.exportExperiment",
+        "title": "Scaleway AI: Exporter Python / TypeScript (hors ligne)"
       }
     ],
     "viewsContainers": {
@@ -152,7 +165,7 @@
   "scripts": {
     "build": "tsc -p .",
     "test": "npm run build && node --test test/*.test.cjs",
-    "package": "npm run check && npm test && vsce package --allow-missing-repository --skip-license --out ../../artifacts/scaleway-ai-toolkit-preview-0.0.22.vsix",
+    "package": "npm run check && npm test && vsce package --allow-missing-repository --skip-license --out ../../artifacts/scaleway-ai-toolkit-preview-0.0.23.vsix",
     "check": "biome check --error-on-warnings .",
     "lint": "biome lint --error-on-warnings .",
     "format": "biome format --write ."
@@ -161,7 +174,7 @@
     "@biomejs/biome": "2.5.15",
     "@types/node": "22.19.0",
     "@types/vscode": "1.96.0",
-    "@vscode/vsce": "3.7.1",
+    "@vscode/vsce": "4.0.0",
     "typescript": "5.9.3"
   },
   "icon": "media/scaleway-icon.png"

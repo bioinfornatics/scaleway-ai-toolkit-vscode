@@ -4,6 +4,11 @@ import { catalogDetails } from './catalogDetails';
 import { visibleCatalogModels } from './catalogVisibility';
 import { Connection } from './connection';
 import { type DemoModel, type Experiment, models, runDemo } from './demo';
+import {
+  exportExperiment,
+  loadExperiment,
+  saveExperiment,
+} from './experimentActions';
 import { parseInput } from './ipc';
 import { playgroundHtml } from './webview';
 
@@ -23,6 +28,7 @@ export function activate(context: vscode.ExtensionContext): void {
   let panel: vscode.WebviewPanel | undefined;
   let catalogPanel: vscode.WebviewPanel | undefined;
   let response = '';
+  let importedPrompt: string | undefined;
   let message = 'Prêt · Ctrl+Entrée pour exécuter';
   const changed = new vscode.EventEmitter<void>();
   const updateCatalog = () => {
@@ -45,6 +51,7 @@ export function activate(context: vscode.ExtensionContext): void {
     void panel?.webview.postMessage({
       type: 'state',
       model: selected.id,
+      ...(importedPrompt !== undefined ? { prompt: importedPrompt } : {}),
       running: !!active,
       output: response || 'La réponse simulée apparaîtra ici.',
       status: message,
@@ -190,6 +197,28 @@ export function activate(context: vscode.ExtensionContext): void {
           command: 'scalewayAI.prepareDeployment',
         },
         {
+          id: 'load-experiment',
+          label: 'Reprendre une expérience hors ligne',
+          icon: 'folder-open',
+          command: 'scalewayAI.loadExperiment',
+        },
+        ...(last
+          ? [
+              {
+                id: 'save-experiment',
+                label: 'Enregistrer l’expérience',
+                icon: 'save',
+                command: 'scalewayAI.saveExperiment',
+              },
+              {
+                id: 'export-experiment',
+                label: 'Exporter Python / TypeScript (hors ligne)',
+                icon: 'code',
+                command: 'scalewayAI.exportExperiment',
+              },
+            ]
+          : []),
+        {
           id: 'playground',
           label: 'Playground modèle',
           icon: 'beaker',
@@ -286,6 +315,7 @@ export function activate(context: vscode.ExtensionContext): void {
     const found = models.find((m) => m.id === model);
     if (!found) return;
     selected = found;
+    importedPrompt = undefined;
     const run = { cancelled: false };
     active = run;
     const origin = panel;
@@ -523,6 +553,50 @@ export function activate(context: vscode.ExtensionContext): void {
     if (active) active.cancelled = true;
   });
   register('scalewayAI.experiment', openExperiment);
+  register('scalewayAI.saveExperiment', async () => {
+    if (!last || active) return;
+    try {
+      await saveExperiment(last);
+    } catch {
+      await vscode.window.showErrorMessage(
+        'Impossible d’enregistrer cette expérience hors ligne.',
+      );
+    }
+  });
+  register('scalewayAI.loadExperiment', async () => {
+    if (active) return;
+    try {
+      const experiment = await loadExperiment();
+      if (!experiment || active) return;
+      const model = models.find(
+        (candidate) => candidate.id === experiment.model,
+      );
+      if (!model) return;
+      last = experiment;
+      selected = model;
+      importedPrompt = experiment.prompt;
+      response = experiment.output;
+      message = 'Expérience hors ligne reprise · aucune exécution déclenchée';
+      openPlayground();
+      refresh();
+      update();
+    } catch {
+      await vscode.window.showErrorMessage(
+        'Expérience invalide, trop volumineuse ou inaccessible. Aucun code exécuté.',
+      );
+    }
+  });
+  register('scalewayAI.exportExperiment', async () => {
+    if (!last || active) return;
+    try {
+      await exportExperiment(last);
+    } catch {
+      await vscode.window.showErrorMessage(
+        'Impossible d’exporter cette expérience hors ligne.',
+      );
+    }
+  });
+
   register('scalewayAI.catalog', async () => {
     const picked = await vscode.window.showQuickPick(
       models.map((m) => ({
