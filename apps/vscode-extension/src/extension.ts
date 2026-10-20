@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { catalogHtml, parseCatalogInput } from './catalog';
+import { visibleCatalogModels } from './catalogVisibility';
 import { Connection } from './connection';
 import { type DemoModel, type Experiment, models, runDemo } from './demo';
 import { parseInput } from './ipc';
@@ -26,8 +27,8 @@ export function activate(context: vscode.ExtensionContext): void {
   const updateCatalog = () => {
     void catalogPanel?.webview.postMessage({
       type: 'catalog-state',
-      serverless: connection.serverless,
-      dedicated: connection.dedicatedCatalog,
+      serverless: visibleCatalogModels(connection.serverless),
+      dedicated: visibleCatalogModels(connection.dedicatedCatalog),
       publicStatus: connection.serverlessState,
       dedicatedStatus: connection.dedicatedCatalogState,
       scope: connection.project
@@ -74,7 +75,7 @@ export function activate(context: vscode.ExtensionContext): void {
         : kind === 'dedicated-catalog'
           ? connection.dedicatedCatalog
           : connection.dedicated;
-    return rows.map((m) => ({
+    return visibleCatalogModels(rows).map((m) => ({
       id: `${kind}:${m.id}`,
       label: m.label,
       icon: 'symbol-method',

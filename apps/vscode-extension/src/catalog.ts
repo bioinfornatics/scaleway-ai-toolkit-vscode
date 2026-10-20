@@ -37,7 +37,7 @@ export function catalogHtml(webview: vscode.Webview, root: vscode.Uri): string {
     '<label for="search">Rechercher un modèle</label><input id="search" type="search" placeholder="Nom du modèle ou statut">' +
     '<h2>Serverless · offres publiques</h2><p id="public-status" role="status">Chargement du catalogue public…</p><div id="public-list" class="grid"></div>' +
     '<h2>Modèles dédiés à déployer · fr-par</h2><p id="dedicated-status" role="status">Sélectionnez un projet pour le catalogue dédié.</p><div id="dedicated-list" class="grid"></div>' +
-    '<p class="note">Source Serverless : catalogue commercial public Scaleway, variantes regroupées par produit. Le statut catalogue ne garantit pas l’accès à l’inférence. Les offres retirées sont conservées avec leur statut. Les déploiements existants sont dans Mes ressources.</p>' +
+    '<p class="note">Source Serverless : catalogue commercial public Scaleway, variantes regroupées par produit. Le statut catalogue ne garantit pas l’accès à l’inférence. Les offres retirées (retired / end_of_life) sont masquées par défaut. Les déploiements existants sont dans Mes ressources.</p>' +
     '</main><script nonce="' +
     nonce +
     '" src="' +

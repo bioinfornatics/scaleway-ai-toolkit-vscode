@@ -1,4 +1,4 @@
-# Scaleway AI Toolkit — Preview 0.0.17
+# Scaleway AI Toolkit — Preview 0.0.18
 
 Experimental community VS Code extension; no Scaleway affiliation. **User browser
 login without API keys**, scoped read-only projects/dedicated deployments and a
@@ -6,7 +6,7 @@ separate **offline synthetic** playground. No real inference or cloud writes.
 
 ## Install and try
 
-    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.17.vsix --force
+    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.18.vsix --force
 
 Reload Window, then **Scaleway AI: Open Offline Preview** (legacy command name).
 
@@ -161,7 +161,7 @@ Scaleway; local experimental identification only, not endorsement. Publication
 requires separate brand review. ai-PULSE event branding not used. Asset provenance:
 evidence/documentation/scaleway-icon-preview-v1.json.
 
-## Preview 0.0.17 navigation and catalog visibility fix
+## Preview 0.0.18 navigation and catalog visibility fix
 
 Resources now separate **Projet Scaleway**, **Modèles**, **Récents**, and
 **Ressources locales** (synthetic demo). Developer tools separate **Découvrir**
@@ -177,7 +177,7 @@ and do not wait for pending SecretStorage. Untrusted workspace displays an expli
 explanation; approve the workspace for HTTP. Dedicated errors do not hide public
 offers. No credentials or provider endpoint input in the catalog webview.
 
-Packaged extension host catalog command (0.0.14 and final0.0.17) verified live public
+Packaged extension host catalog command (0.0.14 and final0.0.18) verified live public
 33 offerings in isolated trusted test workspace. This is stronger than standalone
 adapter testing, but it does not prove screenshot card rendering, keyboard/theme
 review or actual-account dedicated acceptance; those checks remain outstanding.
@@ -205,3 +205,11 @@ Si une erreur de types persiste uniquement dans VS Code, ouvrez le fichier sous
 src puis utilisez « TypeScript: Go to Project Configuration » pour vérifier le
 projet associé, et « TypeScript: Restart TS Server » pour actualiser le service.
 Biome ne remplace pas le contrôle des types effectué par npm run build.
+
+### Offres retirées
+
+Le catalogue central et la navigation des modèles masquent les offres dont tous
+les statuts sont retired, end_of_life ou eol. Un produit regroupant une variante
+retirée et une variante active reste visible. Les statuts inconnus restent visibles
+sans garantie de disponibilité. Les données API brutes sont conservées et les
+déploiements existants ne sont jamais masqués par ce filtre.

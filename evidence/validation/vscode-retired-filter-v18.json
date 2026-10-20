@@ -1,0 +1,12 @@
+{
+  "version": "0.0.18",
+  "biome": "passed, zero diagnostics",
+  "strict_typescript": "passed",
+  "tests": {
+    "passed": 42,
+    "failed": 0
+  },
+  "filter": "presentation only; all lifecycle statuses retired/end_of_life/eol; mixed active and unknown retained; existing deployments unaffected",
+  "sha256": "bb93858adf2c713cfcb23355eba0e7bbe56cc76ed76e4ca8c89436512855ee8f",
+  "rendered_webview_verification": "not_run; service worker issue .3.27 remains separate"
+}
