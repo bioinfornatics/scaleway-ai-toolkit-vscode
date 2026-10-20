@@ -1,6 +1,6 @@
 # Scaleway AI Toolkit — delivery roadmap
 
-Updated 2026-10-20 23:46 +02:00 from stakeholder Foundry navigation reminder and installed-catalog failure report. **Beads owns tasks, dependencies and current status**; this document owns delivery sequencing and product boundaries, not a parallel task checklist. Experimental VSIX milestones do not close production/value/design gates.
+Updated 2026-10-21 after autonomous implementation through VSIX 0.0.25. Historical incident notes below retain their original scope. **Beads owns tasks, dependencies and current status**; this document owns delivery sequencing and product boundaries, not a parallel task checklist. Experimental VSIX milestones do not close production/value/design gates.
 
 ## Immediate delivery order
 
@@ -122,3 +122,30 @@ explicit final name/effect confirmation, one fixed POST, no retries, validated
 success-only default and uncertain-outcome handling. Agent cloud writes remain0;
 actual provider JWT/IAM acceptance not_run. This adds executable code behind a
 user-confirmed action, not a blanket resource/spend mandate.
+
+
+## Current delivery and remaining acceptance — 0.0.25
+
+Latest testable artifact: artifacts/scaleway-ai-toolkit-preview-0.0.25.vsix.
+79 tests and strict TypeScript/Biome gates pass; npm audit reports zero findings.
+Isolated installed packaged host1.142.0 confirms actual webview ready/rendered and
+17 active public cards from33 raw offers, no account authentication. Details:
+evidence/validation/vscode-project-creation-v25.json.
+
+Implemented increments (Beads children closed for these exact slices):
+.5.1.1 deployment preparation, .3.6.1 deployment/endpoint explorer,
+.3.5.1 explicit saved offline experiments and independently executed replay exports,
+.3.26 dev tooling audit fix, .3.27.1 real packaged renderer acknowledgement,
+.3.24.2 user-confirmed project creation code. No actual agent account/cloud write.
+
+Remaining release boundaries are not treated as missing-code checkboxes:
+- .3.23/.3.23.1 visual, keyboard, zoom and themes in real VS Code;
+- .3.2 current-user keyring/session/IAM cross-org acceptance;
+- .3.3 complete capability/invocation/price contract from the recorded console route;
+- .3.4 user-JWT inference audience/streaming transport and bounded send consent;
+- .5.1 dedicated price/quota/EULA and creation/reconciliation execution after exact
+  project/model/node/network/budget authority (preparation is not allocation);
+- parent .3.5/.3.6/.3.7 real-model exports/reachability and production acceptance;
+- advanced .4/.5 hosting and .6 research retain approved sequencing and external gates.
+Code behind project creation is explicit and testable, but live JWT/IAM conformance
+has not been observed. The full roadmap is not declared completed.

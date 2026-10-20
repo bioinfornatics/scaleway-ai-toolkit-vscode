@@ -7,5 +7,36 @@
   "source": "pinned projects-go-account_sdk.go CreateProject",
   "agent_cloud_writes": 0,
   "live_IAM_JWT_creation": "not_run",
-  "sha256": "9c42235460cebb9b5b432a22674c035bb67ab445b4477c55f311611b19b21597"
+  "sha256": "9c42235460cebb9b5b432a22674c035bb67ab445b4477c55f311611b19b21597",
+  "isolated_install": "passed",
+  "packaged_renderer": {
+    "status": "passed",
+    "version": "0.0.25",
+    "hostVersion": "1.142.0",
+    "packagedPath": "/tmp/scw-v25-install-ext/scaleway-ai-community-preview.scaleway-ai-toolkit-preview-0.0.25",
+    "catalogCommand": {
+      "publicCount": 33,
+      "publicStatus": "Offres publiques \u00b7 acc\u00e8s inf\u00e9rence non v\u00e9rifi\u00e9",
+      "panelOpened": true
+    },
+    "renderer": {
+      "panelOpened": true,
+      "rendererReady": true,
+      "rendered": true,
+      "publicCards": 17,
+      "dedicatedCards": 0,
+      "expectedPublicCards": 17,
+      "expectedDedicatedCards": 0
+    },
+    "authentication": "none",
+    "method": "actual packaged extension host and webview DOM acknowledgement with live public adapter"
+  },
+  "dependency_audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  }
 }
