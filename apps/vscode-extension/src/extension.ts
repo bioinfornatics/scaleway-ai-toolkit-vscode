@@ -181,6 +181,12 @@ export function activate(context: vscode.ExtensionContext): void {
       label: 'Construire',
       children: [
         {
+          id: 'prepare-deployment',
+          label: 'Préparer un déploiement dédié',
+          icon: 'server',
+          command: 'scalewayAI.prepareDeployment',
+        },
+        {
           id: 'playground',
           label: 'Playground modèle',
           icon: 'beaker',
@@ -378,6 +384,9 @@ export function activate(context: vscode.ExtensionContext): void {
     if (connection.connected && connection.project)
       await connection.loadModels();
   });
+  register('scalewayAI.prepareDeployment', (id: unknown) =>
+    connection.prepareDeployment(typeof id === 'string' ? id : undefined),
+  );
   register('scalewayAI.openCatalog', async () => {
     if (!catalogPanel) {
       catalogPanel = vscode.window.createWebviewPanel(
@@ -400,6 +409,8 @@ export function activate(context: vscode.ExtensionContext): void {
           const input = parseCatalogInput(value);
           if (!input) return;
           if (input.type === 'ready') updateCatalog();
+          if (input.type === 'prepare')
+            await connection.prepareDeployment(input.id);
           if (input.type === 'details') {
             const details = catalogDetails(
               input.kind === 'serverless'

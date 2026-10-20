@@ -90,3 +90,19 @@ project/fr-par, network and spend cap must be explicit before creation.
 No automatic allocation, license acceptance or retry after an ambiguous POST.
 The stakeholder requests the feature, not an unspecified billable allocation.
 Production acceptance and real-inference authorization remain separate.
+
+
+## Autonomous implementation mandate — 2026-10-21 00:49
+
+User requests implementation of the Beads roadmap, not more planning-only work.
+Local implementation/fixture tests/package/necessary local commits are authorized;
+paid allocation, license acceptance, live account execution and publication still
+require their own explicit bounded confirmation. Do not call a research/design/
+participant/production gate completed merely because its code slice exists.
+
+Version 0.0.21 implements the native dedicated preparation wizard under .5.1.1:
+source-backed model compatibility and regional node inventory, one-node candidate,
+IAM-only endpoint intent, exact decimal user ceiling, non-executable local plan,
+cancellation/session invalidation. This is preparation, not deployment creation.
+Next independent implementation slice: enrich existing deployment explorer with
+validated provider-returned model linkage/endpoints, then portable saved outputs.

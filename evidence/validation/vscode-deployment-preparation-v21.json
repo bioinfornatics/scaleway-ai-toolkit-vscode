@@ -1,0 +1,12 @@
+{
+  "version": "0.0.21",
+  "biome": "passed",
+  "strict_typescript": "passed",
+  "tests": 59,
+  "preparation": "native wizard, catalog/node-type GETs only, non-executable local plan, no EULA acceptance",
+  "source": "pinned evidence/schemas/dedicated-go-inference_sdk.go commit46763ab9, nodes_support/quantizations and ListNodeTypes",
+  "live_account_reads": 0,
+  "cloud_writes": 0,
+  "real_host_wizard": "not_run",
+  "sha256": "151813698238da008ed515f5f3de0fade83d744a210c4d366d40e7925bf88d5c"
+}

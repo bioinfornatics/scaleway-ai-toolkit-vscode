@@ -1,10 +1,12 @@
 import { Buffer } from 'node:buffer';
 import * as vscode from 'vscode';
 import { browserLogin, parseSession, type UserSession } from './browserLogin';
+import { deploymentWizard } from './deploymentWizard';
 import {
   type ListedModel,
   listDedicated,
   listDedicatedCatalog,
+  listNodeTypes,
   listOrganizations,
   listProjects,
   listServerless,
@@ -507,6 +509,64 @@ export class Connection implements vscode.Disposable {
       await this.report(error);
     } finally {
       this.busy = false;
+      this.changed();
+    }
+  }
+  async prepareDeployment(modelId?: string): Promise<boolean> {
+    if (modelId !== undefined && !uuid(modelId)) return false;
+    if (!(await this.ensureProject())) return false;
+    const project = this.project;
+    if (!project) return false;
+    this.busy = true;
+    const generation = this.generation;
+    const abort = new AbortController();
+    this.abort = abort;
+    const current = () =>
+      !this.disposed &&
+      !abort.signal.aborted &&
+      generation === this.generation &&
+      this.project === project &&
+      this.connected &&
+      vscode.workspace.isTrusted;
+    try {
+      const models = await listDedicatedCatalog(
+        project,
+        this.token(),
+        abort.signal,
+      );
+      if (!current()) return false;
+      this.dedicatedCatalog = models;
+      this.dedicatedCatalogState = 'Modèles à déployer · fr-par';
+      this.changed();
+      let model = modelId
+        ? models.find((row) => row.id === modelId)
+        : undefined;
+      if (!modelId) {
+        const pick = await vscode.window.showQuickPick(
+          models
+            .filter((row) => row.dedicatedInfo?.status === 'ready')
+            .map((row) => ({
+              label: row.label,
+              description: row.id,
+              model: row,
+            })),
+          {
+            title: 'Choisir le modèle dédié à préparer',
+            placeHolder: 'Modèles ready · aucun déploiement créé',
+          },
+        );
+        model = pick?.model;
+      }
+      if (!current() || !model) return false;
+      const nodes = await listNodeTypes(this.token(), abort.signal);
+      if (!current()) return false;
+      return await deploymentWizard(project, model, nodes, current);
+    } catch (error) {
+      if (current()) await this.report(error);
+      return false;
+    } finally {
+      this.busy = false;
+      if (this.abort === abort) this.abort = undefined;
       this.changed();
     }
   }

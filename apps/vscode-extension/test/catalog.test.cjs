@@ -177,3 +177,17 @@ test('navigation explicitly separates deployable dedicated catalog and existing 
   assert.ok(source.includes("children: realModelNodes('dedicated-catalog')"));
   assert.ok(source.includes("children: realModelNodes('dedicated')"));
 });
+
+test('deployment preparation IPC is exact UUID identity, never network/budget/acceptance payload', () => {
+  const id = '33333333-3333-3333-3333-333333333333';
+  assert.deepEqual(parseCatalogInput({ type: 'prepare', id }), {
+    type: 'prepare',
+    id,
+  });
+  for (const value of [
+    { type: 'prepare', id: 'invalid' },
+    { type: 'prepare', id, acceptEula: true },
+    { type: 'prepare', id, endpoint: 'evil' },
+  ])
+    assert.equal(parseCatalogInput(value), undefined);
+});

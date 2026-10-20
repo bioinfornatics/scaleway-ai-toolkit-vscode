@@ -1,4 +1,4 @@
-# Scaleway AI Toolkit — Preview 0.0.20
+# Scaleway AI Toolkit — Preview 0.0.21
 
 Experimental community VS Code extension; no Scaleway affiliation. **User browser
 login without API keys**, scoped read-only projects/dedicated deployments and a
@@ -6,7 +6,7 @@ separate **offline synthetic** playground. No real inference or cloud writes.
 
 ## Install and try
 
-    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.20.vsix --force
+    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.21.vsix --force
 
 Reload Window, then **Scaleway AI: Open Offline Preview** (legacy command name).
 
@@ -161,7 +161,7 @@ Scaleway; local experimental identification only, not endorsement. Publication
 requires separate brand review. ai-PULSE event branding not used. Asset provenance:
 evidence/documentation/scaleway-icon-preview-v1.json.
 
-## Preview 0.0.20 navigation and catalog visibility fix
+## Preview 0.0.21 navigation and catalog visibility fix
 
 Resources now separate **Projet Scaleway**, **Modèles**, **Récents**, and
 **Ressources locales** (synthetic demo). Developer tools separate **Découvrir**
@@ -177,7 +177,7 @@ and do not wait for pending SecretStorage. Untrusted workspace displays an expli
 explanation; approve the workspace for HTTP. Dedicated errors do not hide public
 offers. No credentials or provider endpoint input in the catalog webview.
 
-Packaged extension host catalog command (0.0.14 and final0.0.20) verified live public
+Packaged extension host catalog command (0.0.14 and final0.0.21) verified live public
 33 offerings in isolated trusted test workspace. This is stronger than standalone
 adapter testing, but it does not prove screenshot card rendering, keyboard/theme
 review or actual-account dedicated acceptance; those checks remain outstanding.
@@ -233,3 +233,21 @@ en création ou en erreur. Serverless n’implique pas une allocation GPU dédi�
 Le parcours dédié attendu est modèle → infrastructure compatible → coût/licence/
 réseau → confirmation → déploiement → endpoint utilisable. Ce parcours de création
 reste à implémenter ; cette version apporte la distinction, pas la création cloud.
+
+### Préparer un déploiement dédié
+
+Sur une carte dédiée : « Préparer le déploiement », ou Construire → Préparer un
+déploiement dédié. L’action déclenche la connexion/le choix du projet si nécessaire,
+puis relit le catalogue et les types de nœuds en fr-par (maximum 10 GET séquentiels,
+sans confirmation ni progression pour les lectures). Aucun HTTP au démarrage.
+
+L’assistant propose les configurations ready, explicitement compatibles, activées
+et en stock available/low_stock, avec les bits et le contexte fournis par l’API.
+Il recueille le nom, le réseau public/privé protégé par IAM et votre plafond horaire
+EUR. Ce plafond n’est PAS un tarif Scaleway ni un plafond appliqué côté fournisseur.
+L’UUID du réseau privé est une référence candidate, pas une preuve d’appartenance.
+
+La confirmation ouvre un JSON local non exécutable : prix dédié, quota, conditions
+EULA et contrat de création restent à vérifier. Aucun POST, acceptation EULA,
+déploiement, réseau, endpoint ou coût n’est déclenché. Un changement de compte,
+projet, confiance ou une annulation stoppe le parcours. Aucun JWT dans le plan.

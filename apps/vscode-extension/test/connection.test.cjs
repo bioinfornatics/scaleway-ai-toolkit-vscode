@@ -517,3 +517,89 @@ test('public catalog is independent from busy account and pending SecretStorage,
     s.restore();
   }
 });
+
+test('deployment preparation re-reads selected-project model and hardware; wizard sees no JWT', async () => {
+  const s = setup();
+  const wizard = require('../dist/deploymentWizard');
+  const previous = {
+    models: provider.listDedicatedCatalog,
+    nodes: provider.listNodeTypes,
+    wizard: wizard.deploymentWizard,
+  };
+  const modelId = '33333333-3333-3333-3333-333333333333';
+  const steps = [];
+  try {
+    await s.connection.ensureProject();
+    provider.listDedicatedCatalog = async (project, jwt) => {
+      assert.equal(project.id, id);
+      assert.equal(jwt, token);
+      steps.push('models');
+      return [
+        {
+          id: modelId,
+          label: 'Model',
+          kind: 'dedicated-catalog',
+          dedicatedInfo: {
+            status: 'ready',
+            hasEula: false,
+            supportedNodes: [],
+          },
+        },
+      ];
+    };
+    provider.listNodeTypes = async (jwt) => {
+      assert.equal(jwt, token);
+      steps.push('nodes');
+      return [];
+    };
+    wizard.deploymentWizard = async (project, model, nodes, current) => {
+      assert.equal(project.id, id);
+      assert.equal(model.id, modelId);
+      assert.deepEqual(nodes, []);
+      assert.equal(current(), true);
+      assert.ok(!JSON.stringify({ project, model, nodes }).includes(token));
+      steps.push('wizard');
+      return true;
+    };
+    assert.equal(await s.connection.prepareDeployment(modelId), true);
+    assert.deepEqual(steps, ['models', 'nodes', 'wizard']);
+    assert.equal(s.connection.busy, false);
+    steps.length = 0;
+    assert.equal(await s.connection.prepareDeployment('invalid'), false);
+    assert.deepEqual(steps, []);
+  } finally {
+    provider.listDedicatedCatalog = previous.models;
+    provider.listNodeTypes = previous.nodes;
+    wizard.deploymentWizard = previous.wizard;
+    s.connection.dispose();
+    s.restore();
+  }
+});
+test('logout during preparation stops hardware read and cannot finish stale wizard', async () => {
+  const s = setup();
+  const wizard = require('../dist/deploymentWizard');
+  const previous = {
+    models: provider.listDedicatedCatalog,
+    nodes: provider.listNodeTypes,
+    wizard: wizard.deploymentWizard,
+  };
+  const modelId = '33333333-3333-3333-3333-333333333333';
+  try {
+    await s.connection.ensureProject();
+    provider.listDedicatedCatalog = async () => {
+      await s.connection.disconnect();
+      return [{ id: modelId, label: 'Model', kind: 'dedicated-catalog' }];
+    };
+    provider.listNodeTypes = async () => assert.fail('stale hardware read');
+    wizard.deploymentWizard = async () => assert.fail('stale wizard');
+    assert.equal(await s.connection.prepareDeployment(modelId), false);
+    assert.equal(s.connection.connected, false);
+    assert.equal(s.connection.busy, false);
+  } finally {
+    provider.listDedicatedCatalog = previous.models;
+    provider.listNodeTypes = previous.nodes;
+    wizard.deploymentWizard = previous.wizard;
+    s.connection.dispose();
+    s.restore();
+  }
+});

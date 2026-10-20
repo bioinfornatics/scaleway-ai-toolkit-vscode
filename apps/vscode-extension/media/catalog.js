@@ -43,6 +43,20 @@
         });
       });
       card.append(details);
+      if (kind === 'dedicated') {
+        const prepare = document.createElement('button');
+        prepare.type = 'button';
+        prepare.textContent = 'Préparer le déploiement';
+        prepare.setAttribute(
+          'aria-label',
+          `Préparer le déploiement de ${row.label}`,
+        );
+        prepare.addEventListener('click', () =>
+          vscode.postMessage({ type: 'prepare', id: row.id }),
+        );
+        card.append(prepare);
+      }
+
       root.append(card);
     }
     if (rows.length && !shown.length) {

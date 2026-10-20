@@ -1,8 +1,9 @@
 import { randomBytes } from 'node:crypto';
 import * as vscode from 'vscode';
-import { text } from './provider';
+import { text, uuid } from './provider';
 export type CatalogInput =
   | { type: 'ready' | 'refresh' | 'project' }
+  | { type: 'prepare'; id: string }
   | { type: 'details'; kind: 'serverless' | 'dedicated-catalog'; id: string };
 export function parseCatalogInput(value: unknown): CatalogInput | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return;
@@ -14,6 +15,12 @@ export function parseCatalogInput(value: unknown): CatalogInput | undefined {
       message.type === 'project')
   )
     return { type: message.type };
+  if (
+    message.type === 'prepare' &&
+    Object.keys(message).length === 2 &&
+    uuid(message.id)
+  )
+    return { type: 'prepare', id: message.id };
   if (
     message.type === 'details' &&
     Object.keys(message).length === 3 &&

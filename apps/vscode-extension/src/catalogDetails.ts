@@ -23,6 +23,6 @@ export function catalogDetails(
     limits:
       kind === 'serverless'
         ? 'Accès inférence non vérifié. Prix, capacités et identifiant d’invocation non établis par cette source. Le playground actuel est uniquement une démonstration hors ligne, pas un test de ce modèle.'
-        : 'Modèle disponible au catalogue dédié, pas un déploiement existant. Le déploiement et le test d’inférence ne sont pas disponibles dans cette preview.',
+        : 'Modèle disponible au catalogue dédié, pas un déploiement existant. La préparation locale est disponible via la carte ; aucune allocation ni inférence n’est exécutée.',
   };
 }

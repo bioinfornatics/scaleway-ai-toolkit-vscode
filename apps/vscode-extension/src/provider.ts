@@ -16,11 +16,29 @@ export interface Project {
   name: string;
   organizationId: string;
 }
+export interface SupportedNode {
+  nodeTypeName: string;
+  quantizationBits: number;
+  allowed: boolean;
+  maxContextSize: number;
+}
+export interface DedicatedModelInfo {
+  status: string;
+  hasEula: boolean | undefined;
+  supportedNodes: SupportedNode[];
+}
+export interface NodeType {
+  name: string;
+  stockStatus: string;
+  disabled: boolean;
+  region: 'fr-par';
+}
 export interface ListedModel {
   id: string;
   label: string;
   kind: 'serverless' | 'dedicated' | 'dedicated-catalog';
   status?: string;
+  dedicatedInfo?: DedicatedModelInfo;
 }
 export const uuid = (v: unknown): v is string =>
   typeof v === 'string' &&
@@ -63,6 +81,8 @@ export const getJSON: GetJSON = (origin, path, key, signal) => {
       ) && uuid(url.pathname.split('/')[4]);
     const projectRoute = url.pathname === '/account/v3/projects';
     const modelRoute = url.pathname === '/inference/v1/regions/fr-par/models';
+    const nodeRoute =
+      url.pathname === '/inference/v1/regions/fr-par/node-types';
     const deploymentRoute =
       url.pathname === '/inference/v1/regions/fr-par/deployments';
     const fields = projectRoute
@@ -80,6 +100,19 @@ export const getJSON: GetJSON = (origin, path, key, signal) => {
       (projectRoute || uuid(url.searchParams.get('project_id'))) &&
       /^[1-5]$/.test(url.searchParams.get('page') ?? '') &&
       url.searchParams.get('page_size') === '100';
+    if (nodeRoute)
+      allowed =
+        url.origin === 'https://api.scaleway.com' &&
+        !url.hash &&
+        !url.username &&
+        !url.password &&
+        url.searchParams.size === 3 &&
+        ['include_disabled_types', 'page', 'page_size'].every(
+          (field) => url.searchParams.getAll(field).length === 1,
+        ) &&
+        url.searchParams.get('include_disabled_types') === 'true' &&
+        /^[1-5]$/.test(url.searchParams.get('page') ?? '') &&
+        url.searchParams.get('page_size') === '100';
     publicRoute =
       url.pathname === '/product-catalog/v2alpha1/public-catalog/products';
     if (publicRoute)
@@ -350,6 +383,9 @@ export async function listDedicatedCatalog(
       id: row.id,
       label: row.name,
       kind: 'dedicated-catalog' as const,
+      ...(row.nodes_support !== undefined || row.has_eula !== undefined
+        ? { dedicatedInfo: parseDedicatedModelInfo(row) }
+        : {}),
       status:
         (row.project_id === project.id
           ? 'Projet · '
@@ -397,6 +433,106 @@ export async function listDedicated(
     };
   });
   if (new Set(result.map((m) => m.id)).size !== result.length)
+    throw new ReadError('duplicate_id');
+  return result;
+}
+
+/** Preserve exact compatibility bits/context; never infer precision from model names. */
+export function parseDedicatedModelInfo(value: unknown): DedicatedModelInfo {
+  const row = record(value);
+  if (row.has_eula !== undefined && typeof row.has_eula !== 'boolean')
+    throw new ReadError('invalid_response');
+  const supportedNodes: SupportedNode[] = [];
+  const seen = new Map<string, SupportedNode>();
+  if (row.nodes_support !== undefined) {
+    if (!Array.isArray(row.nodes_support) || row.nodes_support.length > 32)
+      throw new ReadError('invalid_response');
+    for (const value of row.nodes_support) {
+      const group = record(value);
+      if (!Array.isArray(group.nodes) || group.nodes.length > 128)
+        throw new ReadError('invalid_response');
+      for (const value of group.nodes) {
+        const node = record(value);
+        if (
+          !text(node.node_type_name) ||
+          !Array.isArray(node.quantizations) ||
+          node.quantizations.length > 32
+        )
+          throw new ReadError('invalid_response');
+        for (const value of node.quantizations) {
+          const quantization = record(value);
+          const bits = quantization.quantization_bits;
+          const context = quantization.max_context_size;
+          if (
+            !Number.isSafeInteger(bits) ||
+            Number(bits) < 1 ||
+            Number(bits) > 128 ||
+            !Number.isSafeInteger(context) ||
+            Number(context) < 0 ||
+            typeof quantization.allowed !== 'boolean'
+          )
+            throw new ReadError('invalid_response');
+          const entry = {
+            nodeTypeName: node.node_type_name,
+            quantizationBits: Number(bits),
+            allowed: quantization.allowed,
+            maxContextSize: Number(context),
+          };
+          const key = `${node.node_type_name}:${bits}`;
+          const existing = seen.get(key);
+          if (
+            existing &&
+            (existing.allowed !== entry.allowed ||
+              existing.maxContextSize !== entry.maxContextSize)
+          )
+            throw new ReadError('conflicting_compatibility');
+          if (!existing) {
+            supportedNodes.push(entry);
+            seen.set(key, entry);
+          }
+          if (supportedNodes.length > 1024)
+            throw new ReadError('response_limit');
+        }
+      }
+    }
+  }
+  return {
+    status: text(row.status) ? row.status : 'unknown',
+    hasEula: row.has_eula as boolean | undefined,
+    supportedNodes,
+  };
+}
+/** Regional hardware inventory only; stock is not quota, price or allocation proof. */
+export async function listNodeTypes(
+  key: string,
+  signal: AbortSignal,
+  get: GetJSON = getJSON,
+): Promise<NodeType[]> {
+  const rows = await pages(
+    'node_types',
+    'control',
+    '/inference/v1/regions/fr-par/node-types?include_disabled_types=true',
+    key,
+    signal,
+    get,
+  );
+  const result = rows.map((value) => {
+    const row = record(value);
+    if (
+      !text(row.name) ||
+      !text(row.stock_status) ||
+      typeof row.disabled !== 'boolean' ||
+      row.region !== 'fr-par'
+    )
+      throw new ReadError('foreign_or_invalid_scope');
+    return {
+      name: row.name,
+      stockStatus: row.stock_status,
+      disabled: row.disabled,
+      region: 'fr-par' as const,
+    };
+  });
+  if (new Set(result.map((row) => row.name)).size !== result.length)
     throw new ReadError('duplicate_id');
   return result;
 }
