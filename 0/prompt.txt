@@ -1,0 +1,265 @@
+1. ok ca fonctionne, je pense que le panneau apparaissant apres avoir donner l'uuid de l'oganisation; lister jusqu'a 5 ... est inutile et doit etre fait silencieusement
+
+---
+
+2. dans le menu de l'extention inutile d'avoir une ligne se connecter, sur l'extension azure foundry il y a un trigger/hooks lorsque la personne clique sur n'importe quel item du menu si non connecté alors ca declence le chemin de connection
+
+---
+
+lorsque l'on clique sur modeles dans le menu un popu apparait: lister les déploiement dédié en fr-par ? jusqu'a 5 Get ...  inutle de mettre le popu fait le silencieusment
+
+---
+
+est-ce que le jwt suite a une connection il peute etre stocké dans les endroits accepté par les specification freedesktop ? afin qu'il nesoit pas uniquement en memoire ? de meme que le choix de l'organisation et l'uuid ? pour choisir l'organisation au lieu d'aller chercher l'id est il possible de lister dynamiquement ceux disponibles ?
+
+---
+
+procede, validé
+
+---
+
+j'ai touhours une demande d'entrée texte pour un uuid regarde la capture écran: "/home/jmercier/Images/Captures d’écran/Capture d’écran du 2026-10-20 23-30-17.png"  ceci implique d'aller sur le web , sur scaleway et copié l'id, est il possible ici de la lister et la selectionner ? ceci simplifie le parcours utilisateur
+
+---
+
+pourquoi aucun modele est lister dans le catalogue de modele, idem pour servless, idem pour déploiement dédié
+
+---
+
+ok procede
+
+---
+
+Pour rappel Voici les éléments visibles du menu **Foundry Toolkit** :
+
+- **My Resources**
+  - Set Foundry Project
+  - Models
+  - Agents
+  - Tools
+  - Knowledge
+  - Evaluations
+  - Recent
+    - Create in Code With Template
+    - Design an Agent with Builder
+  - Local Resources
+  - Classic
+- **Developer Tools**
+  - Discover
+    - Model Catalog
+    - Tool Catalog
+  - Build
+    - Create Agent
+    - Agent Inspector
+    - Deploy to Microsoft Foundry
+    - Hosted Agent Playground
+    - Model Playground
+    - Model Conversion
+    - Fine-tuning
+  - Monitor
+- **Help And Feedback**
+
+Le sélecteur de projet ouvert propose également :
+
+- **Switch project** : choisir un autre projet par défaut.
+- **Create project** : créer un projet et le définir par défaut.
+
+---
+
+planifie avec beads, mets a jour la roadmap, egalement actuellement j'arrive pas a voir le catalogue via l'extension alors que nous avons fait les investigation sur les api précedement et stocké dans un beads les info associé pour traiter le besoin
+
+---
+
+continue traite les taches beads en autonomie
+
+---
+
+resume , retry and continue
+
+---
+
+utilise biomejs sur le code de l'extension vsix, configure le projet, puis corrihge le code en consequence du linting
+
+---
+
+j'ai cette erreur: Error loading webview provided by 'scaleway-ai-community-preview.scaleway-ai-toolkit-preview': Error: Could not register service worker: InvalidStateError: Failed to register a ServiceWorker: The document is in an invalid state..
+
+---
+
+ok et concercnant i) le code et linter biome ii) le code notament sur l'usage de `Buffer` Cannot find name 'Buffer'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.ts(2591)
+
+---
+
+concernant le ctalogue il faut filtrer par defaut ce qui est retired, intile de les afficher on peut rien en faire
+
+---
+
+le catalogue de modele affiche une grille de card de modele, cependant aucun interaction possible attendue avec ces cards
+
+---
+
+dans la partie modèles il faut différencé entre un modele disponible et déployé, on s'attends a pouvoir déployé le modele afin de l'utiliser
+
+---
+
+reprends la roadmap bead et implement tout
+
+---
+
+pour information zur le toolkit azure foundry que l'on utilise pour inspiration:
+Pour **Foundry Toolkit dans VS Code**, je regrouperais les possibilités en **huit parcours utilisateurs**, selon l’objectif recherché. Ils peuvent s’enchaîner : on commence par tester un modèle, puis on construit un agent, on l’évalue et on le déploie.
+
+L’interface distingue **My Resources**, pour retrouver les ressources existantes, et **Developer Tools**, pour lancer les actions de développement. [Microsoft Learn](https://learn.microsoft.com/en-us/azure/foundry/how-to/develop/get-started-projects-vs-code?utm_source=chatgpt.com)
+
+**1. « Je veux choisir un modèle et tester une idée »**
+
+C’est le parcours d’exploration, avant de développer une application.
+
+1. Ouvrir **Model Catalog**.
+2. Choisir où faire tourner le modèle : Foundry, fournisseur externe, ou environnement local.
+3. Déployer, connecter ou télécharger le modèle selon cette destination.
+4. L’ouvrir dans **Model Playground**.
+5. Tester des demandes, modifier les paramètres et comparer les réponses.
+
+**Exemple :** comparer deux modèles sur leur capacité à résumer un incident technique.
+
+**Résultat :** un modèle accessible et une première appréciation de son comportement. Le catalogue permet aussi de connecter un endpoint compatible personnalisé, notamment sur un réseau privé. [code.visualstudio.com](https://code.visualstudio.com/docs/intelligentapps/models?utm_source=chatgpt.com)
+
+**2. « Je veux prototyper un agent sur mon poste »**
+
+Ce parcours passe par **Agent Builder**, avec une configuration sauvegardée localement.
+
+1. Sélectionner un modèle.
+2. Écrire les instructions de l’agent.
+3. Ajouter éventuellement des outils MCP.
+4. Configurer une sortie structurée, si le modèle la supporte.
+5. Tester les conversations et enregistrer les versions locales.
+6. Générer du code d’intégration pour poursuivre le développement.
+
+**Exemple :** extraire d’un compte rendu un JSON contenant les décisions et les actions.
+
+**Résultat :** une configuration locale réutilisable. **Le modèle peut être distant même lorsque la configuration est locale.** [code.visualstudio.com](https://code.visualstudio.com/docs/intelligentapps/agentbuilder?utm_source=chatgpt.com)
+
+**3. « Je veux un agent géré dans Foundry, principalement par configuration »**
+
+On utilise ici un **prompt agent** : son comportement repose sur un modèle, des instructions et des outils supportés par le service.
+
+1. Se connecter à Azure et sélectionner un projet Foundry.
+2. Créer l’agent dans **Agent Builder**.
+3. Choisir le modèle et définir ses instructions.
+4. Ajouter les outils nécessaires.
+5. Tester puis sauvegarder une version dans Foundry.
+6. Générer du code client pour l’appeler depuis une application.
+
+**Exemple :** un assistant de support qui recherche dans une documentation avant de répondre.
+
+**Résultat :** un agent versionné dans Foundry, utilisable par une application. **Sauvegarder sa version et publier une application avec un endpoint stable sont deux opérations distinctes.** [code.visualstudio.com](https://code.visualstudio.com/docs/intelligentapps/agentbuilder?utm_source=chatgpt.com)
+
+Le choix entre les deux principales formes d’agent se fait ainsi :
+
+| Question | Prompt agent | Hosted agent |
+|---|---|---|
+| Comment définir son comportement ? | Instructions et configuration des outils | Code et orchestration personnalisée |
+| Que maintient l’équipe ? | Configuration, intégrations et évaluations | Code, dépendances, packaging et évaluations |
+| Quand le choisir ? | Les capacités configurables couvrent le besoin | Le besoin exige une logique d’exécution spécifique |
+
+**Les deux peuvent servir une application en production**, après les validations nécessaires. [code.visualstudio.com](https://code.visualstudio.com/docs/intelligentapps/create-agents?utm_source=chatgpt.com)
+
+**4. « Je veux développer mon agent en code et l’héberger dans Foundry »**
+
+C’est le parcours **Hosted Agent**.
+
+1. Ouvrir **Create Agent**.
+2. Partir d’un exemple : Agent Framework, Copilot SDK, LangGraph ou autre exemple disponible.
+3. Générer le projet dans son workspace.
+4. Développer sa logique et installer ses dépendances.
+5. Exécuter et déboguer l’agent localement.
+6. Lancer **Deploy to Microsoft Foundry**.
+7. Déployer le code en ZIP ou une image de conteneur via ACR.
+8. Tester l’agent distant dans le **Hosted Agent Playground**.
+
+**Exemple :** un traitement qui analyse une demande, appelle plusieurs services puis construit une réponse selon des règles métier.
+
+**Résultat :** du **code source dans ton dépôt**, exécuté dans une infrastructure gérée par Foundry. Tu conserves la responsabilité du code et de ses dépendances ; Foundry prend en charge l’hébergement et la mise à l’échelle. Ce parcours est documenté en préversion. [code.visualstudio.com](https://code.visualstudio.com/docs/intelligentapps/hosted-agents?utm_source=chatgpt.com)
+
+Une variante consiste à utiliser **GitHub Copilot en mode Agent** pour générer ou modifier le code, ajouter des évaluations ou instrumenter les traces avec les outils spécialisés du Toolkit. [code.visualstudio.com](https://code.visualstudio.com/docs/intelligentapps/copilot-tools?utm_source=chatgpt.com)
+
+**5. « Je veux connecter mon agent aux données et aux actions métier »**
+
+Ce parcours enrichit un agent existant.
+
+1. Ouvrir **Tool Catalog**.
+2. Choisir une capacité ou renseigner une connexion personnalisée.
+3. Configurer l’endpoint et l’authentification.
+4. Attacher les outils à l’agent, directement ou via une **Toolbox**.
+5. Tester une demande qui nécessite réellement l’appel de l’outil.
+
+**Exemple :** rechercher un incident dans un service interne puis récupérer sa documentation associée.
+
+Les mécanismes ont des rôles différents :
+
+| Mécanisme | Usage |
+|---|---|
+| **MCP** | Exposer des outils à l’agent |
+| **OpenAPI** | Décrire les opérations d’une API HTTP |
+| **A2A** | Connecter un agent à un autre |
+| **Toolbox** | Regrouper et partager un ensemble versionné d’outils et de skills |
+
+**Résultat :** un agent capable d’interagir avec son environnement. Une connexion MCP configurée sur ton poste doit être rendue accessible et authentifiée pour être utilisable depuis un agent cloud. [code.visualstudio.com](https://code.visualstudio.com/docs/intelligentapps/tool-catalog?utm_source=chatgpt.com)
+
+**6. « Je veux mesurer la qualité et détecter les régressions »**
+
+Le Toolkit propose plusieurs chemins selon ce que tu possèdes déjà :
+
+| Point de départ | Parcours |
+|---|---|
+| Des réponses déjà enregistrées | Importer un dataset et calculer leurs scores |
+| Un prompt local à améliorer | Exécuter les mêmes cas dans la grille d’évaluation d’Agent Builder |
+| Un agent avec des critères d’acceptation | Générer des tests Python avec **pytest** |
+| Un agent Foundry à évaluer dans le service | Préparer une évaluation Foundry, éventuellement avec Copilot |
+
+**Exemple :** rejouer 100 demandes représentatives pour vérifier qu’un changement de modèle conserve la pertinence des réponses et la bonne utilisation des outils.
+
+**Résultat :** des mesures comparables entre versions et, avec les tests, des critères de réussite explicites. L’évaluation peut s’exécuter localement tout en appelant des modèles ou agents distants. [code.visualstudio.com](https://code.visualstudio.com/docs/intelligentapps/evaluation?utm_source=chatgpt.com)
+
+**7. « Je veux comprendre pourquoi mon agent échoue ou ralentit »**
+
+Deux parcours complémentaires répondent à ce besoin :
+
+- **Agent Inspector** : lancer une requête sur un agent local, examiner les appels d’outils et utiliser des points d’arrêt dans son code. [code.visualstudio.com](https://code.visualstudio.com/docs/intelligentapps/agent-inspector?utm_source=chatgpt.com)
+- **Tracing** : analyser les opérations enregistrées, leurs durées et leurs erreurs. Les traces locales passent par un collecteur OpenTelemetry ; celles des hosted agents sont consultées via l’Application Insights associé au projet. [code.visualstudio.com](https://code.visualstudio.com/docs/intelligentapps/tracing?utm_source=chatgpt.com)
+
+**Exemple :** déterminer si les dix secondes d’attente viennent du modèle, d’une API ou d’une succession d’appels.
+
+**Résultat :** identifier l’étape responsable et vérifier l’effet d’une correction.
+
+**8. « Je veux adapter ou optimiser un modèle »**
+
+Ce parcours s’adresse davantage aux profils ML et aux développeurs d’applications exécutant des modèles sur les appareils.
+
+- **Conversion et quantification** : partir d’un modèle supporté, le convertir en ONNX, réduire sa précision et évaluer le résultat pour une exécution locale sur CPU, GPU ou NPU, dans les environnements Windows pris en charge. [code.visualstudio.com](https://code.visualstudio.com/docs/intelligentapps/modelconversion?utm_source=chatgpt.com)
+- **Fine-tuning** : préparer des données d’apprentissage et de test, entraîner une adaptation puis mesurer son intérêt. Un parcours documenté concerne notamment les adaptateurs LoRA de Phi Silica. [code.visualstudio.com](https://code.visualstudio.com/docs/intelligentapps/finetune?utm_source=chatgpt.com)
+
+**Exemple :** adapter un modèle à un format de réponse spécialisé, ou réduire ses besoins matériels pour une application locale.
+
+**Résultat :** un modèle optimisé ou un adaptateur entraîné, à intégrer ensuite dans l’application.
+
+---
+
+poursuit
+
+---
+
+continue a implementer les taches lister par beads `bd prime` tu es autonome pur tout traiter, pose toi les questions a ésoudre , rfléchis, implemente, evalue, tant que bd lsit est pas vide
+
+---
+
+quest est la suite?
+
+---
+
+procede
+
+---
+
+continue
