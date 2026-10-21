@@ -25,8 +25,11 @@ exports.run = async () => {
   );
   assert.ok(renderer.publicCards > 0, 'no visible public cards');
   assert.equal(renderer.publicCards, renderer.expectedPublicCards);
-  assert.ok(renderer.priceCards > 0, 'no dedicated prices rendered');
-  assert.equal(renderer.priceCards, renderer.expectedPriceCards);
+  assert.equal(
+    renderer.priceCards,
+    undefined,
+    'GPU offers must not be catalog models',
+  );
   if (process.env.SCALEWAY_PREVIEW_SMOKE_RESULT)
     fs.writeFileSync(
       process.env.SCALEWAY_PREVIEW_SMOKE_RESULT,

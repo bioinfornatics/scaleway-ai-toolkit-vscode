@@ -168,15 +168,6 @@ test('card click sends identity; details render text, focus and return to trigge
         },
       ],
       dedicated: [],
-      prices: [
-        {
-          nodeTypeName: 'H100',
-          amountEUR: '0.05666',
-          fetchedAt: '2026-10-21',
-          estimate: { hourlyEquivalentEUR: '3.3996', minuteEUR: '0.05666' },
-        },
-      ],
-      priceStatus: 'Tarifs publics',
       publicStatus: 'OK',
       dedicatedStatus: 'None',
       scope: 'Public',
@@ -188,15 +179,6 @@ test('card click sends identity; details render text, focus and return to trigge
   assert.equal(pricing.textContent, 'Entrée : 0,0018 € / 1000 tokens');
   assert.ok(!pricing.textContent.includes('0,0009'));
   const button = get('public-list').children[0].children.at(-1);
-  assert.equal(get('price-list').children.length, 1);
-  assert.equal(
-    get('price-list').children[0].children[1].textContent,
-    '3,3996 €/heure HT',
-  );
-  assert.equal(
-    get('price-list').children[0].children[2].textContent,
-    '0,05666 €/minute · 1 nœud',
-  );
   assert.equal(button.textContent, 'Voir les détails');
   assert.equal(button['aria-label'], 'Voir les détails de Model');
   button.events.click();
@@ -266,7 +248,6 @@ test('renderer acknowledgement IPC accepts bounded counts and exact shape only',
     type: 'rendered',
     revision: 1,
     publicCards: 17,
-    priceCards: 7,
     dedicatedCards: 0,
   };
   assert.deepEqual(parseCatalogInput(valid), valid);
@@ -275,8 +256,6 @@ test('renderer acknowledgement IPC accepts bounded counts and exact shape only',
     { ...valid, publicCards: -1 },
     { ...valid, publicCards: 501 },
     { ...valid, dedicatedCards: 1.2 },
-    { ...valid, priceCards: -1 },
-    { ...valid, priceCards: 501 },
     { ...valid, token: 'secret' },
   ])
     assert.equal(parseCatalogInput(message), undefined);
@@ -300,4 +279,29 @@ test('EULA IPC permits exact selected UUID only, never text or consent', () => {
   const host = fs.readFileSync('src/extension.ts', 'utf8');
   assert.match(host, /language: 'plaintext'/);
   assert.match(host, /input.type === 'eula'/);
+});
+
+test('model catalog contains no standalone infrastructure offers or GPU pricing section', () => {
+  const html = fs.readFileSync('src/catalog.ts', 'utf8');
+  const renderer = fs.readFileSync('media/catalog.js', 'utf8');
+  assert.ok(!html.includes('price-list'));
+  assert.ok(!html.includes('Tarifs dédiés · infrastructure GPU'));
+  assert.ok(!renderer.includes('renderPrices'));
+  assert.ok(!renderer.includes('state.prices'));
+  assert.ok(renderer.includes('row.serverlessPrices'));
+  const id = '33333333-3333-3333-3333-333333333333';
+  assert.equal(
+    parseCatalogInput({
+      type: 'rendered',
+      revision: 1,
+      publicCards: 17,
+      dedicatedCards: 0,
+      priceCards: 7,
+    }),
+    undefined,
+  );
+  assert.deepEqual(parseCatalogInput({ type: 'prepare', id }), {
+    type: 'prepare',
+    id,
+  });
 });

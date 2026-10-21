@@ -1,0 +1,41 @@
+{
+  "version": "0.0.34",
+  "tests": 122,
+  "biome": "passed-zero-diagnostics",
+  "strict_typescript": "passed",
+  "audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "packaged_renderer": {
+    "status": "passed",
+    "version": "0.0.34",
+    "hostVersion": "1.142.0",
+    "packagedPath": "/tmp/scw-v34-install-ext/scaleway-ai-community-preview.scaleway-ai-toolkit-preview-0.0.34",
+    "catalogCommand": {
+      "publicCount": 33,
+      "publicStatus": "Offres publiques \u00b7 acc\u00e8s inf\u00e9rence non v\u00e9rifi\u00e9",
+      "panelOpened": true
+    },
+    "renderer": {
+      "panelOpened": true,
+      "rendererReady": true,
+      "rendered": true,
+      "publicCards": 17,
+      "dedicatedCards": 0,
+      "expectedPublicCards": 17,
+      "expectedDedicatedCards": 0
+    },
+    "authentication": "none",
+    "method": "actual packaged extension host and webview DOM acknowledgement with live public adapter"
+  },
+  "correction": "Model-only catalogue. Removed standalone GPU offers, all public catalogue hardware price reads and IPC price-card counts. Serverless model realtime unit prices retained. Dedicated hardware/tariff selection belongs to preparation wizard.",
+  "visual_QA": "not_run",
+  "account_reads_by_agent": 0,
+  "cloud_creation": 0,
+  "sha256": "71e917f402b499657075f137c200d64e8dbed153eec23ca98c7918f8ac7e33c0"
+}

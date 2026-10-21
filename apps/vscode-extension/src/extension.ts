@@ -4,7 +4,6 @@ import { catalogDetails } from './catalogDetails';
 import { CatalogHealth } from './catalogHealth';
 import { visibleCatalogModels } from './catalogVisibility';
 import { Connection } from './connection';
-import { corroboratedPublicPrice } from './dedicatedPrices';
 import { type DemoModel, type Experiment, models, runDemo } from './demo';
 import {
   exportExperiment,
@@ -42,13 +41,6 @@ export function activate(context: vscode.ExtensionContext): void {
       dedicated: visibleCatalogModels(connection.dedicatedCatalog),
       publicStatus: connection.serverlessState,
       dedicatedStatus: connection.dedicatedCatalogState,
-      priceStatus: connection.publicPriceState,
-      prices: connection.publicDedicatedPrices.map((row) => ({
-        nodeTypeName: row.nodeTypeName,
-        amountEUR: row.amountEUR,
-        fetchedAt: row.fetchedAt,
-        estimate: corroboratedPublicPrice(row),
-      })),
       scope: connection.project
         ? `Projet : ${connection.project.name} · fr-par`
         : 'Catalogue public · choisissez un projet pour les modèles dédiés',
@@ -673,8 +665,6 @@ export function activate(context: vscode.ExtensionContext): void {
       rendered: !!report,
       publicCards: report?.publicCards,
       dedicatedCards: report?.dedicatedCards,
-      priceCards: report?.priceCards,
-      expectedPriceCards: connection.publicDedicatedPrices.length,
       expectedPublicCards: visibleCatalogModels(connection.serverless).length,
       expectedDedicatedCards: visibleCatalogModels(connection.dedicatedCatalog)
         .length,
