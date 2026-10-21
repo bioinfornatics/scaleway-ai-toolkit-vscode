@@ -2,7 +2,7 @@
   "name": "scaleway-ai-toolkit-preview",
   "displayName": "Scaleway AI Toolkit \u2014 Preview",
   "description": "Scaleway user browser login, read-only project resources and offline playground.",
-  "version": "0.0.30",
+  "version": "0.0.31",
   "publisher": "scaleway-ai-community-preview",
   "private": true,
   "license": "UNLICENSED",
@@ -131,6 +131,10 @@
       {
         "command": "scalewayAI.reconcileDeploymentOperation",
         "title": "Scaleway AI: Retrouver une ressource accept\u00e9e (lecture seule)"
+      },
+      {
+        "command": "scalewayAI.inspectQuotas",
+        "title": "Scaleway AI: Examiner les quotas de l\u2019organisation (lecture seule)"
       }
     ],
     "viewsContainers": {
@@ -181,7 +185,7 @@
   "scripts": {
     "build": "tsc -p .",
     "test": "npm run build && node --test test/*.test.cjs",
-    "package": "npm run check && npm test && vsce package --allow-missing-repository --skip-license --out ../../artifacts/scaleway-ai-toolkit-preview-0.0.30.vsix",
+    "package": "npm run check && npm test && vsce package --allow-missing-repository --skip-license --out ../../artifacts/scaleway-ai-toolkit-preview-0.0.31.vsix",
     "check": "biome check --error-on-warnings .",
     "lint": "biome lint --error-on-warnings .",
     "format": "biome format --write ."

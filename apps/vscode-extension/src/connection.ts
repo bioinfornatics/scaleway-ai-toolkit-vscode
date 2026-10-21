@@ -28,6 +28,7 @@ import {
   text,
   uuid,
 } from './provider';
+import { listQuotaEvidence, type QuotaSnapshot } from './quotas';
 
 interface Metadata {
   name: string;
@@ -944,6 +945,40 @@ export class Connection implements vscode.Disposable {
       this.busy = false;
       if (this.abort === abort) this.abort = undefined;
       if (this.followAbort === abort) this.followAbort = undefined;
+      this.changed();
+    }
+  }
+  async inspectQuotas(): Promise<QuotaSnapshot | undefined> {
+    if (!(await this.ensureProject())) return;
+    const project = this.project;
+    const session = this.session;
+    if (!project || !session || this.disposed || this.busy) return;
+    const generation = this.generation;
+    const abort = new AbortController();
+    this.abort = abort;
+    this.busy = true;
+    const current = () =>
+      generation === this.generation &&
+      this.project === project &&
+      this.session === session &&
+      !this.disposed &&
+      !abort.signal.aborted &&
+      this.connected &&
+      vscode.workspace.isTrusted;
+    try {
+      const snapshot = await listQuotaEvidence(
+        project.organizationId,
+        this.token(),
+        abort.signal,
+      );
+      if (!current()) return;
+      return snapshot;
+    } catch (error) {
+      if (current()) await this.report(error);
+      return;
+    } finally {
+      this.busy = false;
+      if (this.abort === abort) this.abort = undefined;
       this.changed();
     }
   }

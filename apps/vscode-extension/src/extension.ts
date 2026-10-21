@@ -222,6 +222,12 @@ export function activate(context: vscode.ExtensionContext): void {
             ]
           : []),
         {
+          id: 'inspect-quotas',
+          label: 'Examiner les quotas de l’organisation',
+          icon: 'checklist',
+          command: 'scalewayAI.inspectQuotas',
+        },
+        {
           id: 'prepare-deployment',
           label: 'Préparer un déploiement dédié',
           icon: 'server',
@@ -452,6 +458,30 @@ export function activate(context: vscode.ExtensionContext): void {
     await connection.loadCatalogs();
     if (connection.connected && connection.project)
       await connection.loadModels();
+  });
+  register('scalewayAI.inspectQuotas', async () => {
+    const snapshot = await connection.inspectQuotas();
+    if (!snapshot) return;
+    const project = connection.project;
+    const current = () =>
+      connection.project === project &&
+      connection.connected &&
+      vscode.workspace.isTrusted;
+    if (!current()) return;
+    const document = await vscode.workspace.openTextDocument({
+      language: 'json',
+      content: JSON.stringify(
+        {
+          ...snapshot,
+          limitations:
+            'Quotas d’organisation, pas capacité disponible du projet. Usage et restant inconnus ; stock, budget et droits de création non établis. Aucun modèle ni ressource créé. Les noms techniques sont conservés sans rapprochement par libellé.',
+        },
+        null,
+        2,
+      ),
+    });
+    if (current())
+      await vscode.window.showTextDocument(document, { preview: false });
   });
   register('scalewayAI.deploymentOperations', async () => {
     const rows = await connection.deploymentOperations();

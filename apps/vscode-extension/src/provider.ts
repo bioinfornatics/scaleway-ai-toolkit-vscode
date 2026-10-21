@@ -96,6 +96,7 @@ export const getJSON: GetJSON = (origin, path, key, signal) => {
       /^\/iam\/v1alpha1\/users\/[0-9a-f-]{36}\/connections$/i.test(
         url.pathname,
       ) && uuid(url.pathname.split('/')[4]);
+    const quotaRoute = url.pathname === '/iam/v1alpha1/quota';
     const projectRoute = url.pathname === '/account/v3/projects';
     const modelRoute = url.pathname === '/inference/v1/regions/fr-par/models';
     const deploymentDetailRoute =
@@ -121,6 +122,20 @@ export const getJSON: GetJSON = (origin, path, key, signal) => {
       (projectRoute || uuid(url.searchParams.get('project_id'))) &&
       /^[1-5]$/.test(url.searchParams.get('page') ?? '') &&
       url.searchParams.get('page_size') === '100';
+    if (quotaRoute)
+      allowed =
+        url.origin === 'https://api.scaleway.com' &&
+        !url.hash &&
+        !url.username &&
+        !url.password &&
+        url.searchParams.size === 4 &&
+        ['organization_id', 'order_by', 'page', 'page_size'].every(
+          (field) => url.searchParams.getAll(field).length === 1,
+        ) &&
+        uuid(url.searchParams.get('organization_id')) &&
+        url.searchParams.get('order_by') === 'name_asc' &&
+        /^[1-5]$/.test(url.searchParams.get('page') ?? '') &&
+        url.searchParams.get('page_size') === '100';
     if (deploymentDetailRoute)
       allowed =
         url.origin === 'https://api.scaleway.com' &&

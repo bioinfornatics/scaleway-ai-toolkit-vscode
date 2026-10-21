@@ -1103,3 +1103,89 @@ test('preparation prices fail independently and late logout prevents stale wizar
     s.restore();
   }
 });
+
+test('quota controller reads only on action and returns organization snapshot without JWT', async () => {
+  const s = setup();
+  const quota = require('../dist/quotas');
+  const old = quota.listQuotaEvidence;
+  let reads = 0;
+  try {
+    await s.connection.ready;
+    assert.equal(reads, 0);
+    await s.connection.login();
+    quota.listQuotaEvidence = async (organization, jwt, signal) => {
+      reads++;
+      assert.equal(organization, org);
+      assert.equal(jwt, token);
+      assert.equal(signal.aborted, false);
+      return {
+        version: 1,
+        mode: 'organization-quota-evidence',
+        organizationId: org,
+        fetchedAt: '2026-10-21T05:35:00Z',
+        quota: [],
+        createRights: 'unverified',
+        dedicatedNodeMapping: 'unverified',
+      };
+    };
+    const snapshot = await s.connection.inspectQuotas();
+    assert.equal(reads, 1);
+    assert.equal(snapshot.organizationId, org);
+    assert.ok(!JSON.stringify(snapshot).includes(token));
+    assert.equal(s.connection.busy, false);
+    s.vscode.workspace.isTrusted = false;
+    assert.equal(await s.connection.inspectQuotas(), undefined);
+    assert.equal(reads, 1);
+  } finally {
+    quota.listQuotaEvidence = old;
+    s.connection.dispose();
+    s.restore();
+  }
+});
+test('late quota response after logout is discarded, no preference or resource resurrection', async () => {
+  const s = setup();
+  const quota = require('../dist/quotas');
+  const old = quota.listQuotaEvidence;
+  try {
+    await s.connection.login();
+    quota.listQuotaEvidence = async (_organization, _jwt, signal) => {
+      await s.connection.disconnect();
+      assert.equal(signal.aborted, true);
+      return { organizationId: org, quota: [] };
+    };
+    assert.equal(await s.connection.inspectQuotas(), undefined);
+    assert.equal(s.connection.connected, false);
+    assert.equal(s.connection.project, undefined);
+    assert.equal(s.connection.busy, false);
+    assert.equal(
+      s.state.get(['scalewayAI.preferences.v1', org].join('.')),
+      undefined,
+    );
+  } finally {
+    quota.listQuotaEvidence = old;
+    s.connection.dispose();
+    s.restore();
+  }
+});
+test('quota access denial invalidates JWT; malformed data does not claim quota verified', async () => {
+  const s = setup();
+  const quota = require('../dist/quotas');
+  const old = quota.listQuotaEvidence;
+  try {
+    await s.connection.login();
+    quota.listQuotaEvidence = async () => {
+      throw new provider.ReadError('invalid_quota_bound');
+    };
+    assert.equal(await s.connection.inspectQuotas(), undefined);
+    assert.equal(s.connection.connected, true);
+    quota.listQuotaEvidence = async () => {
+      throw new provider.ReadError('access_denied');
+    };
+    assert.equal(await s.connection.inspectQuotas(), undefined);
+    assert.equal(s.connection.connected, false);
+  } finally {
+    quota.listQuotaEvidence = old;
+    s.connection.dispose();
+    s.restore();
+  }
+});
