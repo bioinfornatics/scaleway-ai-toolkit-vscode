@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { text, uuid } from './provider';
 export type CatalogInput =
   | { type: 'ready' | 'refresh' | 'project' }
-  | { type: 'prepare'; id: string }
+  | { type: 'prepare' | 'eula'; id: string }
   | {
       type: 'rendered';
       revision: number;
@@ -40,11 +40,11 @@ export function parseCatalogInput(value: unknown): CatalogInput | undefined {
       dedicatedCards: Number(message.dedicatedCards),
     };
   if (
-    message.type === 'prepare' &&
+    (message.type === 'prepare' || message.type === 'eula') &&
     Object.keys(message).length === 2 &&
     uuid(message.id)
   )
-    return { type: 'prepare', id: message.id };
+    return { type: message.type, id: message.id };
   if (
     message.type === 'details' &&
     Object.keys(message).length === 3 &&

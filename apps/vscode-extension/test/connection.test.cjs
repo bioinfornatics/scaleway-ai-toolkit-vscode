@@ -1189,3 +1189,48 @@ test('quota access denial invalidates JWT; malformed data does not claim quota v
     s.restore();
   }
 });
+
+test('EULA controller accepts only current known model and rejects stale logout/trust response', async () => {
+  const s = setup();
+  const eula = require('../dist/modelEula');
+  const original = eula.getModelEula;
+  let reads = 0;
+  try {
+    await s.connection.login();
+    s.connection.dedicatedCatalog = [
+      {
+        id: operationModel,
+        label: 'Model',
+        kind: 'dedicated-catalog',
+        dedicatedInfo: { hasEula: true },
+      },
+    ];
+    eula.getModelEula = async (project, model, jwt) => {
+      reads++;
+      assert.equal(project.id, id);
+      assert.equal(model.id, operationModel);
+      assert.equal(jwt, token);
+      return { modelId: operationModel, content: 'Terms', accepted: false };
+    };
+    assert.equal(await s.connection.inspectModelEula(operationId), undefined);
+    assert.equal(reads, 0);
+    assert.equal(
+      (await s.connection.inspectModelEula(operationModel)).accepted,
+      false,
+    );
+    assert.equal(reads, 1);
+    eula.getModelEula = async () => {
+      await s.connection.disconnect();
+      return { content: 'Late' };
+    };
+    assert.equal(
+      await s.connection.inspectModelEula(operationModel),
+      undefined,
+    );
+    assert.equal(s.connection.project, undefined);
+  } finally {
+    eula.getModelEula = original;
+    s.connection.dispose();
+    s.restore();
+  }
+});

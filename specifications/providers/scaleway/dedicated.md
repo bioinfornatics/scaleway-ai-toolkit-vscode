@@ -98,3 +98,7 @@ La FAQ officielle épinglée docs-content d3f08c7b précise la durée facturée 
 ## Lecture des quotas — VSIX0.0.31
 
 La commande native explicite inspectQuotas utilise le chemin SDK /iam/v1alpha1/quota, organization_id distinct du projet, order_by=name_asc, page1..5/page_size100. Adapter strict limites par localité, bounds exactement limit ou unlimited=true, noms techniques conservés. Zéro n’est pas absent ; unlimited n’est pas un budget illimité. Les nombres JSON hors safe integer sont refusés ; chaînes uint64 exactes acceptées. Snapshot éphémère non persisté, usage/restant toujours unknown et createRights/dedicatedNodeMapping unverified. Tests synthétiques seulement pour le compte, aucun GET authentifié exécuté par l’agent.
+
+## Route EULA confirmée dans la documentation API — 2026-10-21
+
+CORRECTION de l’inconnue antérieure : la page officielle /en/developers/api/inference/models#get-a-model-eula expose GET /inference/v1/regions/{region}/models/{model_id}/eula, fr-par, 200 application/json scaleway.inference.v1.Eula content:string. Le SDK généré inspecté reste incomplet sur cette opération. Page et extrait capturés/hachés dans evidence/documentation/model-eula-v32. L’extension0.0.32 permet une lecture explicite du modèle has_eula=true déjà connu dans le contexte courant, texte brut borné/digest. Lecture ne vaut pas acceptation. Auth JWT réelle de ce GET, droits et termes du compte non validés ; exemples docs API-key ne réintroduisent pas de clés dans l’extension.

@@ -233,3 +233,23 @@ test('renderer acknowledgement IPC accepts bounded counts and exact shape only',
   ])
     assert.equal(parseCatalogInput(message), undefined);
 });
+
+test('EULA IPC permits exact selected UUID only, never text or consent', () => {
+  const id = '33333333-3333-3333-3333-333333333333';
+  assert.deepEqual(parseCatalogInput({ type: 'eula', id }), {
+    type: 'eula',
+    id,
+  });
+  for (const value of [
+    { type: 'eula', id: 'invalid' },
+    { type: 'eula', id, accepted: true },
+    { type: 'eula', id, content: 'terms' },
+  ])
+    assert.equal(parseCatalogInput(value), undefined);
+  const renderer = fs.readFileSync('media/catalog.js', 'utf8');
+  assert.match(renderer, /hasEula === true/);
+  assert.match(renderer, /Lire l’EULA/);
+  const host = fs.readFileSync('src/extension.ts', 'utf8');
+  assert.match(host, /language: 'plaintext'/);
+  assert.match(host, /input.type === 'eula'/);
+});

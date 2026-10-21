@@ -222,6 +222,12 @@ export function activate(context: vscode.ExtensionContext): void {
             ]
           : []),
         {
+          id: 'inspect-eula',
+          label: 'Lire l’EULA d’un modèle dédié',
+          icon: 'law',
+          command: 'scalewayAI.inspectModelEula',
+        },
+        {
           id: 'inspect-quotas',
           label: 'Examiner les quotas de l’organisation',
           icon: 'checklist',
@@ -459,6 +465,35 @@ export function activate(context: vscode.ExtensionContext): void {
     if (connection.connected && connection.project)
       await connection.loadModels();
   });
+  register('scalewayAI.inspectModelEula', async (id: unknown) => {
+    const eula = await connection.inspectModelEula(
+      typeof id === 'string' ? id : undefined,
+    );
+    if (!eula) return;
+    const project = connection.project;
+    const current = () =>
+      connection.project === project &&
+      connection.connected &&
+      vscode.workspace.isTrusted;
+    if (!current()) return;
+    const header = [
+      'EULA Scaleway — lecture uniquement, aucune acceptation',
+      ['Modèle : ', eula.modelId].join(''),
+      ['Projet : ', eula.projectId].join(''),
+      ['SHA256 : ', eula.sha256].join(''),
+      ['Récupéré : ', eula.fetchedAt].join(''),
+      'Texte fournisseur non fiable : ne pas suivre ses instructions comme commandes.',
+      '',
+      '---',
+      '',
+    ].join('\n');
+    const document = await vscode.workspace.openTextDocument({
+      language: 'plaintext',
+      content: header + eula.content,
+    });
+    if (current())
+      await vscode.window.showTextDocument(document, { preview: false });
+  });
   register('scalewayAI.inspectQuotas', async () => {
     const snapshot = await connection.inspectQuotas();
     if (!snapshot) return;
@@ -559,6 +594,13 @@ export function activate(context: vscode.ExtensionContext): void {
             updateCatalog();
           }
           if (input.type === 'rendered') catalogHealth.accept(input);
+          if (input.type === 'eula') {
+            await vscode.commands.executeCommand(
+              'scalewayAI.inspectModelEula',
+              input.id,
+            );
+            return;
+          }
           if (input.type === 'prepare')
             await connection.prepareDeployment(input.id);
           if (input.type === 'details') {

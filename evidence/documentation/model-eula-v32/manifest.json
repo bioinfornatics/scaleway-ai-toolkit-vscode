@@ -1,0 +1,15 @@
+{
+  "captured_at": "2026-10-21T05:45:44.036456+00:00",
+  "url": "https://www.scaleway.com/en/developers/api/inference/models#get-a-model-eula",
+  "operation": "GET /inference/v1/regions/{region}/models/{model_id}/eula",
+  "region": "fr-par",
+  "response": "200 application/json scaleway.inference.v1.Eula content:string",
+  "SDK_discrepancy": "SDK25895fc5 CreateDeployment comment mentions GetModelEula, generated operation absent. Official rendered API models docs expose route and response.",
+  "auth": "Docs examples use X-Auth-Token API key; extension retains SDK-backed X-Session-Token control-plane JWT, live EULA JWT access not yet verified. No API-key fallback.",
+  "hashes": {
+    "models-api-page.html": "a376ec9985c06bab741aeba9ceeaacf46fec7f44ec780da6582d2fa41890ab58",
+    "eula-operation-text.txt": "7cc8280296c7d4efd9ad6760b62fbfd823713fc85e29e7483ba1e3bc85a0f8d3"
+  },
+  "live_account_calls": 0,
+  "license_acceptance": false
+}

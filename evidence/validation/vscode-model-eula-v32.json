@@ -1,0 +1,42 @@
+{
+  "version": "0.0.32",
+  "tests": 119,
+  "biome": "passed-zero-diagnostics",
+  "strict_typescript": "passed",
+  "audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "packaged_renderer": {
+    "status": "passed",
+    "version": "0.0.32",
+    "hostVersion": "1.142.0",
+    "packagedPath": "/tmp/scw-v32-install-ext/scaleway-ai-community-preview.scaleway-ai-toolkit-preview-0.0.32",
+    "catalogCommand": {
+      "publicCount": 33,
+      "publicStatus": "Offres publiques \u00b7 acc\u00e8s inf\u00e9rence non v\u00e9rifi\u00e9",
+      "panelOpened": true
+    },
+    "renderer": {
+      "panelOpened": true,
+      "rendererReady": true,
+      "rendered": true,
+      "publicCards": 17,
+      "dedicatedCards": 0,
+      "expectedPublicCards": 17,
+      "expectedDedicatedCards": 0
+    },
+    "authentication": "none",
+    "method": "actual packaged extension host and webview DOM acknowledgement with live public adapter"
+  },
+  "eula": "Documented exact fr-par model UUID /eula oneGET; current-known has_eula=true only; max256KiB plaintext/digest/provenance, no acceptance/execution/persistence. Native command and card IPC identity only.",
+  "live_account_reads": 0,
+  "license_acceptance": false,
+  "cloud_creation": 0,
+  "live_EULA_JWT_acceptance": "not_run",
+  "sha256": "de45e670f7af82410cbeb2eb00b2f73b96645a863b4c98beb8505cbad17dd8dd"
+}

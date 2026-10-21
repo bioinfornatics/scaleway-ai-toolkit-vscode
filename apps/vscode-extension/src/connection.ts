@@ -13,6 +13,7 @@ import {
   type ReviewedCreationTransport,
 } from './deploymentLifecycle';
 import { deploymentWizard } from './deploymentWizard';
+import { getModelEula, type ModelEula } from './modelEula';
 import { createProject } from './projectCreation';
 import {
   getDeployment,
@@ -945,6 +946,60 @@ export class Connection implements vscode.Disposable {
       this.busy = false;
       if (this.abort === abort) this.abort = undefined;
       if (this.followAbort === abort) this.followAbort = undefined;
+      this.changed();
+    }
+  }
+  async inspectModelEula(modelId?: string): Promise<ModelEula | undefined> {
+    if (modelId !== undefined && !uuid(modelId)) return;
+    if (!(await this.ensureProject())) return;
+    const project = this.project;
+    const session = this.session;
+    const generation = this.generation;
+    if (!project || !session || this.busy || this.disposed) return;
+    const current = () =>
+      this.project === project &&
+      this.session === session &&
+      generation === this.generation &&
+      this.connected &&
+      !this.disposed &&
+      vscode.workspace.isTrusted;
+    let model = this.dedicatedCatalog.find((row) => row.id === modelId);
+    if (modelId === undefined) {
+      const pick = await vscode.window.showQuickPick(
+        this.dedicatedCatalog
+          .filter((row) => row.dedicatedInfo?.hasEula === true)
+          .map((row) => ({
+            label: row.label,
+            description: row.id,
+            model: row,
+          })),
+        {
+          title: 'Lire l’EULA du modèle',
+          placeHolder: 'Lecture seulement, aucune acceptation de licence',
+        },
+      );
+      model = pick?.model;
+    }
+    if (!current() || this.busy || model?.dedicatedInfo?.hasEula !== true)
+      return;
+    const abort = new AbortController();
+    this.abort = abort;
+    this.busy = true;
+    try {
+      const result = await getModelEula(
+        project,
+        model,
+        this.token(),
+        abort.signal,
+      );
+      if (!current() || abort.signal.aborted) return;
+      return result;
+    } catch (error) {
+      if (current() && !abort.signal.aborted) await this.report(error);
+      return;
+    } finally {
+      this.busy = false;
+      if (this.abort === abort) this.abort = undefined;
       this.changed();
     }
   }

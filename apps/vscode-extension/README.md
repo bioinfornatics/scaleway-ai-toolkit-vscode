@@ -1,4 +1,4 @@
-# Scaleway AI Toolkit — Preview 0.0.31
+# Scaleway AI Toolkit — Preview 0.0.32
 
 Experimental community VS Code extension; no Scaleway affiliation. **User browser
 login without API keys**, scoped read-only projects/dedicated deployments and a
@@ -6,7 +6,7 @@ separate **offline synthetic** playground. No real inference or cloud writes.
 
 ## Install and try
 
-    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.31.vsix --force
+    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.32.vsix --force
 
 Reload Window, then **Scaleway AI: Open Offline Preview** (legacy command name).
 
@@ -161,7 +161,7 @@ Scaleway; local experimental identification only, not endorsement. Publication
 requires separate brand review. ai-PULSE event branding not used. Asset provenance:
 evidence/documentation/scaleway-icon-preview-v1.json.
 
-## Preview 0.0.31 navigation and catalog visibility fix
+## Preview 0.0.32 navigation and catalog visibility fix
 
 Resources now separate **Projet Scaleway**, **Modèles**, **Récents**, and
 **Ressources locales** (synthetic demo). Developer tools separate **Découvrir**
@@ -177,7 +177,7 @@ and do not wait for pending SecretStorage. Untrusted workspace displays an expli
 explanation; approve the workspace for HTTP. Dedicated errors do not hide public
 offers. No credentials or provider endpoint input in the catalog webview.
 
-Packaged extension host catalog command (0.0.14 and final0.0.31) verified live public
+Packaged extension host catalog command (0.0.14 and final0.0.32) verified live public
 33 offerings in isolated trusted test workspace. This is stronger than standalone
 adapter testing, but it does not prove screenshot card rendering, keyboard/theme
 review or actual-account dedicated acceptance; those checks remain outstanding.
@@ -323,3 +323,7 @@ La préparation relit les offres managed_inference sans JWT. Elle conserve les m
 ### Quotas de l’organisation (lecture explicite)
 
 Construire → Examiner les quotas de l’organisation effectue au maximum5 GET séquentiels sur IAM /quota pour l’organisation du projet choisi. La commande passe par la connexion utilisateur et la sélection du projet, sans confirmation GET répétée ni lecture automatique au démarrage. Le document distingue limites historiques, limites globales/régionales/zonales, zéro et unlimited. Les grands uint64 sous forme de chaînes restent exacts ; un nombre JSON déjà imprécis est rejeté. Usage courant, capacité restante, correspondance aux nœuds dédiés et droits de création restent inconnus. Aucune modification IAM ni création. Aucun JWT n’est inséré dans le document.
+
+### Lire une EULA
+
+Les cartes de modèles dédiés dont has_eula=true proposent Lire l’EULA. Construire propose aussi un choix parmi les modèles chargés concernés. La commande lit une seule fois la route officielle /models/{model_id}/eula, puis ouvre le contenu fournisseur en texte brut (maximum256KiB), avec SHA256 et provenance modèle/projet/horodatage. Aucune interprétation HTML, aucune exécution des instructions du texte, aucune acceptation ni persistance automatique. Sans modèle chargé, inconnu ou sans EULA, aucun GET effectué. Le JWT reste dans l’hôte. La compatibilité JWT réelle de cette route reste à confirmer avec le compte utilisateur ; aucun fallback API-key.

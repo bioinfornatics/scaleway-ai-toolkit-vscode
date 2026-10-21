@@ -103,6 +103,10 @@ export const getJSON: GetJSON = (origin, path, key, signal) => {
       /^\/inference\/v1\/regions\/fr-par\/deployments\/[0-9a-f-]{36}$/i.test(
         url.pathname,
       ) && uuid(url.pathname.split('/').at(-1));
+    const eulaRoute =
+      /^\/inference\/v1\/regions\/fr-par\/models\/[0-9a-f-]{36}\/eula$/i.test(
+        url.pathname,
+      ) && uuid(url.pathname.split('/')[6]);
     const nodeRoute =
       url.pathname === '/inference/v1/regions/fr-par/node-types';
     const deploymentRoute =
@@ -136,7 +140,7 @@ export const getJSON: GetJSON = (origin, path, key, signal) => {
         url.searchParams.get('order_by') === 'name_asc' &&
         /^[1-5]$/.test(url.searchParams.get('page') ?? '') &&
         url.searchParams.get('page_size') === '100';
-    if (deploymentDetailRoute)
+    if (deploymentDetailRoute || eulaRoute)
       allowed =
         url.origin === 'https://api.scaleway.com' &&
         !url.hash &&

@@ -1,0 +1,62 @@
+Get a model EULA
+GET
+https://api.scaleway.com
+/inference/v1/regions/{region}/models/{model_id}/eula
+Get the EULA for the given model ID.
+Get a model EULA
+›
+path Parameters
+region
+​
+string
+·
+enum
+·
+required
+The region you want to target
+Enum values:
+fr-par
+model_id
+​
+string
+·
+required
+ID of the model to get the Eula for. (UUID format)
+Get a model EULA
+›
+Responses
+200
+scaleway.inference.v1.Eula
+content
+​
+string
+Content of the end user license agreement.
+GET
+/
+inference
+/
+v1
+/
+regions
+/
+{region}
+/
+models
+/
+{model_id}
+/
+eula
+curl -X GET \
+-H "X-Auth-Token: $SCW_SECRET_KEY" \
+"https://api.scaleway.com/inference/v1/regions/{region}/models/{model_id}/eula"
+cURL
+HTTPie
+Example Responses
+200
+{
+"content"
+:
+"content"
+}
+json
+application/json

@@ -44,6 +44,19 @@
       });
       card.append(details);
       if (kind === 'dedicated') {
+        if (row.dedicatedInfo?.hasEula === true) {
+          const eula = document.createElement('button');
+          eula.type = 'button';
+          eula.textContent = 'Lire l’EULA';
+          eula.setAttribute(
+            'aria-label',
+            ['Lire l’EULA de', row.label].join(' '),
+          );
+          eula.addEventListener('click', () =>
+            vscode.postMessage({ type: 'eula', id: row.id }),
+          );
+          card.append(eula);
+        }
         const prepare = document.createElement('button');
         prepare.type = 'button';
         prepare.textContent = 'Préparer le déploiement';
