@@ -822,3 +822,236 @@ test('stop follow aborts pending read without deleting cloud resources or accept
     s.restore();
   }
 });
+
+const operationModel = '33333333-3333-3333-3333-333333333333';
+const operationId = '44444444-4444-4444-4444-444444444444';
+const resourceId = '55555555-5555-5555-5555-555555555555';
+function savedOperation(status = 'submitting') {
+  return {
+    version: 1,
+    id: operationId,
+    projectId: id,
+    organizationId: org,
+    modelId: operationModel,
+    name: 'Allocated',
+    region: 'fr-par',
+    status,
+    ...(status === 'accepted' ? { deploymentId: resourceId } : {}),
+  };
+}
+function journalKey() {
+  return ['scalewayAI.deploymentOperations.v1', org, org, id].join('.');
+}
+test('controller explicit journal recovery is local, scoped and returns unknown after restart', async () => {
+  const s = setup();
+  let next;
+  try {
+    assert.equal(await s.connection.deploymentOperations(), undefined);
+    await s.connection.login();
+    s.state.set(journalKey(), [savedOperation()]);
+    const before = s.requests();
+    next = s.newConnection();
+    await next.ready;
+    const rows = await next.deploymentOperations();
+    assert.equal(rows[0].status, 'unknown');
+    assert.equal(s.requests(), before);
+    rows[0].name = 'changed';
+    assert.equal((await next.deploymentOperations())[0].name, 'Allocated');
+    s.vscode.workspace.isTrusted = false;
+    assert.equal(await next.deploymentOperations(), undefined);
+    s.vscode.workspace.isTrusted = true;
+    await next.disconnect();
+    assert.equal(await next.deploymentOperations(), undefined);
+    assert.ok(
+      s.state.has(journalKey()),
+      'logout must preserve uncertain operation history',
+    );
+  } finally {
+    next?.dispose();
+    s.connection.dispose();
+    s.restore();
+  }
+});
+test('controller reconciles only accepted scoped ID in one GET, never matches unknown by name', async () => {
+  const s = setup();
+  const old = provider.getDeployment;
+  let reads = 0;
+  try {
+    await s.connection.login();
+    s.state.set(journalKey(), [savedOperation()]);
+    provider.getDeployment = async (project, resource, jwt) => {
+      reads++;
+      assert.equal(project.id, id);
+      assert.equal(resource, resourceId);
+      assert.equal(jwt, token);
+      return {
+        id: resourceId,
+        label: 'Allocated',
+        kind: 'dedicated',
+        status: 'ready',
+        deploymentInfo: {
+          modelId: operationModel,
+          projectId: id,
+          region: 'fr-par',
+        },
+      };
+    };
+    assert.equal(
+      await s.connection.reconcileDeploymentOperation(operationId),
+      undefined,
+    );
+    assert.equal(reads, 0);
+    s.state.set(journalKey(), [savedOperation('accepted')]);
+    assert.equal(
+      (await s.connection.reconcileDeploymentOperation(operationId)).id,
+      resourceId,
+    );
+    assert.equal(reads, 1);
+    assert.equal(s.connection.dedicated.length, 1);
+    provider.getDeployment = async () => {
+      reads++;
+      await s.connection.disconnect();
+      return {
+        id: resourceId,
+        label: 'Allocated',
+        kind: 'dedicated',
+        deploymentInfo: { modelId: operationModel },
+      };
+    };
+    assert.equal(
+      await s.connection.reconcileDeploymentOperation(operationId),
+      undefined,
+    );
+    assert.equal(s.connection.dedicated.length, 0);
+  } finally {
+    provider.getDeployment = old;
+    s.connection.dispose();
+    s.restore();
+  }
+});
+test('controller reserves lifecycle before returning, blocks duplicate factories and stale sends', async () => {
+  const s = setup();
+  let posts = 0;
+  try {
+    await s.connection.login();
+    const model = {
+      id: operationModel,
+      label: 'Model',
+      kind: 'dedicated-catalog',
+    };
+    s.connection.dedicatedCatalog = [model];
+    const results = await Promise.allSettled([
+      s.connection.deploymentLifecycle(model, 'Allocated', async () => {
+        posts++;
+      }),
+      s.connection.deploymentLifecycle(model, 'Allocated', async () => {
+        posts++;
+      }),
+    ]);
+    assert.equal(
+      results.filter((result) => result.status === 'fulfilled').length,
+      1,
+    );
+    assert.equal((await s.connection.deploymentOperations()).length, 1);
+    const engine = results.find(
+      (result) => result.status === 'fulfilled',
+    ).value;
+    await s.connection.disconnect();
+    await assert.rejects(
+      engine.submit(
+        { project_id: id, model_id: operationModel, name: 'Allocated' },
+        new AbortController().signal,
+      ),
+      /deployment_review_required/,
+    );
+    assert.equal(posts, 0);
+    assert.ok(!JSON.stringify([...s.state]).includes(token));
+  } finally {
+    s.connection.dispose();
+    s.restore();
+  }
+});
+
+test('controller persists late accepted response in original journal after logout without restoring session', async () => {
+  const s = setup();
+  try {
+    await s.connection.login();
+    const model = {
+      id: operationModel,
+      label: 'Model',
+      kind: 'dedicated-catalog',
+      dedicatedInfo: {
+        status: 'ready',
+        hasEula: false,
+        supportedNodes: [
+          {
+            nodeTypeName: 'H100',
+            quantizationBits: 8,
+            allowed: true,
+            maxContextSize: 100,
+          },
+        ],
+      },
+    };
+    const nodes = [
+      {
+        name: 'H100',
+        region: 'fr-par',
+        stockStatus: 'available',
+        disabled: false,
+      },
+    ];
+    s.connection.dedicatedCatalog = [model];
+    const {
+      prepareDeploymentDraft,
+      deploymentOptions,
+    } = require('../dist/deployment');
+    const { reviewedDeploymentBody } = require('../dist/deploymentLifecycle');
+    const project = s.connection.project;
+    const draft = prepareDeploymentDraft(project, model, nodes, {
+      name: 'Allocated',
+      option: deploymentOptions(model, nodes)[0],
+      network: { type: 'public', authentication: 'iam' },
+      maxHourlyEUR: '1',
+    });
+    const body = reviewedDeploymentBody(draft, project, model, nodes, {
+      reviewedAt: Date.now(),
+      hourlyPriceEUR: '1',
+      priceSource: 'synthetic',
+      quota: 'verified-for-one-node',
+      quotaSource: 'synthetic',
+      rights: 'verified-create',
+      writeContract: 'verified',
+      license: { kind: 'no-eula-reviewed' },
+      exposureConfirmed: true,
+      billableCreationConfirmed: true,
+    });
+    const engine = await s.connection.deploymentLifecycle(
+      model,
+      'Allocated',
+      async () => {
+        await s.connection.disconnect();
+        return {
+          id: resourceId,
+          name: 'Allocated',
+          project_id: id,
+          region: 'fr-par',
+          model_id: operationModel,
+          node_type_name: 'H100',
+          status: 'creating',
+          endpoints: [],
+        };
+      },
+    );
+    const row = await engine.submit(body, new AbortController().signal);
+    assert.equal(row.id, resourceId);
+    assert.equal(s.connection.connected, false);
+    assert.equal(s.connection.project, undefined);
+    assert.equal(s.connection.dedicated.length, 0);
+    assert.equal(s.state.get(journalKey())[0].status, 'accepted');
+    assert.equal(s.state.get(journalKey())[0].deploymentId, resourceId);
+  } finally {
+    s.connection.dispose();
+    s.restore();
+  }
+});

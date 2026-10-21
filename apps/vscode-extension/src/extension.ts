@@ -194,6 +194,18 @@ export function activate(context: vscode.ExtensionContext): void {
       label: 'Construire',
       children: [
         {
+          id: 'deployment-operations',
+          label: 'Reprendre les opérations de déploiement',
+          icon: 'history',
+          command: 'scalewayAI.deploymentOperations',
+        },
+        {
+          id: 'reconcile-operation',
+          label: 'Retrouver une ressource acceptée',
+          icon: 'refresh',
+          command: 'scalewayAI.reconcileDeploymentOperation',
+        },
+        {
           id: 'follow-deployment',
           label: 'Suivre un déploiement existant',
           icon: 'sync',
@@ -440,6 +452,48 @@ export function activate(context: vscode.ExtensionContext): void {
     await connection.loadCatalogs();
     if (connection.connected && connection.project)
       await connection.loadModels();
+  });
+  register('scalewayAI.deploymentOperations', async () => {
+    const rows = await connection.deploymentOperations();
+    if (!rows) {
+      await vscode.window.showInformationMessage(
+        'Sélectionnez un projet connecté et approuvé pour lire son journal local. Aucun appel réseau effectué.',
+      );
+      return;
+    }
+    const document = await vscode.workspace.openTextDocument({
+      language: 'json',
+      content: JSON.stringify(
+        {
+          version: 1,
+          mode: 'local-deployment-operations',
+          operations: rows,
+          limits:
+            'Résultat inconnu : aucune relance, aucun rapprochement par nom. Accepted ne signifie pas ready. Aucun HTTP lors de cette lecture.',
+        },
+        null,
+        2,
+      ),
+    });
+    await vscode.window.showTextDocument(document);
+  });
+  register('scalewayAI.reconcileDeploymentOperation', async () => {
+    const rows = await connection.deploymentOperations();
+    const pick = await vscode.window.showQuickPick(
+      (rows ?? [])
+        .filter((row) => row.status === 'accepted')
+        .map((row) => ({
+          label: row.name,
+          description: row.deploymentId,
+          id: row.id,
+        })),
+      {
+        title: 'Relire une ressource acceptée',
+        placeHolder:
+          'Un GET par ID connu ; aucun endpoint sondé, aucune création',
+      },
+    );
+    if (pick) await connection.reconcileDeploymentOperation(pick.id);
   });
   register('scalewayAI.followDeployment', (id: unknown) =>
     connection.followDeployment(typeof id === 'string' ? id : undefined),

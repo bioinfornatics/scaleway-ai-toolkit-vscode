@@ -1,0 +1,42 @@
+{
+  "version": "0.0.29",
+  "tests": 97,
+  "biome": "passed",
+  "strict_typescript": "passed",
+  "audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "packaged_renderer": {
+    "status": "passed",
+    "version": "0.0.29",
+    "hostVersion": "1.142.0",
+    "packagedPath": "/tmp/scw-v29-install-ext/scaleway-ai-community-preview.scaleway-ai-toolkit-preview-0.0.29",
+    "catalogCommand": {
+      "publicCount": 33,
+      "publicStatus": "Offres publiques \u00b7 acc\u00e8s inf\u00e9rence non v\u00e9rifi\u00e9",
+      "panelOpened": true
+    },
+    "renderer": {
+      "panelOpened": true,
+      "rendererReady": true,
+      "rendered": true,
+      "publicCards": 17,
+      "dedicatedCards": 0,
+      "expectedPublicCards": 17,
+      "expectedDedicatedCards": 0
+    },
+    "authentication": "none",
+    "method": "actual packaged extension host and webview DOM acknowledgement with live public adapter"
+  },
+  "controller": "Journal wired to host lifecycle factory and explicit local read/native accepted-id reconciliation. Persistent reservation blocks concurrent duplicate name+model factories. Recovery never sends HTTP or restores unknown sends. Late accepted responses saved in original journal after logout without restoring session.",
+  "live_account_reads": 0,
+  "cloud_writes": 0,
+  "production_creation_transport": "not_wired",
+  "visual_keyboard_QA": "not_run",
+  "sha256": "916fe54bee4f5fc3379534d15a5b0cd21dec77bef38b1b44f69cf3fdf22b7487"
+}

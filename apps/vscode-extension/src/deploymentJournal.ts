@@ -98,12 +98,18 @@ export class DeploymentJournal {
       const index = rows.findIndex((row) => row.id === next.id);
       if (index < 0) {
         if (rows.length === 100) throw new ReadError('operation_journal_full');
+        if (
+          rows.some(
+            (row) => row.modelId === next.modelId && row.name === next.name,
+          )
+        )
+          throw new ReadError('reconcile_before_retry');
         rows.push(next);
       } else {
         const previous = rows[index];
         if (
           previous.status === 'submitting' &&
-          next.status === 'prepared' &&
+          (next.status === 'prepared' || next.status === 'submitting') &&
           !this.currentSubmissions.has(next.id)
         )
           throw new ReadError('reconcile_before_retry');

@@ -1,0 +1,44 @@
+{
+  "captured_at": "2026-10-21T05:14:39.381676+00:00",
+  "sdk_commit": "25895fc5ce562db9b94242f507ffbb553347a73f",
+  "sources": [
+    {
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-go/25895fc5ce562db9b94242f507ffbb553347a73f/api/iam/v1alpha1/iam_sdk.go",
+      "path": "iam_sdk.go",
+      "sha256": "f7eda79525fa0548c208d698a42c6bea19e4c315c3094a5c4b35d8fd2cbbd7fa"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-go/25895fc5ce562db9b94242f507ffbb553347a73f/api/inference/v1/inference_sdk.go",
+      "path": "inference_sdk.go",
+      "sha256": "55d4ec88ddc038ab76be3522d633cf222d53090d0650d077369a25f208b6642c"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-go/25895fc5ce562db9b94242f507ffbb553347a73f/api/product_catalog/v2alpha1/product_catalog_sdk.go",
+      "path": "product_catalog_sdk.go",
+      "sha256": "809150103d1418947b786a8efe3a6e6cdbce1764ecfbe791a08446dc9286483e"
+    },
+    {
+      "url": "https://api.scaleway.com/product-catalog/v2alpha1/public-catalog/products?product_types=managed_inference&region=fr-par&page=1&page_size=100",
+      "path": "managed-inference-public-products.json",
+      "sha256": "41837cc22513f4f1bed1743ca3075ea8b687a8a65f2e9871f800976b22d0f792",
+      "authenticated": false,
+      "physical_sends": 1,
+      "rows": 8,
+      "total_count": 8
+    }
+  ],
+  "findings": {
+    "price": "Seven exact node products plus custom-model storage. EUR Money units+nanos. unit_of_measure node size1 has NO time interval; cannot derive EUR/hour or compare to hourly ceiling. Description is not billing contract. Public retail != account-effective price.",
+    "quota": "GET /iam/v1alpha1/quota organization_id/order_by/page/page_size; quota[],total_count. Legacy Limit/Unlimited, limits[] global|region|zone exactly one and limit|unlimited. No usage: remaining capacity unknown. No exact dedicated technical quota mapping established.",
+    "eula": "has_eula bool, accept_eula request; comment names GetModelEula but generated operation absent. No guessed URL or automatic acceptance.",
+    "auth": "Live dedicated creation JWT acceptance unverified."
+  },
+  "blockers": [
+    "billing period/account price",
+    "dedicated quota technical names and usage",
+    "minimum create rights/live JWT acceptance",
+    "EULA text retrieval where required"
+  ],
+  "account_reads": 0,
+  "cloud_writes": 0
+}

@@ -1,7 +1,13 @@
 import { Buffer } from 'node:buffer';
 import * as vscode from 'vscode';
 import { browserLogin, parseSession, type UserSession } from './browserLogin';
-import { followDeployment } from './deploymentLifecycle';
+import { DeploymentJournal } from './deploymentJournal';
+import {
+  DeploymentLifecycle,
+  type DeploymentOperation,
+  followDeployment,
+  type ReviewedCreationTransport,
+} from './deploymentLifecycle';
 import { deploymentWizard } from './deploymentWizard';
 import { createProject } from './projectCreation';
 import {
@@ -42,6 +48,9 @@ export class Connection implements vscode.Disposable {
   private expiry: ReturnType<typeof setTimeout> | undefined;
   private storage: Promise<void> = Promise.resolve();
   private disposed = false;
+  private operationJournal:
+    | { userId: string; project: Project; journal: DeploymentJournal }
+    | undefined;
   readonly ready: Promise<void>;
   constructor(
     private context: vscode.ExtensionContext,
@@ -130,6 +139,7 @@ export class Connection implements vscode.Disposable {
     this.abort?.abort();
     this.abort = undefined;
     this.project = undefined;
+    this.operationJournal = undefined;
     this.serverless = [];
     this.dedicated = [];
     this.dedicatedCatalog = [];
@@ -625,6 +635,185 @@ export class Connection implements vscode.Disposable {
       await this.report(error);
     } finally {
       this.busy = false;
+      this.changed();
+    }
+  }
+  private journal(): DeploymentJournal {
+    const session = this.session;
+    const project = this.project;
+    if (
+      !session ||
+      !project ||
+      !this.connected ||
+      this.disposed ||
+      !vscode.workspace.isTrusted
+    )
+      throw new ReadError('invalid_scope');
+    const cached = this.operationJournal;
+    if (
+      !cached ||
+      cached.userId !== session.userId ||
+      cached.project !== project
+    )
+      this.operationJournal = {
+        userId: session.userId,
+        project,
+        journal: new DeploymentJournal(
+          this.context.globalState,
+          session.userId,
+          project,
+        ),
+      };
+    if (!this.operationJournal) throw new ReadError('invalid_scope');
+    return this.operationJournal.journal;
+  }
+  /** Explicit local read only: never logs in, refreshes resources or sends HTTP. */
+  async deploymentOperations(): Promise<DeploymentOperation[] | undefined> {
+    await this.ready;
+    if (
+      !this.connected ||
+      !this.project ||
+      this.disposed ||
+      !vscode.workspace.isTrusted
+    )
+      return;
+    const session = this.session;
+    const project = this.project;
+    const generation = this.generation;
+    try {
+      const rows = await this.journal().recover();
+      if (
+        generation !== this.generation ||
+        this.session !== session ||
+        this.project !== project ||
+        !this.connected ||
+        this.disposed ||
+        !vscode.workspace.isTrusted
+      )
+        return;
+      return rows;
+    } catch (error) {
+      if (generation === this.generation) await this.report(error);
+      return;
+    }
+  }
+  /** Host-only future allocation boundary. No command or production transport calls this yet. */
+  async deploymentLifecycle(
+    model: ListedModel,
+    name: string,
+    post: ReviewedCreationTransport,
+  ): Promise<DeploymentLifecycle> {
+    await this.ready;
+    const project = this.project;
+    const session = this.session;
+    const generation = this.generation;
+    if (
+      !project ||
+      !session ||
+      this.busy ||
+      model.kind !== 'dedicated-catalog' ||
+      !this.dedicatedCatalog.some((row) => row === model)
+    )
+      throw new ReadError('invalid_scope');
+    const journal = this.journal();
+    const rows = await journal.recover();
+    const current = () =>
+      generation === this.generation &&
+      this.session === session &&
+      this.project === project &&
+      !this.disposed &&
+      this.connected &&
+      vscode.workspace.isTrusted;
+    if (!current()) throw new ReadError('invalid_scope');
+    if (rows.some((row) => row.modelId === model.id && row.name === name))
+      throw new ReadError('reconcile_before_retry');
+    const lifecycle = new DeploymentLifecycle(
+      project,
+      model,
+      name,
+      async (operation) => {
+        // Always preserve a terminal result in its original user/project journal,
+        // including a response arriving after logout. Never revive account state.
+        const beforeSend =
+          operation.status === 'submitting' || operation.status === 'prepared';
+        if (beforeSend && !current()) throw new ReadError('invalid_scope');
+        await journal.save(operation);
+        if (beforeSend && !current()) throw new ReadError('invalid_scope');
+      },
+      async (body, signal) => {
+        if (!current() || signal.aborted) throw new ReadError('cancelled');
+        return post(body, signal);
+      },
+    );
+    // Reserve identity before returning the engine: concurrent/repeated factories fail closed.
+    await journal.save(lifecycle.snapshot);
+    if (!current()) throw new ReadError('invalid_scope');
+    return lifecycle;
+  }
+  /** One exact control-plane GET, only for an accepted ID from this scoped journal. */
+  async reconcileDeploymentOperation(
+    operationId: string,
+  ): Promise<ListedModel | undefined> {
+    if (!uuid(operationId)) return;
+    await this.ready;
+    const scopeProject = this.project;
+    const scopeSession = this.session;
+    const scopeGeneration = this.generation;
+    const rows = await this.deploymentOperations();
+    if (
+      scopeProject !== this.project ||
+      scopeSession !== this.session ||
+      scopeGeneration !== this.generation
+    )
+      return;
+    const operation = rows?.find((row) => row.id === operationId);
+    if (
+      operation?.status !== 'accepted' ||
+      !operation.deploymentId ||
+      this.busy
+    )
+      return;
+    const project = this.project;
+    const session = this.session;
+    const generation = this.generation;
+    if (!project || !session) return;
+    this.busy = true;
+    const abort = new AbortController();
+    this.abort = abort;
+    const current = () =>
+      generation === this.generation &&
+      this.session === session &&
+      this.project === project &&
+      !this.disposed &&
+      !abort.signal.aborted &&
+      this.connected &&
+      vscode.workspace.isTrusted;
+    try {
+      const row = await getDeployment(
+        project,
+        operation.deploymentId,
+        this.token(),
+        abort.signal,
+      );
+      if (!current()) return;
+      if (
+        row.deploymentInfo?.modelId !== operation.modelId ||
+        row.label !== operation.name
+      )
+        throw new ReadError('foreign_or_invalid_scope');
+      this.dedicated = [
+        ...this.dedicated.filter((old) => old.id !== row.id),
+        row,
+      ];
+      this.dedicatedState =
+        'Ressource retrouvée par son ID · endpoint et inférence non vérifiés';
+      return row;
+    } catch (error) {
+      if (current()) await this.report(error);
+      return;
+    } finally {
+      this.busy = false;
+      if (this.abort === abort) this.abort = undefined;
       this.changed();
     }
   }

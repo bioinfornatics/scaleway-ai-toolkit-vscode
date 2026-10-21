@@ -96,3 +96,14 @@ test('journal serializes snapshots and preserves accepted identity on failed wri
   );
   assert.equal((await s.journal.recover())[0].deploymentId, user);
 });
+
+test('journal refuses resubmitting a recovered write and duplicate allocation identity', async () => {
+  const s = setup();
+  await s.journal.save(record);
+  const restarted = new DeploymentJournal(s.storage, user, project);
+  await assert.rejects(restarted.save(record), /reconcile_before_retry/);
+  await assert.rejects(
+    restarted.save({ ...record, id: user }),
+    /reconcile_before_retry/,
+  );
+});
