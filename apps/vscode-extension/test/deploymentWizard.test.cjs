@@ -100,3 +100,26 @@ test('no stock/compatibility or non-ready model produces no false deployment cho
   assert.equal(s.warnings(), 1);
   assert.equal(s.documents.length, 0);
 });
+
+test('wizard preserves public source amount and explicitly refuses hourly price interpretation', async () => {
+  const s = setup();
+  const price = {
+    nodeTypeName: 'H100',
+    sku: 'offer',
+    region: 'fr-par',
+    currency: 'EUR',
+    amountEUR: '0.05666',
+    unit: 'node',
+    size: 1,
+    period: 'unspecified-in-catalog',
+    source: 'public-retail-not-account-price',
+    fetchedAt: '2026-10-21T05:00:00Z',
+  };
+  assert.equal(await s.wizard(project, model, nodes, s.current, [price]), true);
+  const plan = JSON.parse(s.documents[0].content);
+  assert.equal(plan.publicPriceObservation.amountEUR, '0.05666');
+  assert.equal(plan.checks.price, 'unknown');
+  assert.equal(plan.executable, false);
+  assert.match(plan.priceLimitations, /pas un tarif horaire/);
+  assert.match(plan.priceLimitations, /sans trafic/);
+});

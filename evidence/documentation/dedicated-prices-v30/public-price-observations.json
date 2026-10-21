@@ -1,0 +1,86 @@
+[
+  {
+    "nodeTypeName": "H100",
+    "sku": "/ai/inference_dedicated/deployment/h100-1/fr-par",
+    "region": "fr-par",
+    "currency": "EUR",
+    "amountEUR": "0.05666",
+    "unit": "node",
+    "size": 1,
+    "period": "unspecified-in-catalog",
+    "source": "public-retail-not-account-price",
+    "fetchedAt": "2026-10-21T05:24:57.330Z"
+  },
+  {
+    "nodeTypeName": "H100-2",
+    "sku": "/ai/inference_dedicated/deployment/h100-2/fr-par",
+    "region": "fr-par",
+    "currency": "EUR",
+    "amountEUR": "0.11133",
+    "unit": "node",
+    "size": 1,
+    "period": "unspecified-in-catalog",
+    "source": "public-retail-not-account-price",
+    "fetchedAt": "2026-10-21T05:24:57.330Z"
+  },
+  {
+    "nodeTypeName": "H100-SXM-2",
+    "sku": "/ai/inference_dedicated/deployment/h100-sxm-2/fr-par",
+    "region": "fr-par",
+    "currency": "EUR",
+    "amountEUR": "0.1325",
+    "unit": "node",
+    "size": 1,
+    "period": "unspecified-in-catalog",
+    "source": "public-retail-not-account-price",
+    "fetchedAt": "2026-10-21T05:24:57.330Z"
+  },
+  {
+    "nodeTypeName": "H100-SXM-4",
+    "sku": "/ai/inference_dedicated/deployment/h100-sxm-4/fr-par",
+    "region": "fr-par",
+    "currency": "EUR",
+    "amountEUR": "0.253666",
+    "unit": "node",
+    "size": 1,
+    "period": "unspecified-in-catalog",
+    "source": "public-retail-not-account-price",
+    "fetchedAt": "2026-10-21T05:24:57.330Z"
+  },
+  {
+    "nodeTypeName": "H100-SXM-8",
+    "sku": "/ai/inference_dedicated/deployment/h100-sxm-8/fr-par",
+    "region": "fr-par",
+    "currency": "EUR",
+    "amountEUR": "0.501",
+    "unit": "node",
+    "size": 1,
+    "period": "unspecified-in-catalog",
+    "source": "public-retail-not-account-price",
+    "fetchedAt": "2026-10-21T05:24:57.330Z"
+  },
+  {
+    "nodeTypeName": "L4",
+    "sku": "/ai/inference_dedicated/deployment/l4/fr-par",
+    "region": "fr-par",
+    "currency": "EUR",
+    "amountEUR": "0.0155",
+    "unit": "node",
+    "size": 1,
+    "period": "unspecified-in-catalog",
+    "source": "public-retail-not-account-price",
+    "fetchedAt": "2026-10-21T05:24:57.330Z"
+  },
+  {
+    "nodeTypeName": "L40S",
+    "sku": "/ai/inference_dedicated/deployment/l40s/fr-par",
+    "region": "fr-par",
+    "currency": "EUR",
+    "amountEUR": "0.02866",
+    "unit": "node",
+    "size": 1,
+    "period": "unspecified-in-catalog",
+    "source": "public-retail-not-account-price",
+    "fetchedAt": "2026-10-21T05:24:57.330Z"
+  }
+]

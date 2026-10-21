@@ -1,0 +1,127 @@
+{
+  "version": "0.0.30",
+  "tests": 106,
+  "biome": "passed-zero-diagnostics",
+  "strict_typescript": "passed",
+  "audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "packaged_renderer": {
+    "status": "passed",
+    "version": "0.0.30",
+    "hostVersion": "1.142.0",
+    "packagedPath": "/tmp/scw-v30-install-ext/scaleway-ai-community-preview.scaleway-ai-toolkit-preview-0.0.30",
+    "catalogCommand": {
+      "publicCount": 33,
+      "publicStatus": "Offres publiques \u00b7 acc\u00e8s inf\u00e9rence non v\u00e9rifi\u00e9",
+      "panelOpened": true
+    },
+    "renderer": {
+      "panelOpened": true,
+      "rendererReady": true,
+      "rendered": true,
+      "publicCards": 17,
+      "dedicatedCards": 0,
+      "expectedPublicCards": 17,
+      "expectedDedicatedCards": 0
+    },
+    "authentication": "none",
+    "method": "actual packaged extension host and webview DOM acknowledgement with live public adapter"
+  },
+  "live_public_price_adapter": [
+    {
+      "nodeTypeName": "H100",
+      "sku": "/ai/inference_dedicated/deployment/h100-1/fr-par",
+      "region": "fr-par",
+      "currency": "EUR",
+      "amountEUR": "0.05666",
+      "unit": "node",
+      "size": 1,
+      "period": "unspecified-in-catalog",
+      "source": "public-retail-not-account-price",
+      "fetchedAt": "2026-10-21T05:24:57.330Z"
+    },
+    {
+      "nodeTypeName": "H100-2",
+      "sku": "/ai/inference_dedicated/deployment/h100-2/fr-par",
+      "region": "fr-par",
+      "currency": "EUR",
+      "amountEUR": "0.11133",
+      "unit": "node",
+      "size": 1,
+      "period": "unspecified-in-catalog",
+      "source": "public-retail-not-account-price",
+      "fetchedAt": "2026-10-21T05:24:57.330Z"
+    },
+    {
+      "nodeTypeName": "H100-SXM-2",
+      "sku": "/ai/inference_dedicated/deployment/h100-sxm-2/fr-par",
+      "region": "fr-par",
+      "currency": "EUR",
+      "amountEUR": "0.1325",
+      "unit": "node",
+      "size": 1,
+      "period": "unspecified-in-catalog",
+      "source": "public-retail-not-account-price",
+      "fetchedAt": "2026-10-21T05:24:57.330Z"
+    },
+    {
+      "nodeTypeName": "H100-SXM-4",
+      "sku": "/ai/inference_dedicated/deployment/h100-sxm-4/fr-par",
+      "region": "fr-par",
+      "currency": "EUR",
+      "amountEUR": "0.253666",
+      "unit": "node",
+      "size": 1,
+      "period": "unspecified-in-catalog",
+      "source": "public-retail-not-account-price",
+      "fetchedAt": "2026-10-21T05:24:57.330Z"
+    },
+    {
+      "nodeTypeName": "H100-SXM-8",
+      "sku": "/ai/inference_dedicated/deployment/h100-sxm-8/fr-par",
+      "region": "fr-par",
+      "currency": "EUR",
+      "amountEUR": "0.501",
+      "unit": "node",
+      "size": 1,
+      "period": "unspecified-in-catalog",
+      "source": "public-retail-not-account-price",
+      "fetchedAt": "2026-10-21T05:24:57.330Z"
+    },
+    {
+      "nodeTypeName": "L4",
+      "sku": "/ai/inference_dedicated/deployment/l4/fr-par",
+      "region": "fr-par",
+      "currency": "EUR",
+      "amountEUR": "0.0155",
+      "unit": "node",
+      "size": 1,
+      "period": "unspecified-in-catalog",
+      "source": "public-retail-not-account-price",
+      "fetchedAt": "2026-10-21T05:24:57.330Z"
+    },
+    {
+      "nodeTypeName": "L40S",
+      "sku": "/ai/inference_dedicated/deployment/l40s/fr-par",
+      "region": "fr-par",
+      "currency": "EUR",
+      "amountEUR": "0.02866",
+      "unit": "node",
+      "size": 1,
+      "period": "unspecified-in-catalog",
+      "source": "public-retail-not-account-price",
+      "fetchedAt": "2026-10-21T05:24:57.330Z"
+    }
+  ],
+  "price_evidence": "public raw node measure preserved, pinned perMinute exact corroboration keyed SKU/node/region/amount; account-effective price unknown. No hourly rounding in bigint nine-decimal comparison.",
+  "preparation_request_budget": "max15 sequential GET (model5,node5,public prices5); no retries; failed public price produces unknown, stale logout stops wizard",
+  "account_reads": 0,
+  "cloud_creation": 0,
+  "sha256": "f7d5a0df73b794c5b7b89818fe058c79ab136beb6060a96149084a5ce3f4e23a"
+}

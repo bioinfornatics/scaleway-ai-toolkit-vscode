@@ -1,4 +1,4 @@
-# Scaleway AI Toolkit — Preview 0.0.29
+# Scaleway AI Toolkit — Preview 0.0.30
 
 Experimental community VS Code extension; no Scaleway affiliation. **User browser
 login without API keys**, scoped read-only projects/dedicated deployments and a
@@ -6,7 +6,7 @@ separate **offline synthetic** playground. No real inference or cloud writes.
 
 ## Install and try
 
-    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.29.vsix --force
+    code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.30.vsix --force
 
 Reload Window, then **Scaleway AI: Open Offline Preview** (legacy command name).
 
@@ -161,7 +161,7 @@ Scaleway; local experimental identification only, not endorsement. Publication
 requires separate brand review. ai-PULSE event branding not used. Asset provenance:
 evidence/documentation/scaleway-icon-preview-v1.json.
 
-## Preview 0.0.29 navigation and catalog visibility fix
+## Preview 0.0.30 navigation and catalog visibility fix
 
 Resources now separate **Projet Scaleway**, **Modèles**, **Récents**, and
 **Ressources locales** (synthetic demo). Developer tools separate **Découvrir**
@@ -177,7 +177,7 @@ and do not wait for pending SecretStorage. Untrusted workspace displays an expli
 explanation; approve the workspace for HTTP. Dedicated errors do not hide public
 offers. No credentials or provider endpoint input in the catalog webview.
 
-Packaged extension host catalog command (0.0.14 and final0.0.29) verified live public
+Packaged extension host catalog command (0.0.14 and final0.0.30) verified live public
 33 offerings in isolated trusted test workspace. This is stronger than standalone
 adapter testing, but it does not prove screenshot card rendering, keyboard/theme
 review or actual-account dedicated acceptance; those checks remain outstanding.
@@ -238,7 +238,7 @@ reste à implémenter ; cette version apporte la distinction, pas la création c
 
 Sur une carte dédiée : « Préparer le déploiement », ou Construire → Préparer un
 déploiement dédié. L’action déclenche la connexion/le choix du projet si nécessaire,
-puis relit le catalogue et les types de nœuds en fr-par (maximum 10 GET séquentiels,
+puis relit le catalogue, les types de nœuds en fr-par et les prix publics dédiés (maximum 15 GET séquentiels,
 sans confirmation ni progression pour les lectures). Aucun HTTP au démarrage.
 
 L’assistant propose les configurations ready, explicitement compatibles, activées
@@ -315,3 +315,7 @@ Le journal interne des opérations de déploiement dispose maintenant d’un ada
 ### Reprise des opérations
 
 Dans Construire, Reprendre les opérations de déploiement lit uniquement le journal local du compte/projet courant, sans connexion ni HTTP automatique. Retrouver une ressource acceptée effectue un seul GET sur un ID enregistré après succès ; aucun rapprochement par nom, aucune relance de création, aucun sondage de l’endpoint. Le moteur interne utilise désormais ce journal ; la création dédiée payante reste non raccordée. Une réponse tardive après déconnexion conserve son ID dans le journal d’origine sans rétablir la session.
+
+### Prix dédiés publics
+
+La préparation relit les offres managed_inference sans JWT. Elle conserve les montants EUR units+nanos exacts, la mesure node, le SKU et l’horodatage. Lorsque SKU, type de nœud, région et montant correspondent exactement aux données officielles de prix épinglées au 21 octobre 2026, elle affiche aussi le montant par minute et son équivalent horaire HT sans arrondi. Cela reste une corroboration publique datée, pas le prix effectif du compte ni une autorisation de création. Un montant modifié invalide la corroboration. La FAQ officielle précise la facturation à la durée (minutes), après disponibilité, y compris sans trafic ; aucun arrêt automatique au plafond saisi. Quotas, droits, EULA et confirmation finale restent à vérifier.

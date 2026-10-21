@@ -363,3 +363,27 @@ test('follow cancellation/foreign scope/transport failure stops without optimist
   waitAbort.abort();
   await assert.rejects(delay, { code: 'cancelled' });
 });
+
+test('provider hourly price comparison preserves nine fractional digits against four-digit user ceiling', () => {
+  assert.throws(
+    () =>
+      reviewedDeploymentBody(draft(), project, model, nodes, {
+        ...review(),
+        hourlyPriceEUR: '12.000100001',
+      }),
+    { code: 'price_exceeds_ceiling' },
+  );
+  const valid = reviewedDeploymentBody(draft(), project, model, nodes, {
+    ...review(),
+    hourlyPriceEUR: '12.000099999',
+  });
+  assert.equal(valid.min_size, 1);
+  assert.throws(
+    () =>
+      reviewedDeploymentBody(draft(), project, model, nodes, {
+        ...review(),
+        hourlyPriceEUR: '12.0000000001',
+      }),
+    { code: 'unverified_price' },
+  );
+});

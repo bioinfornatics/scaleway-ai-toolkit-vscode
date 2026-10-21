@@ -1,6 +1,10 @@
 import { Buffer } from 'node:buffer';
 import * as vscode from 'vscode';
 import { browserLogin, parseSession, type UserSession } from './browserLogin';
+import {
+  type DedicatedPriceObservation,
+  listDedicatedPrices,
+} from './dedicatedPrices';
 import { DeploymentJournal } from './deploymentJournal';
 import {
   DeploymentLifecycle,
@@ -991,7 +995,14 @@ export class Connection implements vscode.Disposable {
       if (!current() || !model) return false;
       const nodes = await listNodeTypes(this.token(), abort.signal);
       if (!current()) return false;
-      return await deploymentWizard(project, model, nodes, current);
+      let prices: DedicatedPriceObservation[] = [];
+      try {
+        prices = await listDedicatedPrices(abort.signal);
+      } catch {
+        /* Price unavailability is not a verified tariff. */
+      }
+      if (!current()) return false;
+      return await deploymentWizard(project, model, nodes, current, prices);
     } catch (error) {
       if (current()) await this.report(error);
       return false;

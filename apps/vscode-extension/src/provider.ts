@@ -153,7 +153,9 @@ export const getJSON: GetJSON = (origin, path, key, signal) => {
         ['product_types', 'region', 'page', 'page_size'].every(
           (k) => url.searchParams.getAll(k).length === 1,
         ) &&
-        url.searchParams.get('product_types') === 'generative_apis' &&
+        ['generative_apis', 'managed_inference'].includes(
+          url.searchParams.get('product_types') ?? '',
+        ) &&
         url.searchParams.get('region') === 'fr-par' &&
         /^[1-5]$/.test(url.searchParams.get('page') ?? '') &&
         url.searchParams.get('page_size') === '100';
@@ -249,7 +251,7 @@ function record(v: unknown): Record<string, unknown> {
   return v as Record<string, unknown>;
 }
 /** At most 5 sequential pages per collection. Partial/malformed results are errors. */
-async function pages(
+export async function pages(
   field: string,
   origin: 'control',
   path: string,

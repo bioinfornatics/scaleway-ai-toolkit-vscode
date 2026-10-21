@@ -1,5 +1,9 @@
 import * as vscode from 'vscode';
 import {
+  corroboratedPublicPrice,
+  type DedicatedPriceObservation,
+} from './dedicatedPrices';
+import {
   type DeploymentNetwork,
   deploymentOptions,
   prepareDeploymentDraft,
@@ -18,6 +22,7 @@ export async function deploymentWizard(
   model: ListedModel,
   nodes: NodeType[],
   current: () => boolean,
+  prices: DedicatedPriceObservation[] = [],
 ): Promise<boolean> {
   if (!current()) return false;
   const options = deploymentOptions(model, nodes);
@@ -31,7 +36,10 @@ export async function deploymentWizard(
     options.map((option) => ({
       label: option.nodeTypeName,
       description: `${option.quantizationBits} bits · contexte ${option.maxContextSize}`,
-      detail: `Stock : ${option.stockStatus} · 1 nœud · prix et quota inconnus`,
+      detail: [
+        priceDescription(option.nodeTypeName, prices),
+        'quota inconnu',
+      ].join(' · '),
       option,
     })),
     {
@@ -83,6 +91,9 @@ export async function deploymentWizard(
         : 'Montant positif, point décimal, maximum 4 décimales.',
   });
   if (!maxHourlyEUR || !current()) return false;
+  const observedPrice = prices.find(
+    (price) => price.nodeTypeName === picked.option.nodeTypeName,
+  );
   const draft = prepareDeploymentDraft(project, model, nodes, {
     name,
     option: picked.option,
@@ -97,9 +108,42 @@ export async function deploymentWizard(
   if (choice !== 'Ouvrir le plan local' || !current()) return false;
   const document = await vscode.workspace.openTextDocument({
     language: 'json',
-    content: JSON.stringify(draft, null, 2),
+    content: JSON.stringify(
+      {
+        ...draft,
+        publicPriceObservation: observedPrice ?? null,
+        corroboratedPublicEstimate: observedPrice
+          ? (corroboratedPublicPrice(observedPrice) ?? null)
+          : null,
+        priceLimitations:
+          'Prix public EUR par node ; période absente du catalogue seul. Une corroboration publique épinglée peut fournir un équivalent horaire exact, pas un tarif horaire effectif du compte. Facturation dédiée à la durée, y compris sans trafic (FAQ Scaleway). Charges additionnelles possibles. Aucun plafond de dépense appliqué.',
+      },
+      null,
+      2,
+    ),
   });
   if (!current()) return false;
   await vscode.window.showTextDocument(document, { preview: false });
   return true;
+}
+
+function priceDescription(
+  node: string,
+  prices: DedicatedPriceObservation[],
+): string {
+  const price = prices.find((row) => row.nodeTypeName === node);
+  const estimate = price ? corroboratedPublicPrice(price) : undefined;
+  if (estimate)
+    return [
+      estimate.minuteEUR,
+      'EUR/min · équivalent',
+      estimate.hourlyEquivalentEUR,
+      'EUR/h HT (source publique épinglée, prix compte inconnu)',
+    ].join(' ');
+  return price
+    ? [
+        price.amountEUR,
+        'EUR / node (catalogue public, période non précisée)',
+      ].join(' ')
+    : 'Prix public indisponible';
 }

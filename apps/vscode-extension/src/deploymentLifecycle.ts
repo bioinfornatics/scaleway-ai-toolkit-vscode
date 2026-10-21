@@ -1,9 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import {
-  type DeploymentDraft,
-  prepareDeploymentDraft,
-  validHourlyCeiling,
-} from './deployment';
+import { type DeploymentDraft, prepareDeploymentDraft } from './deployment';
 import {
   type ListedModel,
   type NodeType,
@@ -67,9 +63,13 @@ const reviewedBodies = new WeakMap<
   { serialized: string; expiresAt: number }
 >();
 function decimalUnits(value: string): bigint {
-  if (!validHourlyCeiling(value)) throw new ReadError('unverified_price');
+  if (
+    !/^(?:0|[1-9][0-9]{0,5})(?:\.[0-9]{1,9})?$/.test(value) ||
+    !/[1-9]/.test(value)
+  )
+    throw new ReadError('unverified_price');
   const [whole, fraction = ''] = value.split('.');
-  return BigInt(whole) * 10000n + BigInt(fraction.padEnd(4, '0'));
+  return BigInt(whole) * 1000000000n + BigInt(fraction.padEnd(9, '0'));
 }
 export function reviewedDeploymentBody(
   draft: DeploymentDraft,

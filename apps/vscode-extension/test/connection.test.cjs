@@ -3,6 +3,7 @@ const { test } = require('node:test');
 const Module = require('node:module');
 const provider = require('../dist/provider');
 const auth = require('../dist/browserLogin');
+const priceProvider = require('../dist/dedicatedPrices');
 const org = '11111111-1111-1111-1111-111111111111',
   id = '22222222-2222-2222-2222-222222222222';
 const token = 'eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjQwMDAwMDAwMDB9.c3ludGhldGlj';
@@ -66,7 +67,9 @@ function setup() {
   const old = provider.listProjects,
     oldAuth = auth.browserLogin,
     oldDedicated = provider.listDedicated,
-    oldOrganizations = provider.listOrganizations;
+    oldOrganizations = provider.listOrganizations,
+    oldPrices = priceProvider.listDedicatedPrices;
+  priceProvider.listDedicatedPrices = async () => [];
   provider.listOrganizations = async (u, k) => {
     assert.equal(u, org);
     assert.equal(k, token);
@@ -106,6 +109,7 @@ function setup() {
       auth.browserLogin = oldAuth;
       provider.listDedicated = oldDedicated;
       provider.listOrganizations = oldOrganizations;
+      priceProvider.listDedicatedPrices = oldPrices;
     },
   };
 }
@@ -1051,6 +1055,50 @@ test('controller persists late accepted response in original journal after logou
     assert.equal(s.state.get(journalKey())[0].status, 'accepted');
     assert.equal(s.state.get(journalKey())[0].deploymentId, resourceId);
   } finally {
+    s.connection.dispose();
+    s.restore();
+  }
+});
+
+test('preparation prices fail independently and late logout prevents stale wizard', async () => {
+  const s = setup();
+  const wizard = require('../dist/deploymentWizard');
+  const oldModels = provider.listDedicatedCatalog,
+    oldNodes = provider.listNodeTypes,
+    oldWizard = wizard.deploymentWizard;
+  let opened = 0;
+  try {
+    await s.connection.login();
+    provider.listDedicatedCatalog = async () => [
+      { id: operationModel, label: 'Model', kind: 'dedicated-catalog' },
+    ];
+    provider.listNodeTypes = async () => [];
+    priceProvider.listDedicatedPrices = async () => {
+      throw new provider.ReadError('invalid_price_response');
+    };
+    wizard.deploymentWizard = async (
+      _project,
+      _model,
+      _nodes,
+      current,
+      prices,
+    ) => {
+      assert.equal(current(), true);
+      assert.deepEqual(prices, []);
+      opened++;
+      return true;
+    };
+    assert.equal(await s.connection.prepareDeployment(operationModel), true);
+    priceProvider.listDedicatedPrices = async () => {
+      await s.connection.disconnect();
+      return [];
+    };
+    assert.equal(await s.connection.prepareDeployment(operationModel), false);
+    assert.equal(opened, 1);
+  } finally {
+    provider.listDedicatedCatalog = oldModels;
+    provider.listNodeTypes = oldNodes;
+    wizard.deploymentWizard = oldWizard;
     s.connection.dispose();
     s.restore();
   }
