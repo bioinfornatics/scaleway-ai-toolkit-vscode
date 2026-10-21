@@ -30,6 +30,35 @@
           ? 'Serverless · offre disponible, pas un déploiement dédié'
           : 'Dédié · modèle à déployer, pas une ressource déployée';
       card.append(note);
+      if (kind === 'public') {
+        const prices = (row.serverlessPrices || []).filter(
+          (price) => price.consumptionMode === 'realtime',
+        );
+        const pricing = document.createElement('p');
+        pricing.className = 'model-prices';
+        pricing.textContent = prices.length
+          ? prices
+              .map((price) => {
+                const type =
+                  {
+                    input_token: 'Entrée',
+                    output_token: 'Sortie',
+                    cached_input_token: 'Entrée en cache',
+                  }[price.tokenType] || price.tokenType;
+                const unit = price.unit === 'token' ? 'tokens' : price.unit;
+                return [
+                  type,
+                  ':',
+                  price.amountEUR.replace('.', ','),
+                  '€ /',
+                  price.size,
+                  unit,
+                ].join(' ');
+              })
+              .join(' · ')
+          : 'Tarif temps réel non disponible dans les données retournées';
+        card.append(pricing);
+      }
       const details = document.createElement('button');
       details.type = 'button';
       details.textContent = 'Voir les détails';
@@ -44,6 +73,34 @@
       });
       card.append(details);
       if (kind === 'dedicated') {
+        const supported = new Set(
+          (row.dedicatedInfo?.supportedNodes || [])
+            .filter((node) => node.allowed && node.maxContextSize > 0)
+            .map((node) => node.nodeTypeName),
+        );
+        const compatiblePrices = (state.prices || []).filter((price) =>
+          supported.has(price.nodeTypeName),
+        );
+        const pricing = document.createElement('p');
+        pricing.className = 'model-prices';
+        pricing.textContent = compatiblePrices.length
+          ? compatiblePrices
+              .map((price) =>
+                price.estimate
+                  ? [
+                      price.nodeTypeName,
+                      ':',
+                      price.estimate.hourlyEquivalentEUR.replace('.', ','),
+                      '€/h HT',
+                    ].join(' ')
+                  : [price.nodeTypeName, ': tarif horaire non confirmé'].join(
+                      ' ',
+                    ),
+              )
+              .join(' · ')
+          : 'Tarifs compatibles non chargés : voir les infrastructures ci-dessus ou préparer le déploiement.';
+        card.append(pricing);
+
         if (row.dedicatedInfo?.hasEula === true) {
           const eula = document.createElement('button');
           eula.type = 'button';
@@ -78,7 +135,47 @@
       root.append(empty);
     }
   }
+  function renderPrices() {
+    const root = document.getElementById('price-list');
+    root.replaceChildren();
+    document.getElementById('price-status').textContent =
+      state.priceStatus || 'Tarifs non chargés';
+    for (const row of state.prices || []) {
+      const card = document.createElement('article');
+      const heading = document.createElement('h3');
+      heading.textContent = row.nodeTypeName;
+      card.append(heading);
+      const amount = document.createElement('p');
+      amount.className = 'price-amount';
+      amount.textContent = row.estimate
+        ? [
+            row.estimate.hourlyEquivalentEUR.replace('.', ','),
+            '€/heure HT',
+          ].join(' ')
+        : [
+            row.amountEUR.replace('.', ','),
+            'EUR / node · période non confirmée',
+          ].join(' ');
+      card.append(amount);
+      const minute = document.createElement('p');
+      minute.textContent = row.estimate
+        ? [row.estimate.minuteEUR.replace('.', ','), '€/minute · 1 nœud'].join(
+            ' ',
+          )
+        : 'Pas de conversion horaire disponible';
+      card.append(minute);
+      const source = document.createElement('p');
+      source.textContent = [
+        'Catalogue public · relevé',
+        row.fetchedAt,
+        row.estimate ? '· période corroborée au 21/10/2026' : '',
+      ].join(' ');
+      card.append(source);
+      root.append(card);
+    }
+  }
   function render() {
+    renderPrices();
     document.getElementById('public-status').textContent =
       `${state.publicStatus} · ${state.serverless.length} modèle(s)`;
     document.getElementById('dedicated-status').textContent =
@@ -122,6 +219,9 @@
           revision: state.revision,
           publicCards: document
             .getElementById('public-list')
+            .querySelectorAll('article').length,
+          priceCards: document
+            .getElementById('price-list')
             .querySelectorAll('article').length,
           dedicatedCards: document
             .getElementById('dedicated-list')

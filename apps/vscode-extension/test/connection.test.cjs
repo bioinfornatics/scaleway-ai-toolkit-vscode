@@ -1234,3 +1234,43 @@ test('EULA controller accepts only current known model and rejects stale logout/
     s.restore();
   }
 });
+
+test('catalog visibly loads public prices without login even if account busy, failures stay independent', async () => {
+  const s = setup();
+  const old = provider.listServerless;
+  let reads = 0;
+  try {
+    s.connection.ready = new Promise(() => {});
+    s.connection.busy = true;
+    provider.listServerless = async () => [
+      { id: 'offer', label: 'Offer', kind: 'serverless' },
+    ];
+    priceProvider.listDedicatedPrices = async () => {
+      reads++;
+      return [{ nodeTypeName: 'H100', amountEUR: '0.05666' }];
+    };
+    await s.connection.loadPublicCatalog();
+    assert.equal(reads, 1);
+    assert.equal(s.connection.publicDedicatedPrices.length, 1);
+    assert.equal(s.logins(), 0);
+    priceProvider.listDedicatedPrices = async () => {
+      throw new provider.ReadError('invalid_price_response');
+    };
+    await s.connection.loadPublicCatalog();
+    assert.equal(s.connection.serverless.length, 1);
+    assert.equal(s.connection.publicDedicatedPrices.length, 0);
+    assert.match(s.connection.publicPriceState, /indisponibles/);
+    provider.listServerless = async () => {
+      throw new provider.ReadError('transport_error');
+    };
+    priceProvider.listDedicatedPrices = async () => [
+      { nodeTypeName: 'L4', amountEUR: '0.0155' },
+    ];
+    await s.connection.loadPublicCatalog();
+    assert.equal(s.connection.publicDedicatedPrices[0].nodeTypeName, 'L4');
+  } finally {
+    provider.listServerless = old;
+    s.connection.dispose();
+    s.restore();
+  }
+});

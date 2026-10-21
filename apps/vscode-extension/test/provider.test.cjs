@@ -226,3 +226,56 @@ test('safe names reject every ASCII control while preserving Unicode', () => {
   for (const value of ['', 'a'.repeat(257), null, 42])
     assert.equal(text(value), false);
 });
+
+test('Serverless public price projection preserves exact unit and realtime/batch distinction', async () => {
+  const row = {
+    sku: 'input',
+    product: 'priced-model',
+    status: 'preview',
+    locality: { region: 'fr-par' },
+    properties: {
+      generative_apis: {
+        token_type: 'input_token',
+        consumption_mode: 'realtime',
+      },
+    },
+    price: { retail_price: { currency_code: 'EUR', units: 0, nanos: 1800000 } },
+    unit_of_measure: { unit: 'token', size: 1000 },
+  };
+  const result = await listServerless('', signal(), async () => ({
+    products: [
+      row,
+      {
+        ...row,
+        sku: 'batch',
+        properties: {
+          generative_apis: {
+            token_type: 'input_token',
+            consumption_mode: 'batch',
+          },
+        },
+      },
+    ],
+    total_count: 2,
+  }));
+  assert.equal(result[0].serverlessPrices.length, 2);
+  assert.equal(result[0].serverlessPrices[0].amountEUR, '0.0018');
+  assert.equal(result[0].serverlessPrices[0].size, 1000);
+  assert.equal(result[0].serverlessPrices[1].consumptionMode, 'batch');
+  const unknown = await listServerless('', signal(), async () => ({
+    products: [
+      {
+        ...row,
+        price: {
+          retail_price: {
+            currency_code: 'EUR',
+            units: 9007199254740992,
+            nanos: 0,
+          },
+        },
+      },
+    ],
+    total_count: 1,
+  }));
+  assert.equal(unknown[0].serverlessPrices, undefined);
+});

@@ -144,14 +144,59 @@ test('card click sends identity; details render text, focus and return to trigge
   receive({
     data: {
       type: 'catalog-state',
-      serverless: [{ id: 'a', label: 'Model', status: 'preview' }],
+      serverless: [
+        {
+          id: 'a',
+          label: 'Model',
+          status: 'preview',
+          serverlessPrices: [
+            {
+              amountEUR: '0.0018',
+              unit: 'token',
+              size: 1000,
+              tokenType: 'input_token',
+              consumptionMode: 'realtime',
+            },
+            {
+              amountEUR: '0.0009',
+              unit: 'token',
+              size: 1000,
+              tokenType: 'input_token',
+              consumptionMode: 'batch',
+            },
+          ],
+        },
+      ],
       dedicated: [],
+      prices: [
+        {
+          nodeTypeName: 'H100',
+          amountEUR: '0.05666',
+          fetchedAt: '2026-10-21',
+          estimate: { hourlyEquivalentEUR: '3.3996', minuteEUR: '0.05666' },
+        },
+      ],
+      priceStatus: 'Tarifs publics',
       publicStatus: 'OK',
       dedicatedStatus: 'None',
       scope: 'Public',
     },
   });
+  const pricing = get('public-list').children[0].children.find(
+    (child) => child.className === 'model-prices',
+  );
+  assert.equal(pricing.textContent, 'Entrée : 0,0018 € / 1000 tokens');
+  assert.ok(!pricing.textContent.includes('0,0009'));
   const button = get('public-list').children[0].children.at(-1);
+  assert.equal(get('price-list').children.length, 1);
+  assert.equal(
+    get('price-list').children[0].children[1].textContent,
+    '3,3996 €/heure HT',
+  );
+  assert.equal(
+    get('price-list').children[0].children[2].textContent,
+    '0,05666 €/minute · 1 nœud',
+  );
   assert.equal(button.textContent, 'Voir les détails');
   assert.equal(button['aria-label'], 'Voir les détails de Model');
   button.events.click();
@@ -221,6 +266,7 @@ test('renderer acknowledgement IPC accepts bounded counts and exact shape only',
     type: 'rendered',
     revision: 1,
     publicCards: 17,
+    priceCards: 7,
     dedicatedCards: 0,
   };
   assert.deepEqual(parseCatalogInput(valid), valid);
@@ -229,6 +275,8 @@ test('renderer acknowledgement IPC accepts bounded counts and exact shape only',
     { ...valid, publicCards: -1 },
     { ...valid, publicCards: 501 },
     { ...valid, dedicatedCards: 1.2 },
+    { ...valid, priceCards: -1 },
+    { ...valid, priceCards: 501 },
     { ...valid, token: 'secret' },
   ])
     assert.equal(parseCatalogInput(message), undefined);

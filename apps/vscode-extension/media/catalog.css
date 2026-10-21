@@ -105,3 +105,9 @@ article p:last-child {
     outline-color: Highlight;
   }
 }
+
+article .price-amount {
+  color: var(--vscode-foreground);
+  font-size: 20px;
+  font-weight: 600;
+}

@@ -1,0 +1,43 @@
+{
+  "version": "0.0.33",
+  "tests": 121,
+  "biome": "passed-zero-diagnostics",
+  "strict_typescript": "passed",
+  "audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "packaged_renderer": {
+    "status": "passed",
+    "version": "0.0.33",
+    "hostVersion": "1.142.0",
+    "packagedPath": "/tmp/scw-v33-install-ext/scaleway-ai-community-preview.scaleway-ai-toolkit-preview-0.0.33",
+    "catalogCommand": {
+      "publicCount": 33,
+      "publicStatus": "Offres publiques \u00b7 acc\u00e8s inf\u00e9rence non v\u00e9rifi\u00e9",
+      "panelOpened": true
+    },
+    "renderer": {
+      "panelOpened": true,
+      "rendererReady": true,
+      "rendered": true,
+      "publicCards": 17,
+      "dedicatedCards": 0,
+      "priceCards": 7,
+      "expectedPriceCards": 7,
+      "expectedPublicCards": 17,
+      "expectedDedicatedCards": 0
+    },
+    "authentication": "none",
+    "method": "actual packaged extension host and webview DOM acknowledgement with live public adapter"
+  },
+  "pricing_visibility": "Top-of-catalog dedicated GPU price section,7 exact public minute/hour estimates; Serverless card realtime input/output unit prices; dedicated model cards show exact compatible hardware prices after project catalogue read. Price failure independent/no login/public max10GET.",
+  "visual_QA": "not_run; actual packaged DOM ack and unit text checks, not screenshot verdict",
+  "account_reads_by_agent": 0,
+  "cloud_creation": 0,
+  "sha256": "6f4fe3ed840010e818bedc2b28c706e82ede90f53da33a1d72d716c15d78a391"
+}

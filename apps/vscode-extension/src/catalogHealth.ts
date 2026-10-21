@@ -2,6 +2,7 @@ export interface CatalogRenderReport {
   revision: number;
   publicCards: number;
   dedicatedCards: number;
+  priceCards?: number;
 }
 /** A renderer acknowledgement proves script/DOM execution, not visual or usability QA. */
 export class CatalogHealth {

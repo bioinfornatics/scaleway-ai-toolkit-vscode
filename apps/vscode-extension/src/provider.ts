@@ -49,11 +49,20 @@ export interface DeploymentInfo {
   nodeTypeName?: string;
   endpoints: DeploymentEndpoint[] | undefined;
 }
+export interface ServerlessPrice {
+  sku: string;
+  amountEUR: string;
+  unit: string;
+  size: number;
+  tokenType: string;
+  consumptionMode: string;
+}
 export interface ListedModel {
   id: string;
   label: string;
   kind: 'serverless' | 'dedicated' | 'dedicated-catalog';
   status?: string;
+  serverlessPrices?: ServerlessPrice[];
   dedicatedInfo?: DedicatedModelInfo;
   deploymentInfo?: DeploymentInfo;
 }
@@ -372,11 +381,12 @@ export async function listServerless(
     get,
   );
   const models = new Map<string, Set<string>>();
+  const prices = new Map<string, ServerlessPrice[]>();
   const skus = new Set<string>();
   for (const value of rows) {
     const row = record(value);
     const properties = record(row.properties);
-    record(properties.generative_apis);
+    const apiProperties = record(properties.generative_apis);
     if (
       !text(row.sku) ||
       !text(row.product) ||
@@ -389,12 +399,54 @@ export async function listServerless(
     const statuses = models.get(row.product) ?? new Set<string>();
     statuses.add(row.status);
     models.set(row.product, statuses);
+    // Price fields may be absent in legacy projections. Never invent a zero price.
+    if (
+      row.price &&
+      row.unit_of_measure &&
+      !['retired', 'end_of_life', 'eol'].includes(row.status)
+    ) {
+      const money = record(record(row.price).retail_price);
+      const unit = record(row.unit_of_measure);
+      if (
+        money.currency_code === 'EUR' &&
+        Number.isSafeInteger(money.units) &&
+        Number(money.units) >= 0 &&
+        Number.isSafeInteger(money.nanos) &&
+        Number(money.nanos) >= 0 &&
+        Number(money.nanos) < 1000000000 &&
+        text(unit.unit) &&
+        Number.isSafeInteger(unit.size) &&
+        Number(unit.size) > 0 &&
+        text(apiProperties.consumption_mode)
+      ) {
+        const fraction = String(money.nanos)
+          .padStart(9, '0')
+          .replace(/0+$/, '');
+        const amountEUR = [
+          String(money.units),
+          ...(fraction ? [fraction] : []),
+        ].join('.');
+        const entries = prices.get(row.product) ?? [];
+        entries.push({
+          sku: row.sku,
+          amountEUR,
+          unit: unit.unit,
+          size: Number(unit.size),
+          tokenType: text(apiProperties.token_type)
+            ? apiProperties.token_type
+            : 'unknown',
+          consumptionMode: apiProperties.consumption_mode,
+        });
+        prices.set(row.product, entries);
+      }
+    }
   }
   return [...models]
     .map(([id, statuses]) => ({
       id,
       label: id,
       kind: 'serverless' as const,
+      ...(prices.has(id) ? { serverlessPrices: prices.get(id) } : {}),
       status: [...statuses].sort().join(' / '),
     }))
     .sort((a, b) => a.label.localeCompare(b.label));

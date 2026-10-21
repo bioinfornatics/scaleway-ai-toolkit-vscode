@@ -41,6 +41,8 @@ const preferenceKey = (userId: string) => `scalewayAI.preferences.v1.${userId}`;
 export class Connection implements vscode.Disposable {
   metadata: Metadata | undefined;
   project: Project | undefined;
+  publicDedicatedPrices: DedicatedPriceObservation[] = [];
+  publicPriceState = 'Non chargés';
   serverless: ListedModel[] = [];
   dedicated: ListedModel[] = [];
   dedicatedCatalog: ListedModel[] = [];
@@ -535,6 +537,8 @@ export class Connection implements vscode.Disposable {
     this.publicAbort = abort;
     this.publicPending = (async () => {
       this.serverlessState = 'Chargement…';
+      this.publicPriceState = 'Chargement des tarifs dédiés…';
+      this.publicDedicatedPrices = [];
       this.changed();
       try {
         const rows = await listServerless('', abort.signal);
@@ -552,6 +556,28 @@ export class Connection implements vscode.Disposable {
         if (!abort.signal.aborted && !this.disposed)
           this.serverlessState =
             'Erreur · ' +
+            (error instanceof ReadError ? error.code : 'local_error');
+      } finally {
+        this.changed();
+      }
+      if (abort.signal.aborted || this.disposed || !vscode.workspace.isTrusted)
+        return;
+      try {
+        const prices = await listDedicatedPrices(abort.signal);
+        if (
+          !abort.signal.aborted &&
+          !this.disposed &&
+          vscode.workspace.isTrusted
+        ) {
+          this.publicDedicatedPrices = prices;
+          this.publicPriceState = prices.length
+            ? 'Tarifs publics HT · 1 nœud · fr-par'
+            : 'Aucun tarif dédié retourné';
+        }
+      } catch (error) {
+        if (!abort.signal.aborted && !this.disposed)
+          this.publicPriceState =
+            'Tarifs indisponibles · ' +
             (error instanceof ReadError ? error.code : 'local_error');
       } finally {
         this.changed();
