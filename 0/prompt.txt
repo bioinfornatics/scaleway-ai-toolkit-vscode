@@ -1,0 +1,109 @@
+Dépôt : /home/jmercier/Codes/me/scaleway_ai_vscode
+Tâche principale : scaleway_ai_vscode-398.6.2
+Objectif : préciser et recueillir mon autorisation explicite pour la validation
+live représentative du playground Serverless installé. Ne pas exécuter le live
+dans cette tranche.
+
+État :
+- 398.6.1 et ahh sont fermées pour leur acceptance locale mockée.
+- 328 tests, typecheck, Biome et diff-check passent.
+- Clavier natif Chromium, thèmes et révocation réelle de confiance VS Code
+  ont été vérifiés.
+- Le correctif bloque définitivement la webview après perte du contrôleur
+  d’origine, conserve la réponse partielle et interdit le rejeu automatique.
+- Aucun appel cloud, commit ou push effectué.
+- La validation locale ne prouve pas la compatibilité live ni l’acceptance
+  des tâches parentes.
+
+Références :
+- specifications/coordination.md
+- specifications/roadmap.md, section de séquencement actuelle
+... (41 more lines → /tmp/goose-dbfzCC.txt)
+
+---
+
+approuvé
+
+---
+
+Organisation: 2befc663-6487-48d0-9eb1-2b5c61150487
+Projet: 2befc663-6487-48d0-9eb1-2b5c61150487 (default)
+region: fr-par
+budget: 5€
+---
+pourquoi as tu besoin de ca déjà ?
+
+---
+
+ok il devrait pas avoir de consommation normalent, une fois que tu as fini de faire l'etension je pourriat la tester et du coup consommer une reponse ia ca va couter qq centimes seulement
+
+---
+
+continue
+
+---
+
+poursuivre `398.4` avec le transport streaming dédié testé par mocks, puis son intégration au playground.
+
+---
+
+ok fait la suite
+
+---
+
+je souhaite arreter les test sur le playground car je comprends ce que tu fais
+
+---
+
+dans le cadre de la roadmap traite toutes les demandes afin de reduire au maximum le backlog
+❯ bd list
+○ scaleway_ai_vscode-jgh ● P1 [epic] Deliver the Scaleway AI Toolkit developer journey
+├── ○ scaleway_ai_vscode-jgh.1 ● P1 [epic] Phase 0 — Validate value, API contracts and safety
+│   ├── ● scaleway_ai_vscode-jgh.1.1 ● P1 Validate SC1 value and agree comparative test
+│   └── ◐ scaleway_ai_vscode-jgh.1.6 ● P1 Validate candidate hosting streaming and state limits
+│       └── ○ scaleway_ai_vscode-jgh.1.6.3 ● P1 Execute bounded private Containers spike after scope budget and image approval
+├── ○ scaleway_ai_vscode-jgh.2 ● P1 [epic] Product Design — Approve and verify the MVP journey
+│   ├── ○ scaleway_ai_vscode-jgh.2.1 ● P1 Explore three complete MVP interaction journeys
+│   ├── ○ scaleway_ai_vscode-jgh.2.2 ● P1 Complete and approve exact selected source set
+│   ├── ○ scaleway_ai_vscode-jgh.2.3 ● P1 Build explicitly approved mock-data review prototype
+│   ├── ○ scaleway_ai_vscode-jgh.2.4 ● P1 Perform source-bound canonical design QA
+│   └── ○ scaleway_ai_vscode-jgh.2.5 ● P1 Evaluate value and obtain production mandate
+├── ○ scaleway_ai_vscode-jgh.3 ● P1 [epic] Phase 1 — Model-focused MVP
+│   ├── ○ scaleway_ai_vscode-398 ● P1 [epic] Complete selected-model playground journey: inference, recovery, export and validation
+│   │   ├── ◐ scaleway_ai_vscode-398.4 ● P2 Add dedicated endpoint invocation policy
+│   │   ├── ○ scaleway_ai_vscode-398.5 ● P2 Save and export real billed experiments
+│   │   └── ○ scaleway_ai_vscode-398.6 ● P2 Validate installed playground and separately scoped live journey
+│   │       ├── ● scaleway_ai_vscode-398.6.2 ● P1 Approve exact scope and budget for representative live playground validation
+│   │       └── ○ scaleway_ai_vscode-398.6.3 ● P2 Validate one representative Serverless chat model through installed extension under approved budget
+│   ├── ○ scaleway_ai_vscode-jgh.3.1 ● P1 Scaffold TypeScript extension and quality harness
+│   ├── ○ scaleway_ai_vscode-jgh.3.2 ● P1 Implement secure connection and scoped context
+│   ├── ○ scaleway_ai_vscode-jgh.3.3 ● P1 Implement capability-aware model catalog
+│   ├── ○ scaleway_ai_vscode-jgh.3.4 ● P1 Implement streaming playground and recovery
+│   ├── ○ scaleway_ai_vscode-jgh.3.5 ● P1 Implement saved experiments and portable code export
+│   ├── ○ scaleway_ai_vscode-jgh.3.6 ● P1 Implement read-only dedicated resource explorer
+│   ├── ○ scaleway_ai_vscode-jgh.3.7 ● P1 Verify MVP security, accessibility and end-to-end acceptance
+│   ├── ● scaleway_ai_vscode-jgh.3.14 ● P1 Require delegated user OAuth instead of API-key connection
+│   ├── ○ scaleway_ai_vscode-jgh.3.23 ● P1 Align native navigation with Foundry resource/discover/build structure
+│   │   └── ◐ scaleway_ai_vscode-jgh.3.23.1 ● P2 Verify installed catalog cards and native navigation visually and with keyboard
+│   ├── ◐ scaleway_ai_vscode-jgh.3.27 ● P1 [bug] Diagnose VS Code webview InvalidStateError service worker failure
+│   └── ○ scaleway_ai_vscode-jgh.3.24 ● P2 Add default-project action selector and plan guarded project creation
+├── ○ scaleway_ai_vscode-jgh.4 ● P2 [epic] Phase 2 — Strands local agents and evaluation
+│   ├── ○ scaleway_ai_vscode-jgh.4.1 ● P2 Implement portable agent specification validation
+│   ├── ○ scaleway_ai_vscode-jgh.4.2 ● P2 Implement bounded Strands Python agent runtime
+│   ├── ○ scaleway_ai_vscode-jgh.4.3 ● P2 Implement approved MCP configuration and policy
+│   ├── ○ scaleway_ai_vscode-jgh.4.4 ● P2 Implement approved agent editor and local controls
+│   ├── ○ scaleway_ai_vscode-jgh.4.5 ● P2 Implement correlated local run and tool inspector
+│   ├── ○ scaleway_ai_vscode-jgh.4.6 ● P2 Implement bounded dataset evaluations and comparisons
+│   └── ○ scaleway_ai_vscode-jgh.4.7 ● P2 Verify local-agent end-to-end acceptance
+├── ○ scaleway_ai_vscode-jgh.5 ● P2 [epic] Phase 3 — Model and agent cloud deployment
+│   ├── ○ scaleway_ai_vscode-jgh.5.1 ● P1 Implement reviewed dedicated model deployment
+│   │   └── ◐ scaleway_ai_vscode-jgh.5.1.5 ● P1 Verify dedicated tariff quota and EULA review source contracts
+│   ├── ○ scaleway_ai_vscode-jgh.5.2 ● P2 Implement portable image packaging and registry adapter
+│   ├── ○ scaleway_ai_vscode-jgh.5.3 ● P2 Implement reviewed hosted application and cleanup
+│   ├── ○ scaleway_ai_vscode-jgh.5.4 ● P2 Implement hosted playground on common event protocol
+│   ├── ○ scaleway_ai_vscode-jgh.5.5 ● P2 Implement logs and validated Cockpit trace integration
+│   └── ○ scaleway_ai_vscode-jgh.5.6 ● P2 Verify hosted workflow, safety and resource cleanup
+└── ○ scaleway_ai_vscode-jgh.6 ● P2 [epic] Phase 4 — Evidence-led advanced integrations
+    ├── ○ scaleway_ai_vscode-jgh.6.1 ● P3 Research retrieval backend and knowledge value
+    └── ○ scaleway_ai_vscode-jgh.6.2 ● P3 Research fine-tuning feasibility and demand
+● scaleway_ai_vscode-msz ● P2 Verify v35 key bootstrap and SDK reads with explicit live test scope
