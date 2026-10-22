@@ -1,0 +1,277 @@
+on revoit le menu
+1. On ne fait pas de sous menu a Modeles
+- le Menu Medele corresponds aux inerence dispobible est déployé, ce qui doit correspondandre au sous menu serverless. Exemple dans azure foundry toolkit: "/home/jmercier/Téléchargements/WhatsApp Image 2026-10-21 at 16.12.58(2).jpeg"
+2. On enleve le sous menu Dédié, on fait un menu agents se situant en dessous de modele, j'imagine que chez scaleway la notion n'existe pas de maniere plugin and play et donc que ca correspond a un container tournant dans scaleway, donc potentiellement stockage ddu container dans Container Registry et execution via serverless compute / container . Donc d'un coté le menu agent liste les containers taggé agent et on pourrait les jouer en les déployant par un clic sur play en serverles compute container
+evalue la proposition et  la faisabilité
+
+---
+
+je propose sur la partie agent de d'abod déployé localement l'agents de configuré la base de code strands (AGENT framework) avec le endpoint voulu (mistrall 3 pour exemple), et de puvoir le déployé facilement cachant la complexité et donc de maniere simple creer le container et le déploie mets a jour le menu en conséquence
+
+---
+
+resume and continue
+
+---
+
+split tasks in smaller tasks
+
+---
+
+continue
+
+---
+
+quel tache implique cette limit de token en sortie atteinte, c'est la troisieme tentative!
+
+---
+
+validé avance
+
+---
+
+genere un vsix pour valider le resultat puis explique la suite
+
+---
+
+j'ai des clé déja crée et le pbm c'est que le flux actuel ne considere pas cette possibilité , j'aurais trendance a dire 1 verifier si une clé existe, 1.A. si oui l'utiliser et se connecter si echec indiquait qu'il faut engénéré une, 1.B si cle absente suivre le parcours actuel loin web creer la clé , la stocker pour la reutilisé
+
+---
+
+oui et stocké la configuration actuel afin d'etre resilient au redemarrage
+
+---
+
+go implemenation
+
+---
+
+genere le vsix
+
+---
+
+validé
+
+---
+
+ok fait la suite
+
+---
+
+on valide , on fera un bug report si besoin
+
+---
+
+ok
+
+---
+
+avant de passer aux developement local d'un agent , petit correction: menu , me Ressources > Modèles > tab Mes modèles, j'ai une ligne correspondant au service serveless déployé pour le modele deepseek-v4.1-flash  . je ne comprends pas pourquoi la valeur de la colonne état est: Référence locale · accès non vérifié
+
+---
+
+ca sert a rien de dire non testé, je recommende d'indiqué success/faillure pour indiqué l'état du déploiement et une colonne date de création si l'api permet d'avoir l'information
+
+---
+
+quand tu lance lance le déploiement du service serverless est-ce que l'on recupere un code de succes ? quand tu liste les inferences deployé via l'api on peut considérer que c'ets un succes si l'api le liste
+
+---
+
+est-ce que l'api fournit une info de status ?
+
+---
+
+c'est quoi le status ,
+
+---
+
+y a t'il un health check ?
+
+---
+
+ok validé
+
+---
+
+c'est ok pour moi , quand on fait une demander d'un service serverless bia l'api y a t'il un code de retour ?
+
+---
+
+ok go implement
+
+---
+
+genere le vsix et donne la commande d'install
+
+---
+
+ok apres actualisation les colonnes etat/disponibilité et date de création on pour valeur "—" !!!
+
+---
+
+example de responses de l'api list models
+```
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "id",
+      "object": "model",
+      "created": 0,
+      "owned_by": "owned_by"
+    }
+  ]
+}
+```
+
+---
+
+pour la partie dedié: deux api
+1. /inference/v1/regions/{region}/verify-model
+```
+{
+  "nodes": [
+    {
+      "node_type_name": "node_type_name",
+      "quantizations": [
+        {
+          "quantization_bits": 0,
+          "allowed": true,
+          "max_context_size": 0
+        }
+      ]
+    }
+  ],
+  "size_bytes": 0
+}
+```
+2. GET/inference/v1/regions/{region}/models
+```
+{
+  "models": [
+    {
+      "id": "6170692e-7363-616c-6577-61792e636f6d",
+      "name": "name",
+      "project_id": "6170692e-7363-616c-6577-61792e636f6d",
+      "tags": [
+        "string"
+      ],
+      "status": "unknown_status",
+      "description": "description",
+      "error_message": "error_message",
+      "has_eula": true,
+      "created_at": "2022-03-22T12:34:56.123456Z",
+      "updated_at": "2022-03-22T12:34:56.123456Z",
+      "region": "region",
+      "nodes_support": [
+        {
+          "nodes": [
+            {
+              "node_type_name": "node_type_name",
+              "quantizations": [
+                {
+                  "quantization_bits": 0,
+                  "allowed": true,
+                  "max_context_size": 0
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "parameter_size_bits": 0,
+      "size_bytes": 0
+    }
+  ],
+  "total_count": 0
+}
+```
+
+---
+
+3. GET/inference/v1/regions/{region}/models/{model_id}
+```
+{
+  "id": "6170692e-7363-616c-6577-61792e636f6d",
+  "name": "name",
+  "project_id": "6170692e-7363-616c-6577-61792e636f6d",
+  "tags": [
+    "string"
+  ],
+  "status": "unknown_status",
+  "description": "description",
+  "error_message": "error_message",
+  "has_eula": true,
+  "created_at": "2022-03-22T12:34:56.123456Z",
+  "updated_at": "2022-03-22T12:34:56.123456Z",
+  "region": "region",
+  "nodes_support": [
+    {
+      "nodes": [
+        {
+          "node_type_name": "node_type_name",
+          "quantizations": [
+            {
+              "quantization_bits": 0,
+              "allowed": true,
+              "max_context_size": 0
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "parameter_size_bits": 0,
+  "size_bytes": 0
+}
+```
+
+---
+
+est-ce que ces informations amene une mise a jour du code?
+
+---
+
+go implemente, ameliore, corrige
+
+---
+
+genere le vsix et donne la commande d'install
+
+---
+
+colonne/ligne: deepseek-v4.1-flash	Serverless	—	—
+
+---
+
+oui et le label "État / disponibilité" peut ete simplifié "status"
+
+---
+
+j'ai cliqué sur actualisé et j'ai les info 
+deepseek-v4.1-flash	Serverless	Disponible	2026-10-05T14:44:44.000Z
+
+---
+
+le fomat date est pas lisible pour un humain
+
+---
+
+genere le vsix et donne la commande d'install
+
+---
+
+je suis obligé de cliqué manuellement sur actualisé pour avoir les valeurs, ceci doit ere fait silencieusement et automatiquement par l'outil
+
+---
+
+genere le vsix et donne la commande d'install
+
+---
+
+ok c'est validé, simplifie la colonne: Date de création (modèle / déploiement)  | avec simplement Date de création
+
+---
+
+genere le vsix et donne la commande d'install
