@@ -1,0 +1,61 @@
+{
+  "cli_version": "0.11.5",
+  "checkpoint_id": "01M5JE4PRJBHQJ80V1A614FSTH",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 10,
+  "files_touched": [
+    ".beads/interactions.jsonl",
+    "AGENTS.md",
+    "README.md",
+    "apps/vscode-extension/.vscodeignore",
+    "apps/vscode-extension/README.md",
+    "apps/vscode-extension/media/catalog.css",
+    "apps/vscode-extension/media/catalog.js",
+    "apps/vscode-extension/media/servicePlayground.js",
+    "apps/vscode-extension/package-lock.json",
+    "apps/vscode-extension/package.json",
+    "apps/vscode-extension/src/catalog.ts",
+    "apps/vscode-extension/src/catalogDetails.ts",
+    "apps/vscode-extension/src/connection.ts",
+    "apps/vscode-extension/src/extension.ts",
+    "apps/vscode-extension/src/inference.ts",
+    "apps/vscode-extension/src/provider.ts",
+    "apps/vscode-extension/src/servicePlayground.ts",
+    "apps/vscode-extension/src/servicePlaygroundIpc.ts",
+    "apps/vscode-extension/src/servicePlaygroundView.ts",
+    "apps/vscode-extension/test/catalog.test.cjs",
+    "apps/vscode-extension/test/connection.test.cjs",
+    "apps/vscode-extension/test/host-smoke.cjs",
+    "apps/vscode-extension/test/inference.test.cjs",
+    "apps/vscode-extension/test/provider.test.cjs",
+    "apps/vscode-extension/test/servicePlayground-browser-fixture.js",
+    "apps/vscode-extension/test/servicePlayground-host.cjs",
+    "apps/vscode-extension/test/servicePlayground.test.cjs",
+    "apps/vscode-extension/test/servicePlaygroundView.test.cjs",
+    "apps/vscode-extension/tsconfig.json",
+    "evidence/validation/coordination-beads-entire-20261021.json",
+    "evidence/validation/service-playground-configurable-398.json",
+    "evidence/validation/service-playground-local-398.json",
+    "specifications/coordination.md",
+    "specifications/providers/scaleway/dedicated.md",
+    "specifications/providers/scaleway/serverless.md",
+    "specifications/roadmap.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 638
+  }
+}

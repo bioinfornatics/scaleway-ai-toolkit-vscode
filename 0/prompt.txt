@@ -1,0 +1,96 @@
+**L’intention est de terminer le parcours principal :**
+
+**Catalogue → Utiliser / Déployer → Mes ressources → Playground → Réponse du modèle**
+
+Aujourd’hui, le catalogue affiche les prix et les actions alimentent les ressources. Mais **le playground d’un service affiche seulement son contexte : il n’envoie pas encore de prompt au modèle**. C’est le prochain gain fonctionnel, avant les agents ou d’autres fonctionnalités avancées.
+
+### Tickets concernés
+
+| Ticket                                                                      | Intention                                                                                                                     | Priorité proposée                                   |
+|-----------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|
+| **`scaleway_ai_vscode-398`** — Playground réel et validation du parcours    | Brancher le modèle sélectionné, recevoir une réponse en streaming, gérer arrêt/erreurs/usage, puis sauvegarde et export       | **Prochain chantier**                               |
+| **`scaleway_ai_vscode-jgh.3.4`** — Streaming playground and recovery        | Exigences de référence : paramètres compatibles, réponse partielle conservée, isolation entre exécutions, destination visible | À coordonner avec `398`, sans travail en double     |
+| **`scaleway_ai_vscode-msz`** — Vérification réelle des clés et lectures SDK | Vérifier création de clé après consentement, restauration de session, lectures du projet et révocation                        | Validation complémentaire, avec périmètre explicite |
+`398` est assez large. Je recommande de le **découper en petites tranches Beads avant de coder**, plutôt que de mélanger transport, UI, export et validation cloud.
+
+## Premier incrément recommandé
+
+Un **playground de chat texte sur un modèle Serverless compatible**, avec :
+
+- le modèle et la destination clairement affichés ;
+- un prompt et une limite de sortie ;
+- **Exécuter / Arrêter** ;
+- une réponse progressive ;
+- des erreurs lisibles et la réponse partielle conservée ;
+- les tokens et le coût estimé lorsque les données permettent de les calculer — sinon « indisponible », jamais zéro par défaut.
+
+Le clic **Utiliser** ouvre le playground ; **seul Exécuter déclenche l’inférence**. Aucun modèle de démonstration ne remplace silencieusement le modèle choisi.
+
+Il faut d’abord confirmer le contrat d’invocation : **identifiant exact, endpoint, authentification, paramètres et format du streaming**. Le catalogue commercial ne suffit pas à prouver tout cela. La classe SDK `Inferencev1.API` sert au contrôle des services dédiés, pas aux conversations Serverless.
+
+### Fichiers potentiellement impactés
+
+Chemins relatifs à `apps/vscode-extension/` :
+
+| Fichier                                                         | Modification probable                                                                                          |
+|-----------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
+| `src/extension.ts`                                              | Remplacer le panneau de contexte par le playground réel ; relier les actions et les événements                 |
+| `src/connection.ts`                                             | Fournir le contexte authentifié côté hôte ; interrompre une exécution lors d’un logout ou changement de projet |
+| `src/provider.ts`                                               | Exposer les métadonnées d’invocation vérifiées, distinctes des informations commerciales                       |
+| **Nouveau** `src/inference.ts`                                  | Transport d’inférence borné, lecture du streaming, annulation, erreurs et usage                                |
+| **Nouveau** `src/servicePlayground.ts`                          | Contrôleur du playground réel, séparé de la démonstration hors ligne                                           |
+| `src/ipc.ts` ou **nouveau** `src/servicePlaygroundIpc.ts`       | Messages validés ; aucune clé ni URL arbitraire provenant du navigateur                                        |
+| `src/webview.ts`, `media/playground.js`, `media/playground.css` | Prompt, paramètres, streaming et états d’exécution ; séparation explicite réel/offline                         |
+| `test/connection.test.cjs`, nouveaux tests transport/playground | Tests mockés : streaming fragmenté, arrêt, erreurs, réponses tardives et changement de session                 |
+**Dans une tranche ultérieure**, `src/experiments.ts` et `src/experimentActions.ts` devront évoluer : leur format actuel est explicitement réservé aux expériences synthétiques hors ligne. On ne doit pas y enregistrer une réponse réelle en prétendant qu’elle n’est pas facturée.
+
+Les contrats seraient également précisés dans :
+- `specifications/providers/scaleway/serverless.md`
+- `specifications/providers/scaleway/dedicated.md`
+
+## Comment valider
+
+1. **Implémentation et tests locaux/mockés**, sans appel cloud authentifié.
+2. Vérification du playground dans VS Code : streaming, arrêt, erreurs et identité du modèle.
+3. **Test réel séparé**, uniquement après accord sur le projet, le modèle, le nombre d’appels et le budget.
+
+**Ma recommandation : commencer par cette tranche Serverless texte, puis brancher les endpoints dédiés, puis ajouter sauvegarde/export.** Aucun ticket ni fichier n’a été modifié pour cette proposition.
+
+---
+
+c'est quoi la suite ? explique, fichier probablement touché, tickets ...
+
+---
+
+Quand tu dit:
+> **Point important :** seul `mistral-small-3.2-24b-instruct-2506` est actuellement autorisé. Ce n’est pas encore un playground universel pour tout le catalogue.
+l'objectif n'est pas de testé tout les modele aux cataloque, a partir du moment que ca fonctionne avec un modele y a pas de raison que ca ne marche pas pour les autres, d'ailleurs ca sera définit programmatiquement lors de la définition de l'agents via strands
+
+---
+
+applique, implemente, prolonge la reflexion et le travail
+
+---
+
+1. Quel est la suiste ? taches , fichier impaté, probleme a resouvre ... ?
+2. comment je dois utiliser `entire cli` ? je vois les sessions via ` entire session list` , j'ai pas compris comment focntionne les autres aspects interessant de entire
+
+---
+
+est-ce que la roadmap, les epics et les us beads sont suffisament bien structuré pour etre aligné avec entire cli et les besoins qui vont etre traité ? a quel momeent on commence une nouvelle session ? comment faire le decoupade tache beads pour facailiter l'usage de entire #coordination
+
+---
+
+procede
+
+---
+
+avertit a quel comment ont doit changer de ssions, quand il faut commit , quel fichiuer sont modifié et quels sont les prochaines actions
+
+---
+
+go sur la suite des taches
+
+---
+
+propose un nom de la session suivante
