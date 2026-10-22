@@ -1,0 +1,27 @@
+your goal is to investigate migrate to scaleway sdk /home/jmercier/Codes/third-parties/scaleway-sdk-js , is feasable abd the things to do or we should continue like this and only cherry pick feature needed from the sdk
+thus the application on first login create an access key and an api key like this it follow current implement path to login in this service after it create the scaleway client and use the inference class to retrieve.
+
+---
+
+ok do it
+
+---
+
+- Selon moi, dans Mes Ressources -> Serveless | Dédiée il faut afficher que les ressources déployé 
+- Outil de dévlemopement -> catalogue de modele ! on liste les modeles déployable et en 1 clic on déploie ce qui implique de mettre a jour les service déployé
+- dans le menu  mes ressources, pour serveles et dédiés il y a un texte qui suit ... je trouve ca inutile
+Réfléchit selon toi , le pacrours utilisateur, l'UX le fonctionnement du plugin analogue Azure foundry toolkit que vois tu ?
+
+---
+
+validé , implemente
+
+---
+
+dans catalgue de modele indique: Accès inférence non vérifié. Prix, capacités et identifiant d’invocation non établis par cette source. Le playground actuel est uniquement une démonstration hors ligne, pas un test de ce modèle.
+
+pourquoi les prix ne sont pas affiché, tu les avait tout a l'heure, puis le text a peu de valeur ici, soit simple hierarchise l'information et affiche celle ayant un impact comme le prix
+
+---
+
+quel est l'atpe suivant ? explique infique l'intention, les ticket, les fichier potentiellement impacté

@@ -1,0 +1,55 @@
+{
+  "cli_version": "0.11.5",
+  "checkpoint_id": "01M5JE4N996ZW83S4VY0CYYB74",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 6,
+  "files_touched": [
+    ".beads/interactions.jsonl",
+    "README.md",
+    "apps/vscode-extension/.vscodeignore",
+    "apps/vscode-extension/README.md",
+    "apps/vscode-extension/THIRD_PARTY_NOTICES.md",
+    "apps/vscode-extension/build.mjs",
+    "apps/vscode-extension/media/catalog.css",
+    "apps/vscode-extension/media/catalog.js",
+    "apps/vscode-extension/package-lock.json",
+    "apps/vscode-extension/package.json",
+    "apps/vscode-extension/src/catalog.ts",
+    "apps/vscode-extension/src/catalogDetails.ts",
+    "apps/vscode-extension/src/connection.ts",
+    "apps/vscode-extension/src/deployService.ts",
+    "apps/vscode-extension/src/extension.ts",
+    "apps/vscode-extension/src/provider.ts",
+    "apps/vscode-extension/src/scalewaySdk.ts",
+    "apps/vscode-extension/test/catalog.test.cjs",
+    "apps/vscode-extension/test/catalogRenderer.test.cjs",
+    "apps/vscode-extension/test/connection.test.cjs",
+    "apps/vscode-extension/test/deployService.test.cjs",
+    "apps/vscode-extension/test/host-smoke.cjs",
+    "apps/vscode-extension/test/scalewaySdk.test.cjs",
+    "apps/vscode-extension/tsconfig.json",
+    "evidence/validation/catalog-details-v37.json",
+    "evidence/validation/resources-journey-v36.json",
+    "evidence/validation/scaleway-sdk-v35.json",
+    "evidence/validation/scaleway-v36-desktop.png",
+    "evidence/validation/scaleway-v36-sidebar.png",
+    "specifications/roadmap.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 352
+  }
+}
