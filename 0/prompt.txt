@@ -1,0 +1,26 @@
+Objectif : identifier la cause du timeout du harness installé, puis terminer la validation locale avec transport mocké, **sans appel cloud**.
+
+- **Session :** nouvelle conversation recommandée pour isoler ce diagnostic ; aucun changement automatique de session.
+- **Commit :** pas encore recommandé pour cette tranche, QA bloquée.
+- **Fichiers de la tranche précédente :** `apps/vscode-extension/test/servicePlayground-host.cjs` et `apps/vscode-extension/test/servicePlayground-browser-fixture.js`. Aucun fichier modifié par cette réponse ; les modifications préexistantes restent à préserver.
+- **Suite :** débloquer `398.6.1` → obtenir l’autorisation explicite `398.6.2` → exécuter la validation live `398.6.3`.
+
+---
+
+quel est la suite?
+
+---
+
+terminer les contrôles locaux de **`398.6.1`**
+
+---
+
+continue
+
+---
+
+quel est le prompt pour la prochaine session
+
+---
+
+nom de la session
