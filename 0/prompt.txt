@@ -1,0 +1,76 @@
+- **Session :** nouvelle conversation recommandée pour la revue ciblée de `398.5.3`.
+- **Commit :** pas prêt avant cette revue et votre autorisation ; aucun effectué.
+- **Fichiers :** modules `realExperiments`, `realExperimentExports`, `realExperimentActions`, `boundedExperimentRead` et leurs tests ajoutés ; intégration dans le contrôleur, IPC, vue et JS du playground. Roadmap actualisée. Inventaire exact dans `evidence/validation/real-experiments-398-5.json` ; dirty préexistant préservé.
+- **Suite :** terminer la revue de `398.5.3`, puis poursuivre les tâches locales restantes selon la roadmap, sans reprendre les tests arrêtés ni exécuter le cloud.
+
+---
+
+- **Suite :** corriger la mémoire retenue et ajouter une régression « lectures courtes » dans **`398.5.3`**, puis refaire la revue. Résultat consigné dans Beads ; `398.5.3` et son parent `398.5` restent ouverts. Les tests arrêtés et le cloud restent exclus.
+
+---
+
+- **Suite :** résultat enregistré dans Beads. **`398.5.3` et `398.5` restent ouverts**, comme demandé. L’acceptation complète de `398.5` reste limitée par les preuves UI/installées manquantes ; aucun test arrêté ni cloud exécuté.
+
+---
+
+as tu generer l'archive vsix
+
+---
+
+genere
+
+---
+
+dans le menu de l'extension vscode quand on clic sur Outil de developement -> catalogue de modeles -> je clique sur utiliser   ---> ca ouvre un playground c'est pertubant
+
+---
+
+je m'attends -> ajouter le modèle à Mes ressources
+---
+sur azure foundry tool kit le menu
+Voici les éléments visibles du menu Foundry Toolkit :
+- My Resources
+  - Set Foundry Project
+  - Models
+  - Agents
+  - Tools
+  - Knowledge
+  - Evaluations
+  - Recent
+    - Create in Code With Template
+    - Design an Agent with Builder
+  - Local Resources
+  - Classic
+- Developer Tools
+  - Discover
+    - Model Catalog
+    - Tool Catalog
+  - Build
+    - Create Agent
+    - Agent Inspector
+    - Deploy to Microsoft Foundry
+    - Hosted Agent Playground
+    - Model Playground
+    - Model Conversion
+    - Fine-tuning
+  - Monitor
+- Help And Feedback
+Le sélecteur de projet ouvert propose également :
+- Switch project : choisir un autre projet par défaut.
+- Create project : créer un projet et le définir par défaut.
+
+---
+
+oui c'est ca
+
+---
+
+clean les vsix ancien et met un nouveau
+
+---
+
+dans la barre footer il y a Scaleway AI: Offline
+
+---
+
+corrige en consequence
