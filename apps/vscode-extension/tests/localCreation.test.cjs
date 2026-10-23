@@ -695,7 +695,9 @@ test('agent built-in base uses inline name and deployed model with standalone en
   assert.ok(
     files['README.md'].startsWith(template('agents').files['README.md']),
   );
-  assert.ok(files['scaleway_agent.py']);
+  assert.ok(files['src/agent_app/agent.py']);
+  assert.match(files['pyproject.toml'], /agent_app.agent:main/);
+  assert.equal(JSON.parse(files['.vscode/scaleway-agent-run.json']).consoleScript, 'agent');
   assert.equal(
     JSON.parse(files['.vscode/scaleway-agent-run.json']).ready,
     true,

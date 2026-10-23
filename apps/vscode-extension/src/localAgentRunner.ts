@@ -2,12 +2,14 @@ import { createHash, randomBytes } from 'node:crypto';
 import { constants } from 'node:fs';
 import { lstat, open, realpath, stat } from 'node:fs/promises';
 import * as path from 'node:path';
+import * as TOML from '@iarna/toml';
 import * as vscode from 'vscode';
 
 const CONFIG = '.vscode/scaleway-agent-run.json';
 const LIMIT = 2 * 1024 * 1024;
 interface Launch {
-  version: 1;
+  version: 1 | 2;
+  consoleScript?: 'agent';
   ready: boolean;
   runtime: 'python' | 'node';
   entry: string;
@@ -35,8 +37,9 @@ export function parseLocalLaunch(value: unknown, requireReady = true): Launch {
     throw new Error('invalid_launch');
   const v = value as Record<string, unknown>;
   if (
-    Object.keys(v).sort().join(',') !== 'args,entry,ready,runtime,version' ||
-    v.version !== 1 ||
+    (v.version === 2
+      ? Object.keys(v).sort().join(',') !== 'args,consoleScript,entry,ready,runtime,version' || v.consoleScript !== 'agent' || v.runtime !== 'python'
+      : Object.keys(v).sort().join(',') !== 'args,entry,ready,runtime,version' || v.version !== 1) ||
     typeof v.ready !== 'boolean' ||
     (requireReady && v.ready !== true) ||
     !['python', 'node'].includes(v.runtime as string) ||
@@ -66,7 +69,8 @@ export function parseLocalLaunch(value: unknown, requireReady = true): Launch {
   )
     throw new Error('invalid_launch');
   return {
-    version: 1,
+    version: v.version as 1 | 2,
+    ...(v.version === 2 ? { consoleScript: 'agent' as const } : {}),
     ready: v.ready as boolean,
     runtime: v.runtime as Launch['runtime'],
     entry: v.entry,
@@ -168,7 +172,13 @@ async function prepare(directory: string): Promise<Prepared> {
   if (launch.runtime === 'python') {
     let project = false;
     try {
-      await read(directory, 'pyproject.toml', 65536);
+      const manifest = await read(directory, 'pyproject.toml', 65536);
+      if (launch.consoleScript) {
+        hash.update(manifest);
+        const parsed = TOML.parse(manifest.toString('utf8')) as { project?: { scripts?: { agent?: string } } };
+        if (parsed.project?.scripts?.agent !== 'agent_app.agent:main' || launch.entry !== 'src/agent_app/agent.py')
+          throw new Error('invalid_console_entry');
+      }
       project = true;
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
@@ -199,6 +209,15 @@ async function prepare(directory: string): Promise<Prepared> {
         throw new Error('environment_required');
       }
     }
+  }
+  if (launch.consoleScript) {
+    if (executable === 'python3') throw new Error('environment_required');
+    // Execute the installed entry, never uv run here (which could install on launch).
+    executable = path.join(directory, '.venv/bin/agent');
+    const info = await lstat(executable);
+    if (!info.isFile() || info.isSymbolicLink() || !(info.mode & 0o111))
+      throw new Error('console_entry_required');
+    hash.update(await read(directory, '.venv/bin/agent', 65536));
   }
   return { launch, executable, digest: hash.digest('hex') };
 }
@@ -415,10 +434,9 @@ export class LocalAgentRunner implements vscode.Disposable {
       const first = await prepare(directory);
       if (!current() || this.disposed || !vscode.workspace.isTrusted) return;
       const executable = first.executable;
-      const args = [
-        path.join(directory, first.launch.entry),
-        ...first.launch.args,
-      ];
+      const args = first.launch.consoleScript
+        ? [...first.launch.args]
+        : [path.join(directory, first.launch.entry), ...first.launch.args];
       const accepted = await vscode.window.showWarningMessage(
         'Exécuter cet agent local ?',
         {

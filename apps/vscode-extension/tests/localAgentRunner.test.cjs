@@ -419,3 +419,36 @@ test('Python symlink-backed venv preserves virtualenv context when dispatched', 
     'False',
   );
 });
+
+test('Version 2 Python console entry runs installed command with args only and guards manifest mutation', async (t) => {
+  const f = await fixture(t);
+  await fsp.mkdir(path.join(f.directory, 'src/agent_app'), { recursive: true });
+  await fsp.writeFile(path.join(f.directory, 'src/agent_app/agent.py'), '# offline');
+  await fsp.mkdir(path.join(f.directory, '.venv/bin'), { recursive: true });
+  await fsp.writeFile(path.join(f.directory, '.venv/bin/python'), '# fake python', { mode: 0o700 });
+  await fsp.writeFile(path.join(f.directory, '.venv/bin/agent'), '# fake installed entry', { mode: 0o700 });
+  const manifest = '[project.scripts]\nagent = "agent_app.agent:main"\n';
+  await fsp.writeFile(path.join(f.directory, 'pyproject.toml'), manifest);
+  const config = { ...f.config, version: 2, consoleScript: 'agent', entry: 'src/agent_app/agent.py', args: ['Bonjour'] };
+  await fsp.writeFile(path.join(f.directory, '.vscode/scaleway-agent-run.json'), JSON.stringify(config));
+  await f.runner.start(f.directory, 'console', () => true);
+  assert.equal(f.state.tasks[0].execution.executable, path.join(f.directory, '.venv/bin/agent'));
+  assert.deepEqual(f.state.tasks[0].execution.args, ['Bonjour']);
+  f.state.listeners.processEnd({ execution: f.state.execution, exitCode: 0 });
+  f.state.confirm = async () => { await fsp.writeFile(path.join(f.directory, 'pyproject.toml'), manifest + '# changed'); return 'Exécuter'; };
+  await f.runner.start(f.directory, 'changed', () => true);
+  assert.equal(f.state.tasks.length, 1);
+  assert.throws(() => f.parse({ ...config, runtime: 'node' }));
+  assert.throws(() => f.parse({ ...config, consoleScript: '../other' }));
+});
+test('Missing installed Python console command refuses launch instead of installing or falling back', async (t) => {
+  const f = await fixture(t);
+  await fsp.mkdir(path.join(f.directory, 'src/agent_app'), { recursive: true });
+  await fsp.writeFile(path.join(f.directory, 'src/agent_app/agent.py'), '# offline');
+  await fsp.mkdir(path.join(f.directory, '.venv/bin'), { recursive: true });
+  await fsp.writeFile(path.join(f.directory, '.venv/bin/python'), '# fake', { mode: 0o700 });
+  await fsp.writeFile(path.join(f.directory, 'pyproject.toml'), '[project.scripts]\nagent="agent_app.agent:main"');
+  await fsp.writeFile(path.join(f.directory, '.vscode/scaleway-agent-run.json'), JSON.stringify({ ...f.config, version: 2, consoleScript: 'agent', entry: 'src/agent_app/agent.py' }));
+  await f.runner.start(f.directory, 'missing', () => true);
+  assert.equal(f.state.tasks.length, 0);
+});

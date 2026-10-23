@@ -6,6 +6,7 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { loadEmbeddedTemplates } = require('../dist/embeddedTemplates');
 const { composeAgentProject } = require('../dist/agentProject');
+const { withEndpointLaunch } = require('../dist/endpointAgent');
 const { stackChoices } = require('../dist/stackScaffold');
 const {
   prepareEmbeddedProject,
@@ -133,10 +134,10 @@ test('opt-in offline wheel build/install: six bases and six backend+SDK composit
       const verify = path.join(root, 'outside-source-' + index);
       await fs.mkdir(project);
       await fs.mkdir(verify);
-      const rendered = renderProjectTemplate(
+      const rendered = withEndpointLaunch(renderProjectTemplate(
         prepareEmbeddedProject(candidate.template, 'python'),
         { name: 'Wheel_Agent' },
-      );
+      ), 'python');
       for (const [relative, bytes] of Object.entries(rendered.files)) {
         const destination = path.join(project, relative);
         await fs.mkdir(path.dirname(destination), { recursive: true });
@@ -173,6 +174,8 @@ test('opt-in offline wheel build/install: six bases and six backend+SDK composit
           'assert not any(n.startswith(("src/", "tests/", "evals/")) for n in names)',
           'metadata=email.message_from_bytes(z.read(next(n for n in names if n.endswith(".dist-info/METADATA"))))',
           'assert metadata["Name"] == "wheel-agent" and metadata["Version"] == "0.1.0"',
+          'entry=z.read(next(n for n in names if n.endswith(".dist-info/entry_points.txt"))).decode()',
+          'assert "agent = agent_app.agent:main" in entry',
           'print(p.name + " sha256=" + hashlib.sha256(p.read_bytes()).hexdigest())',
         ].join('\n'),
         wheel,
@@ -217,6 +220,10 @@ test('opt-in offline wheel build/install: six bases and six backend+SDK composit
           'pytest>=8,<10',
         ]),
       );
+      const consoleEntry = path.join(venv, 'bin', 'agent');
+      assert.ok((await fs.stat(consoleEntry)).mode & 0o111);
+      const checked = run(consoleEntry, ['--check'], verify, { SCW_API_KEY: 'offline-key', SCW_INFERENCE_BASE_URL: 'https://example.invalid/v1', SCW_INFERENCE_MODEL_ID: 'offline-model' });
+      requireSuccess(checked);
       // Isolated Python + unrelated cwd; assert site-packages origin, no editable/source path.
       const imported = run(
         python,
@@ -235,9 +242,10 @@ test('opt-in offline wheel build/install: six bases and six backend+SDK composit
             'assert m.version("wheel-agent") == "0.1.0"',
             'assert "PYTHONPATH" not in os.environ and "SCW_API_KEY" not in os.environ',
             'if (location.parent / "agent.py").exists():',
-            '    from agent_app.agent import build_agent',
+            '    from agent_app import agent',
+            '    assert callable(agent.main)',
             '    os.environ.update(SCW_API_KEY="synthetic-not-a-credential", SCW_INFERENCE_BASE_URL="https://example.invalid/v1", SCW_INFERENCE_MODEL_ID="model")',
-            '    assert callable(build_agent)',
+            '    assert not hasattr(agent, "build_agent") or callable(agent.build_agent)',
             'print("installed import origin="+str(location))',
           ].join('\n'),
         ],

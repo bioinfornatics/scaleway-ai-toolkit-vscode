@@ -163,7 +163,8 @@ test('Host Python agent gets folder-local interpreter, pytest, debug entry and r
   const debug = JSON.parse(result.files['.vscode/launch.json'])
     .configurations[0];
   assert.equal(debug.type, 'debugpy');
-  assert.equal(debug.program, '${workspaceFolder}/src/agent_app/agent.py');
+  assert.equal(debug.module, 'agent_app.agent');
+  assert.equal(debug.program, undefined);
   assert.equal(debug.python, '${workspaceFolder}/.venv/bin/python');
   assert.equal(
     debug.windows.python,

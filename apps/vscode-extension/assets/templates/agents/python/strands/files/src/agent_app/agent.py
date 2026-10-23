@@ -17,7 +17,7 @@ def build_agent():
     model = OpenAIModel(model_id=config.model_id, client_args=client_args, stream=False)
     return Agent(model=model, tools=[], system_prompt="You are a helpful assistant.", callback_handler=None)
 
-def main():
+def _run():
     if sys.argv[1:] == ["--check"]:
         load_project_config()
         print("Configuration présente ; aucun appel réseau.")
@@ -26,9 +26,13 @@ def main():
     prompt = " ".join(sys.argv[1:]) or "Bonjour"
     print(agent(prompt))
 
-if __name__ == "__main__":
+def main():
     try:
-        main()
+        _run()
+        return 0
     except Exception:
         print("Échec : vérifiez les dépendances, la configuration et l’accès au modèle.", file=sys.stderr)
-        sys.exit(1)
+        return 1
+
+if __name__ == "__main__":
+    sys.exit(main())

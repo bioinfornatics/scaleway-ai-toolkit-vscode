@@ -17,7 +17,7 @@ def build_agent():
     model = ChatOpenAI(**options)
     return create_agent(model=model, tools=[], system_prompt="You are a helpful assistant.")
 
-def main():
+def _run():
     if sys.argv[1:] == ["--check"]:
         load_project_config()
         print("Configuration présente ; aucun appel réseau.")
@@ -27,9 +27,13 @@ def main():
     result = agent.invoke({"messages": [{"role": "user", "content": prompt}]})
     print(result["messages"][-1].content)
 
-if __name__ == "__main__":
+def main():
     try:
-        main()
+        _run()
+        return 0
     except Exception:
         print("Échec : vérifiez les dépendances, la configuration et l’accès au modèle.", file=sys.stderr)
-        sys.exit(1)
+        return 1
+
+if __name__ == "__main__":
+    sys.exit(main())
