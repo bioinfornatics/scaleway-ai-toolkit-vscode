@@ -1,6 +1,11 @@
-/** Single executable matrix. API routes use endpoint transport; SDK orchestration is separate. */
+/** Executable API matrix. AgentOS owns Agno orchestration; other routes use endpoint transport. */
 import type { Language } from './stackScaffold';
 export const SERVICE_CAPABILITIES = Object.freeze([
+  Object.freeze({
+    language: 'python',
+    framework: 'agentos',
+    adapter: 'agentos',
+  }),
   Object.freeze({
     language: 'python',
     framework: 'fastapi',
@@ -45,4 +50,12 @@ export function supportsIntegrated(
 }
 export function supportsCli(language: string): language is Language {
   return CLI_LANGUAGES.some((candidate) => candidate === language);
+}
+
+/** AgentOS ships Agno; independent SDK selections must not be silently dropped. */
+export function compatibleServiceSdk(
+  framework: string | undefined,
+  sdk: string | undefined,
+): boolean {
+  return framework !== 'agentos' || sdk === undefined;
 }

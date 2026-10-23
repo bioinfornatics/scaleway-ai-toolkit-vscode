@@ -374,7 +374,7 @@ const pythonGuard = [
   'socket.socket.bind=forbidden',
   '_import=builtins.__import__',
   'def guarded(name,*a,**k):',
-  ' if name.split(".")[0] in {"strands","langchain","langchain_openai","fastapi","litestar","django","uvicorn","mcp"}: raise AssertionError("Expensive SDK import forbidden during help/check")',
+  ' if name.split(".")[0] in {"strands","langchain","langchain_openai","fastapi","litestar","django","uvicorn","mcp","agno","openai","httpx"}: raise AssertionError("Expensive SDK import forbidden during help/check")',
   ' return _import(name,*a,**k)',
   'builtins.__import__=guarded',
   'sys.argv=sys.argv[1:]',
@@ -395,8 +395,8 @@ function cliSources(files) {
       (name === 'src/main.rs' && content.includes('Args::parse()')),
   );
 }
-test('ALL 27 built-in inventories have parser-backed real entrypoints; import-only sources remain libraries', () => {
-  assert.equal(cliEntries.length, 27);
+test('ALL 28 built-in inventories have parser-backed real entrypoints; import-only sources remain libraries', () => {
+  assert.equal(cliEntries.length, 28);
   for (const entry of cliEntries) {
     const result = generated(entry);
     const sources = cliSources(result.files);
@@ -517,7 +517,10 @@ for (const entry of cliEntries.filter((e) => e.language !== 'rust'))
 
 test('backend plus AI framework compositions preserve unique CLI helpers, parse actual launch entry and retain v2 console script', (t) => {
   for (const backend of stackChoices('agents').filter(
-    (s) => s.category !== 'agent' && s.language !== 'rust',
+    (s) =>
+      s.category !== 'agent' &&
+      s.language !== 'rust' &&
+      s.framework !== 'agentos',
   ))
     for (const ai of stackChoices('agents').filter(
       (s) => s.category === 'agent' && s.language === backend.language,

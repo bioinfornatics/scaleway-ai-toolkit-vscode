@@ -119,14 +119,16 @@ test('opt-in offline wheel build/install: six bases and six backend+SDK composit
     label: entry.template.id,
     template: entry.template,
   }));
-  for (const backend of choices.filter((c) => c.category !== 'agent'))
+  for (const backend of choices.filter(
+    (c) => c.category !== 'agent' && c.framework !== 'agentos',
+  ))
     for (const sdk of choices.filter((c) => c.category === 'agent'))
       candidates.push({
         label: backend.framework + '+' + sdk.framework,
         template: composeAgentProject(backend, sdk, 'wheel-agent'),
       });
-  assert.equal(entries.length, 7);
-  assert.equal(candidates.length, 15);
+  assert.equal(entries.length, 8);
+  assert.equal(candidates.length, 16);
   for (const [index, candidate] of candidates.entries())
     await t.test(candidate.label, async (sub) => {
       const project = path.join(root, 'project-' + index);
@@ -231,6 +233,31 @@ test('opt-in offline wheel build/install: six bases and six backend+SDK composit
         SCW_INFERENCE_MODEL_ID: 'offline-model',
       });
       requireSuccess(checked);
+      if (candidate.label.includes('agentos')) {
+        // Installed console, root-only synthetic .env and NO supplied provider env.
+        const envFile = path.join(verify, '.env');
+        await fs.writeFile(
+          envFile,
+          'SCW_API_KEY=synthetic-private-wheel-key\nSCW_INFERENCE_BASE_URL=https://EXAMPLE.INVALID:443/v1\nSCW_INFERENCE_MODEL_ID=offline-model\n',
+          { mode: 0o600 },
+        );
+        const fromRoot = run(consoleEntry, ['--check'], verify);
+        requireSuccess(fromRoot);
+        assert.doesNotMatch(detail(fromRoot), /synthetic-private-wheel-key/);
+        const child = path.join(verify, 'child');
+        await fs.mkdir(child);
+        const noAncestor = run(consoleEntry, ['--check'], child);
+        assert.notEqual(noAncestor.status, 0, 'must not search parent .env');
+        await fs.rm(envFile);
+        assert.notEqual(
+          run(consoleEntry, ['--check'], verify).status,
+          0,
+          'no source/user fallback',
+        );
+        sub.diagnostic(
+          'Installed AgentOS console --check: cwd root-only .env PASS; no supplied env, ancestor or missing-file fallback; no inference.',
+        );
+      }
       // Isolated Python + unrelated cwd; assert site-packages origin, no editable/source path.
       const imported = run(
         python,
@@ -241,7 +268,7 @@ test('opt-in offline wheel build/install: six bases and six backend+SDK composit
             'import sys, pathlib, importlib.metadata as m, importlib.abc, os',
             'class RejectRuntime(importlib.abc.MetaPathFinder):',
             '    def find_spec(self, fullname, path=None, target=None):',
-            '        if fullname.split(".")[0] in {"strands", "langchain", "langchain_openai", "openai", "boto3", "fastapi", "litestar", "django", "deepeval"}: raise AssertionError("runtime import forbidden: " + fullname)',
+            '        if fullname.split(".")[0] in {"strands", "langchain", "langchain_openai", "openai", "boto3", "fastapi", "litestar", "django", "deepeval", "agno", "httpx"}: raise AssertionError("runtime import forbidden: " + fullname)',
             'sys.meta_path.insert(0, RejectRuntime())',
             'import agent_app, agent_app.config',
             'location=pathlib.Path(agent_app.__file__).resolve()',

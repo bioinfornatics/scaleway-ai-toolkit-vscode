@@ -101,7 +101,7 @@ test('single matrix matches renderer advertised frameworks and generator support
         );
     }
   }
-  assert.equal(SERVICE_CAPABILITIES.length, 3);
+  assert.equal(SERVICE_CAPABILITIES.length, 4);
   assert.equal(Object.isFrozen(SERVICE_CAPABILITIES), true);
   assert.equal(apiCapability('typescript', 'litestar'), undefined);
   assert.equal(apiCapability('python', 'elysia'), undefined);

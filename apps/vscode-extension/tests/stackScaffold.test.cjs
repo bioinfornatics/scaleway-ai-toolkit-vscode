@@ -32,7 +32,15 @@ const { parseTemplate } = load('templateLibrary');
 const { materializeTemplate } = load('agentScaffold');
 const matrix = {
   agents: {
-    python: ['strands', 'langchain', 'fastapi', 'litestar', 'django', 'none'],
+    python: [
+      'strands',
+      'langchain',
+      'fastapi',
+      'litestar',
+      'agentos',
+      'django',
+      'none',
+    ],
     typescript: ['langchain', 'strands', 'mastra', 'nestjs', 'elysia', 'none'],
     rust: ['axum', 'actix', 'none'],
   },
@@ -124,7 +132,10 @@ for (const kind of ['agents', 'tools']) {
             .join('\n'),
           /build_agent|buildAgent/,
         );
-      if (s.category === 'backend') assert.match(s.description, /intégrer/);
+      if (s.framework === 'agentos')
+        assert.match(s.description, /Agno \+ AgentOS/);
+      else if (s.category === 'backend')
+        assert.match(s.description, /intégrer/);
     }
   });
   test(`${kind}: all stacks materialize exclusive actual temporary files`, {

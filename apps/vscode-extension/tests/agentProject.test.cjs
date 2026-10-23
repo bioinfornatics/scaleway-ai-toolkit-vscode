@@ -35,7 +35,9 @@ function configuredAccess(projectId, bearerType = 'user') {
     verifiedAt: new Date().toISOString(),
   };
 }
-for (const backend of choices.filter((c) => c.category === 'backend')) {
+for (const backend of choices.filter(
+  (c) => c.category === 'backend' && c.framework !== 'agentos',
+)) {
   for (const ai of choices.filter(
     (c) => c.category === 'agent' && c.language === backend.language,
   )) {

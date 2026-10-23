@@ -49,15 +49,26 @@ const shared = [
   'evals/test_agent_eval.py',
 ];
 
-test('seven real embedded Python trees share identical config and tests and retain metadata', () => {
-  assert.equal(entries.length, 7);
+test('eight real embedded Python trees share identical config and tests and retain metadata', () => {
+  assert.equal(entries.length, 8);
   for (const entry of entries) {
-    for (const file of shared)
-      assert.equal(entry.template.files[file], entries[0].template.files[file]);
+    for (const file of shared) {
+      let expected = entries[0].template.files[file];
+      if (entry.framework === 'agentos' && file === 'src/agent_app/config.py') {
+        // Dedicated installed console contract: cwd root, never site-packages ancestry.
+        expected = expected
+          .replace(
+            'Load the project .env explicitly when launching/building the agent.',
+            'Explicit launch reads only .env in cwd (the documented project root).',
+          )
+          .replace('Path(__file__).resolve().parents[2]', 'Path.cwd()');
+      }
+      assert.equal(entry.template.files[file], expected);
+    }
     assert.equal(entry.template.files['agent.py'], undefined);
     assert.ok(
       entry.template.files[
-        entry.category === 'agent'
+        entry.category === 'agent' || entry.framework === 'agentos'
           ? 'src/agent_app/agent.py'
           : 'src/agent_app/api.py'
       ],
@@ -80,7 +91,9 @@ const candidates = entries.map((entry) => ({
   label: entry.template.id,
   template: entry.template,
 }));
-for (const backend of choices.filter((c) => c.category !== 'agent'))
+for (const backend of choices.filter(
+  (c) => c.category !== 'agent' && c.framework !== 'agentos',
+))
   for (const sdk of choices.filter((c) => c.category === 'agent'))
     candidates.push({
       label: backend.framework + '+' + sdk.framework,
@@ -150,7 +163,9 @@ for (const candidate of candidates)
           'if pathlib.Path("src/agent_app/agent.py").exists():',
           '    sdk = importlib.import_module("agent_app.agent")',
           '    os.environ.update(SCW_API_KEY="synthetic", SCW_INFERENCE_BASE_URL="https://example.invalid/v1", SCW_INFERENCE_MODEL_ID="model")',
-          '    assert callable(sdk.build_agent)',
+          '    if (pathlib.Path("src/agent_app/service_api.py")).exists():',
+          '        service = importlib.import_module("agent_app.service_api"); assert callable(service.create_app)',
+          '    else: assert callable(sdk.build_agent)',
           '    sdk.load_project_config()',
         ].join('\n'),
       ]);

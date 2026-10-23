@@ -1,0 +1,8 @@
+{
+  "authoring_version": 1,
+  "kind": "agents",
+  "language": "python",
+  "backend": "agentos",
+  "ai_framework": "agno",
+  "incomplete": true
+}

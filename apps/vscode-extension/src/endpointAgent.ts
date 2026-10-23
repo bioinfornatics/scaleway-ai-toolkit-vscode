@@ -63,14 +63,17 @@ export function withEndpointLaunch(
     };
     files['pyproject.toml'] = TOML.stringify(manifest as TOML.JsonMap);
   }
+  const agentos =
+    JSON.parse(files['service.authoring.json'] ?? '{}').transport ===
+    'agno-agentos';
   files['.vscode/scaleway-agent-run.json'] = JSON.stringify(
     {
       version: packagedPython ? 2 : 1,
       ...(packagedPython ? { consoleScript: 'agent' } : {}),
-      ready: true,
+      ready: !agentos,
       runtime: language === 'python' ? 'python' : 'node',
       entry,
-      args: [],
+      args: agentos ? ['--help'] : [],
     },
     null,
     2,
@@ -239,7 +242,7 @@ export function withEndpointLaunch(
     files[marker] = JSON.stringify(
       {
         ...note,
-        incomplete: false,
+        incomplete: agentos,
         note: frameworkEntry
           ? 'Selected framework configured for Scaleway endpoint. Install dependencies explicitly; no inference verified.'
           : 'Standalone endpoint client configured. Backend and framework integration belong to the development team. No inference verified.',

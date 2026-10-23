@@ -1,0 +1,6 @@
+# Agno API grounded in official v3.1.10 sources; transitive runtime not installed here.
+agno[os]==3.1.10
+openai==2.54.0
+httpx==0.28.1
+fastapi>=0.115,<1
+uvicorn>=0.30,<1

@@ -1,5 +1,6 @@
 import { withEmbeddedAgentLaunch } from './projectGenerator';
 import type { ListedModel } from './provider';
+import { compatibleServiceSdk } from './serviceCompatibility';
 import type { StackChoice } from './stackScaffold';
 import { parseTemplate, type TemplateDefinition } from './templateLibrary';
 
@@ -81,6 +82,8 @@ export function composeAgentProject(
   personal?: TemplateDefinition,
   projectId?: string,
 ): TemplateDefinition {
+  if (!personal && !compatibleServiceSdk(backend?.framework, ai?.framework))
+    throw new Error('incompatible_agentos_sdk');
   if (backend && backend.category !== 'backend' && backend.category !== 'basic')
     throw new Error('invalid_backend');
   if (ai && ai.category !== 'agent') throw new Error('invalid_ai');
@@ -162,7 +165,10 @@ export function composeAgentProject(
         : {
             language: backend?.language ?? ai?.language,
             backend: backend?.framework ?? 'none',
-            ai_framework: ai?.framework ?? 'none',
+            ai_framework:
+              backend?.framework === 'agentos'
+                ? 'agno'
+                : (ai?.framework ?? 'none'),
           }),
       ...(model?.kind === 'serverless'
         ? {

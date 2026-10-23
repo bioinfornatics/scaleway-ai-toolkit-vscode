@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "transport": "agno-agentos",
+  "main_source": "src/agent_app/service_api.py",
+  "local_only": true,
+  "install_verified": false,
+  "build_verified": false
+}

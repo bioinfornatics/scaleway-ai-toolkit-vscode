@@ -226,6 +226,10 @@ export function buildCreationView(v: BuildView): string {
     supportsIntegrated(v.frontend, v.language) &&
     v.architecture === 'integrated';
   const cli = v.projectType === 'agent' && v.exposure === 'cli';
+  const agentos =
+    !cli &&
+    !integrated &&
+    v.rows.find((r) => r.index === v.backend)?.stack?.framework === 'agentos';
   const radios = (
     label: string,
     choices: { action: string; label: string; checked: boolean }[],
@@ -350,10 +354,14 @@ export function buildCreationView(v: BuildView): string {
     (!cli && !integrated
       ? selectField('Framework API', 'backend', stackOptions(false))
       : '') +
-    selectField('Framework IA', 'ai', stackOptions(true)) +
+    (agentos
+      ? '<span data-runtime-lock=agno>Framework IA : Agno (intégré à AgentOS)</span>'
+      : selectField('Framework IA', 'ai', stackOptions(true))) +
     '</div>' +
     (!cli
-      ? '<span class="scope-note">Route IA : client endpoint côté serveur ; SDK IA conservé pour intégration.</span>'
+      ? agentos
+        ? '<span>Agno orchestre les requêtes ; AgentOS sert /api/chat sur loopback. Routes natives fermées.</span>'
+        : '<span class="scope-note">Route IA : client endpoint côté serveur ; SDK IA conservé pour intégration.</span>'
       : '') +
     '</section>';
   const ready =

@@ -462,7 +462,7 @@ pouvoir exécuter le binaire ; l’aide ne constitue pas une preuve de compatibi
 
 Le générateur composeServiceProject distingue l’agent CLI d’une API/webapp.
 L’agent CLI ignore le backend et conserve une base langage ou SDK IA. Les APIs
-compatibles sont Python/FastAPI et TypeScript/Elysia (Bun). Django, NestJS et les
+compatibles sont Python/FastAPI, Litestar, AgentOS et TypeScript/Elysia (Bun). Django, NestJS et les
 APIs Rust échouent explicitement plutôt que prétendre intégrer un chat.
 
 - Next.js intégré, TypeScript uniquement : page de chat React et POST /api/chat serveur.
@@ -495,9 +495,9 @@ mocks locaux sans serveur, cloud ou inférence réelle.
 ### Litestar et matrice de compatibilité des services
 
 La matrice commune serviceCompatibility.ts pilote les choix API de la vue,
-leur validation par l’hôte et le générateur. Python : FastAPI ou Litestar ;
+leur validation par l’hôte et le générateur. Python : FastAPI, Litestar ou AgentOS ;
 TypeScript : Elysia. Next.js intégré reste TypeScript uniquement. Les API Rust,
-Django, NestJS et AgentOS ne sont pas annoncées comme intégrées.
+Django et NestJS ne sont pas annoncées comme intégrées.
 Litestar fournit une vraie route POST /api/chat, avec validation et transport
 endpoint côté serveur, erreurs fixes, plafond de corps et travail réseau hors
 boucle asynchrone. Les SDK IA restent des sources à intégrer, pas le moteur de
@@ -518,3 +518,7 @@ TypeScript 5.9.3 ; skipLibCheck est limité à ces bases Elysia. strict reste ac
 pour le code applicatif, vérifié avec un test négatif de compilation.
 Cette concession ne certifie pas les déclarations des dépendances. La composition
 avec un SDK préserve ce seul écart de tsconfig et refuse les autres conflits.
+
+### Agno + AgentOS dédié (5qk)
+
+AgentOS est une API Python distincte avec Agno intégré, verrouillé dans le formulaire. Les combinaisons Strands/LangChain, Next intégré et agent CLI sont refusées, jamais converties silencieusement. Le runtime sert AgentOS derrière un gate ASGI fermant les routes natives ; /api/chat appelle Agent.arun. Sources, contrat de sécurité, commandes et limites : specifications/agentos-runtime.md dans le dépôt et README du template AgentOS livré. Runtime SDK installé/live, build frontend et visuel NOT RUN ; les mocks et wheels offline --no-deps ne les remplacent pas.

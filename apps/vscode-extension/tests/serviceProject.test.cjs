@@ -449,6 +449,22 @@ test('supported backend + every same-language SDK preserves SDK sources and real
     for (const ai of choices.filter(
       (c) => c.category === 'agent' && c.language === backend.language,
     )) {
+      if (backend.framework === 'agentos') {
+        assert.throws(
+          () =>
+            compose(
+              backend,
+              ai,
+              'service',
+              undefined,
+              undefined,
+              undefined,
+              opts('vite'),
+            ),
+          /incompatible_agentos_sdk/,
+        );
+        continue;
+      }
       const template = compose(
         backend,
         ai,

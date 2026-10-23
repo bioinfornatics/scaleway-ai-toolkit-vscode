@@ -33,6 +33,7 @@ import {
 import type { ListedModel } from './provider';
 import {
   apiCapability,
+  compatibleServiceSdk,
   supportsCli,
   supportsIntegrated,
 } from './serviceCompatibility';
@@ -1216,6 +1217,22 @@ export class LocalCreation implements vscode.Disposable {
           !apiCapability(row.stack.language, row.stack.framework))
       )
         return;
+      const chosenBackend =
+        input.action === 'backend'
+          ? row.stack
+          : this.rows.find((r) => r.index === this.backend)?.stack;
+      const chosenSdk =
+        input.action === 'ai'
+          ? row.stack.category === 'basic'
+            ? undefined
+            : row.stack.framework
+          : this.rows.find((r) => r.index === this.ai)?.stack?.framework;
+      if (!compatibleServiceSdk(chosenBackend?.framework, chosenSdk)) {
+        this.status =
+          'AgentOS inclut Agno : retirez le SDK IA sélectionné avant de choisir ce runtime.';
+        this.render(input.action);
+        return;
+      }
       if (input.action === 'backend') this.backend = row.index;
       else this.ai = row.stack.category === 'basic' ? undefined : row.index;
       this.selected =

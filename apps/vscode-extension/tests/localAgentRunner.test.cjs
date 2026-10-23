@@ -550,3 +550,32 @@ test('Service source opens pinned, rejects traversal and late content change wit
   await f.runner.openEntry(f.directory, () => true);
   assert.equal(f.state.shows.length, 1);
 });
+
+test('AgentOS service opens only pinned canonical runtime source and never starts a not-ready server', async (t) => {
+  const { directory, state, api, runner } = await fixture(t);
+  const service = 'src/agent_app/service_api.py';
+  await fsp.mkdir(path.join(directory, 'src/agent_app'), { recursive: true });
+  await fsp.writeFile(path.join(directory, service), '# Agno AgentOS source');
+  await fsp.writeFile(
+    path.join(directory, 'service.authoring.json'),
+    JSON.stringify({
+      version: 1,
+      transport: 'agno-agentos',
+      main_source: service,
+    }),
+  );
+  api.workspace.openTextDocument = async (uri) => ({ uri, isClosed: false });
+  await runner.openEntry(directory, () => true);
+  assert.equal(state.shows[0].uri.fsPath, path.join(directory, service));
+  assert.equal(state.tasks.length, 0);
+  await fsp.writeFile(
+    path.join(directory, 'service.authoring.json'),
+    JSON.stringify({
+      version: 1,
+      transport: 'agno-agentos',
+      main_source: 'src/agent_app/unreviewed.py',
+    }),
+  );
+  await runner.openEntry(directory, () => true);
+  assert.equal(state.shows.length, 1);
+});

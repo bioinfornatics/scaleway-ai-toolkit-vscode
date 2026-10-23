@@ -1,0 +1,25 @@
+{
+  "format_version": 1,
+  "id": "agents-python-agentos",
+  "label": "AgentOS \u00b7 python",
+  "kind": "agents",
+  "language": "python",
+  "framework": "agentos",
+  "category": "backend",
+  "usage": "stack",
+  "description": "Runtime API d\u00e9di\u00e9 Agno + AgentOS ; routes natives ferm\u00e9es, sans tools ni stockage.",
+  "files": [
+    "README.md",
+    "agent.authoring.json",
+    "evals/README.md",
+    "evals/test_agent_eval.py",
+    "requirements.txt",
+    "src/agent_app/__init__.py",
+    "src/agent_app/config.py",
+    "tests/integration/README.md",
+    "tests/unit/test_config.py",
+    "src/agent_app/agent.py",
+    "src/agent_app/service_api.py",
+    "service.authoring.json"
+  ]
+}

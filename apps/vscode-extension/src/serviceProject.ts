@@ -7,6 +7,7 @@ import {
 import type { ListedModel } from './provider';
 import {
   apiCapability,
+  compatibleServiceSdk,
   supportsCli,
   supportsIntegrated,
 } from './serviceCompatibility';
@@ -391,6 +392,21 @@ export function composeServiceProject(
     throw new Error('invalid_service_options');
   if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/.test(name))
     throw new Error('invalid_project_name');
+  const agentos = backend?.framework === 'agentos';
+  if (
+    agentos &&
+    (backend?.language !== 'python' ||
+      !compatibleServiceSdk('agentos', ai?.framework))
+  )
+    throw new Error('incompatible_agentos_sdk');
+  if (agentos && opts.exposure === 'cli' && opts.projectType === 'agent')
+    throw new Error('agentos_requires_api');
+  if (
+    agentos &&
+    opts.projectType === 'webapp' &&
+    opts.architecture === 'integrated'
+  )
+    throw new Error('unsupported_integrated_service');
   if (opts.projectType === 'agent' && opts.exposure === 'cli') {
     const cliLanguage =
       ai?.language ?? backend?.language ?? personal?.project?.language;
@@ -456,10 +472,13 @@ export function composeServiceProject(
     files['service-cli.cjs'] = integratedCli;
     entry = 'service-cli.cjs';
   } else if (language === 'python') {
-    files['src/agent_app/service_transport.py'] = pythonTransport;
-    files['src/agent_app/service_api.py'] =
-      capability?.adapter === 'litestar' ? litestarApi : pythonApi;
-    files['src/agent_app/service_cli.py'] = pythonCli;
+    if (!agentos) files['src/agent_app/service_transport.py'] = pythonTransport;
+    if (!agentos)
+      files['src/agent_app/service_api.py'] =
+        capability?.adapter === 'litestar' ? litestarApi : pythonApi;
+    files['src/agent_app/service_cli.py'] = agentos
+      ? files['src/agent_app/agent.py']
+      : pythonCli;
     const manifest = TOML.parse(files['pyproject.toml']) as {
       project: Record<string, unknown>;
     };
@@ -508,7 +527,7 @@ export function composeServiceProject(
   files['service.authoring.json'] = json({
     version: 1,
     ...opts,
-    transport: 'server-side-endpoint-client',
+    transport: agentos ? 'agno-agentos' : 'server-side-endpoint-client',
     main_source: integrated
       ? 'app/page.tsx'
       : language === 'python'
@@ -525,7 +544,9 @@ export function composeServiceProject(
   files['README.md'] =
     (files['README.md'] ?? '') +
     '\n\n## Composed service (explicit launch)\n' +
-    'POST /api/chat accepts {"message":"..."}, returns {"reply":"..."}, and calls the Scaleway HTTPS endpoint server-side. SDK sources remain for authoring; this route uses an independent endpoint transport.\n' +
+    (agentos
+      ? 'POST /api/chat executes Agno Agent.arun with OpenAILike inside AgentOS, returns {"reply":"..."}. Native routes are blocked by LocalSurface.\n'
+      : 'POST /api/chat accepts {"message":"..."}, returns {"reply":"..."}, and calls the Scaleway HTTPS endpoint server-side. SDK sources remain for authoring; this route uses an independent endpoint transport.\n') +
     'Create only root .env with SCW_INFERENCE_BASE_URL, SCW_INFERENCE_MODEL_ID and SCW_API_KEY. Never use NEXT_PUBLIC_ or VITE_ credentials. No caller-provided endpoint URLs.\n' +
     (integrated
       ? 'Install: bun install. Build: bun run build. Explicit run: node service-cli.cjs --serve (dev), or bun run start after build. Edit app/page.tsx and app/api/chat/route.ts.\n'

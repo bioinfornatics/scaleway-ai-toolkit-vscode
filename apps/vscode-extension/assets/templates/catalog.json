@@ -8,6 +8,7 @@
     "agents/typescript/mastra/template.json",
     "agents/python/fastapi/template.json",
     "agents/python/litestar/template.json",
+    "agents/python/agentos/template.json",
     "agents/python/django/template.json",
     "agents/typescript/nestjs/template.json",
     "agents/typescript/elysia/template.json",
