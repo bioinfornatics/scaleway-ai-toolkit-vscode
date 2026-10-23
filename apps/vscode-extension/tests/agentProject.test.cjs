@@ -202,7 +202,7 @@ test('model label uses model identity, not deployment name or endpoint', () => {
       serverlessAvailability: 'Disponible',
       llmAccess: configuredAccess('p'),
     }),
-    'deepseek-v4.1-flash · Serverless · Utilisateur IAM · clé sélectionnée',
+    'deepseek-v4.1-flash · Serverless',
   );
   assert.equal(
     agentModelLabel({
@@ -261,10 +261,7 @@ test('selected key proof requires unexpired access in the selected project and D
     [],
   );
   const { agentModelLabel } = load('agentProject');
-  assert.equal(
-    agentModelLabel(application),
-    'application-model · Serverless · Application IAM · clé sélectionnée',
-  );
+  assert.equal(agentModelLabel(application), 'application-model · Serverless');
 });
 
 test('public Serverless authoring needs no selected key and grants no execution authority', () => {
@@ -281,10 +278,7 @@ test('public Serverless authoring needs no selected key and grants no execution 
   };
   assert.deepEqual(deployedAgentModels(context), [model]);
   const { agentModelLabel } = load('agentProject');
-  assert.equal(
-    agentModelLabel(model),
-    'public-model · Serverless · clé API à choisir',
-  );
+  assert.equal(agentModelLabel(model), 'public-model · Serverless');
   for (const status of ['deleted', 'retired', 'end-of-life'])
     assert.deepEqual(
       deployedAgentModels({ ...context, rows: [{ ...model, status }] }),

@@ -38,7 +38,7 @@ test('parser exact fields, tokenized key actions and dedicated IDs only', () => 
       type,
       token,
     });
-  for (const type of ['import-key', 'use-key']) {
+  for (const type of ['import-key', 'use-key', 'reveal-key']) {
     const input = { type, id: 'b'.repeat(32), token };
     assert.deepEqual(overview.parseOverviewInput(input), input);
     for (const id of [
@@ -104,7 +104,6 @@ test('keys view escapes masked metadata, omits raw credentials and deployment ro
     "connect-src 'none'",
     "default-src 'none'",
     'nonce-',
-    'ni ses droits sur le projet ni une inférence réussie ne sont certifiés',
   ])
     assert.ok(html.includes(text), text);
   assert.doesNotMatch(
@@ -218,5 +217,27 @@ test('deployment dates use local DST and invalid fallback', () => {
       'dedicated',
     );
     assert.ok(html.includes(`<td>${expected}</td>`));
+  }
+});
+
+test('reveal button only for local rows, including expired copies; credentials and IAM paragraph absent', () => {
+  for (const secretAvailable of [false, true]) {
+    const { html } = overview.modelsOverviewHtml(
+      webview,
+      'root',
+      'project',
+      [
+        key({
+          secretAvailable,
+          expiresAt: 1,
+          accessKey: 'RAW_ACCESS',
+          secretKey: 'RAW_SECRET',
+        }),
+      ],
+      [],
+      'ready',
+    );
+    assert.equal(html.includes('data-action="reveal-key"'), secretAvailable);
+    assert.doesNotMatch(html, /RAW_ACCESS|RAW_SECRET|Une clé IAM appartient/);
   }
 });

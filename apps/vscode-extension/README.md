@@ -396,3 +396,19 @@ Les exemples n’ajoutent ni outils ni fallback fournisseur. Les backends et Rus
 des bases de développement, pas des frameworks IA certifiés. Templates personnels et
 anciens projets préservés. Les vérifications mockées ne prouvent pas l’inférence réelle
 ni la compatibilité complète des SDK installés.
+
+### Choisir une clé et afficher sa copie locale
+
+**Créer un agent** propose deux listes distinctes : modèle / déploiement et **Clé API**.
+La sélection de clé est indépendante du modèle et conservée lors d’une actualisation du même contexte.
+Seules les clés dont le secret est enregistré localement et qui ne sont pas expirées sont proposées.
+Utilisez **Ajouter / importer une clé API…** si nécessaire. La clé choisie est revalidée avant
+sa copie dans le fichier privé .env ; aucun remplacement silencieux par la clé de connexion.
+
+Dans **Clés API**, **Afficher access + secret…** est disponible seulement pour une copie locale.
+Après confirmation explicite, une boîte de dialogue native affiche les deux valeurs en clair.
+Attention au partage d’écran et aux captures : ne diffusez pas ces credentials.
+Les valeurs ne passent jamais par le webview, le presse-papiers ou les journaux de l’extension.
+Une copie expirée peut être affichée, mais pas utilisée pour créer un agent. Aucune récupération
+ou recréation de secret via IAM ; un secret absent doit être importé par son détenteur.
+L’inventaire et la présence locale ne certifient ni les politiques IAM du projet ni une inférence.

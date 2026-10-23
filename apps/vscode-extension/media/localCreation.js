@@ -7,6 +7,7 @@
     'language',
     'backend',
     'ai',
+    'key',
     'model',
     'stack',
     'destination',
@@ -34,6 +35,7 @@
     'chooseStack',
     'chooseTemplate',
     'destination',
+    'addKey',
     'serverless',
     'dedicated',
     'refresh',
@@ -57,7 +59,16 @@
   window.addEventListener('message', (event) => {
     const value = event.data;
     if (
-      value?.type !== 'creation-models' ||
+      !value ||
+      typeof value !== 'object' ||
+      Array.isArray(value) ||
+      Object.keys(value).sort().join(',') !==
+        (value.keys !== undefined
+          ? 'keys,models,revision,selected,selectedKey,token,type'
+          : 'models,revision,selected,token,type') ||
+      value.type !== 'creation-models' ||
+      typeof value.selected !== 'string' ||
+      (value.selected !== '' && !/^[a-f0-9]{32}$/.test(value.selected)) ||
       value.token !== token ||
       !Number.isSafeInteger(value.revision) ||
       value.revision <= modelRevision ||
@@ -65,12 +76,54 @@
       value.models.length > 256 ||
       value.models.some(
         (m) =>
+          !m ||
+          typeof m !== 'object' ||
+          Object.keys(m).sort().join(',') !== 'index,label' ||
           !/^[a-f0-9]{32}$/.test(m.index) ||
           typeof m.label !== 'string' ||
           m.label.length > 1024,
       )
     )
       return;
+    if (
+      value.keys !== undefined &&
+      (!Array.isArray(value.keys) ||
+        value.keys.length > 500 ||
+        value.keys.some(
+          (key) =>
+            !key ||
+            typeof key !== 'object' ||
+            Object.keys(key).sort().join(',') !== 'index,label' ||
+            !/^[a-f0-9]{32}$/.test(key.index) ||
+            typeof key.label !== 'string' ||
+            key.label.length > 1024,
+        ) ||
+        typeof value.selectedKey !== 'string' ||
+        (value.selectedKey !== '' && !/^[a-f0-9]{32}$/.test(value.selectedKey)))
+    )
+      return;
+    const keySelect = document.querySelector?.('select[data-action="key"]');
+    if (keySelect && value.keys) {
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = value.keys.length
+        ? 'Sélectionner une clé API locale'
+        : 'Aucune clé locale valide';
+      keySelect.replaceChildren(
+        placeholder,
+        ...value.keys.map((key) => {
+          const option = document.createElement('option');
+          option.value = key.index;
+          option.textContent = key.label;
+          return option;
+        }),
+      );
+      keySelect.value = value.keys.some(
+        (key) => key.index === value.selectedKey,
+      )
+        ? value.selectedKey
+        : '';
+    }
     const select = document.querySelector('select[data-action="model"]');
     if (!select) return;
     modelRevision = value.revision;
@@ -94,7 +147,9 @@
     if (create) {
       const ready =
         (!!select.value || !!document.querySelector('.template-notice')) &&
-        create.dataset.destinationReady !== 'false';
+        create.dataset.destinationReady !== 'false' &&
+        (!keySelect || !!keySelect.value);
+      create.dataset.keyReady = String(!keySelect || !!keySelect.value);
       create.dataset.ready = String(ready);
       create.disabled =
         !ready || !/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/.test(name?.value ?? '');
@@ -121,7 +176,8 @@
     }
     if (
       ['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key) &&
-      event.target.closest('select[data-action="model"]')
+      (event.target.closest('select[data-action="model"]') ||
+        event.target.closest('select[data-action="key"]'))
     )
       refreshModelList();
   });
@@ -141,6 +197,7 @@
         const model = document.querySelector?.('select[data-action="model"]');
         create.dataset.ready = String(
           !!pathField.value &&
+            create.dataset.keyReady !== 'false' &&
             (!!model?.value || !!document.querySelector?.('.template-notice')),
         );
         create.disabled =
@@ -169,6 +226,7 @@
         const model = document.querySelector?.('select[data-action="model"]');
         create.dataset.ready = String(
           !!projectPath.value &&
+            create.dataset.keyReady !== 'false' &&
             (!!model?.value || !!document.querySelector?.('.template-notice')),
         );
       }
@@ -190,7 +248,7 @@
     const select = event.target.closest('select[data-action]');
     if (
       !select ||
-      !['language', 'stack', 'backend', 'ai', 'model'].includes(
+      !['language', 'stack', 'backend', 'ai', 'model', 'key'].includes(
         select.dataset.action,
       )
     )
@@ -204,6 +262,10 @@
           select.dataset.action === 'backend' ? 'clearBackend' : 'clearAi',
         token,
       });
+      return;
+    }
+    if (select.dataset.action === 'key' && select.value === '') {
+      vscode.postMessage({ action: 'clearKey', token });
       return;
     }
     if (select.dataset.action === 'model' && select.value === '') {
@@ -222,7 +284,10 @@
     });
   });
   document.addEventListener('click', (event) => {
-    if (event.target.closest('select[data-action="model"]')) {
+    if (
+      event.target.closest('select[data-action="model"]') ||
+      event.target.closest('select[data-action="key"]')
+    ) {
       refreshModelList();
       return;
     }

@@ -315,15 +315,22 @@ function fixture() {
     { extensionUri: uri('/extension') },
     {
       current: () => state.modelContext,
-      credentialScope: (projectId, model) => {
+      addKey: async () => {
+        state.addKeys = (state.addKeys ?? 0) + 1;
+      },
+      credentialScope: (projectId, model, preferredKeyId) => {
         const key = state.modelContext.key;
         state.credentialScopes = (state.credentialScopes ?? 0) + 1;
         state.credentialArgs = [projectId, model];
+        state.preferredKeyId = preferredKeyId;
         const credentials = {
           current: () => key === state.modelContext.key,
           secretKey: () => {
             state.secretReads = (state.secretReads ?? 0) + 1;
-            return model.llmAccess?.bearerType === 'application'
+            return state.modelContext.apiKeys?.find(
+              (key) => key.id === preferredKeyId,
+            )?.bearerType === 'application' ||
+              model.llmAccess?.bearerType === 'application'
               ? applicationKey
               : userKey;
           },
@@ -1332,7 +1339,7 @@ test('Serverless DeepSeek resource appears and can initialize agent despite no d
   await host.open('agents');
   assert.match(
     state.panels[0].webview.html,
-    /deepseek-v4.1-flash · Serverless · Utilisateur IAM · clé sélectionnée/,
+    /deepseek-v4.1-flash · Serverless/,
   );
   const backend = option(state.panels[0].webview.html, 'backend', 'FastAPI');
   await state.send('backend', backend);
@@ -1725,10 +1732,7 @@ test('Serverless dropdown accepts public models but rejects stale configured pro
   );
   await host.open('agents');
   const html = state.panels[0].webview.html;
-  assert.match(
-    html,
-    /serverless-test · Serverless · Utilisateur IAM · clé sélectionnée/,
-  );
+  assert.match(html, /serverless-test · Serverless/);
   assert.doesNotMatch(
     html,
     /expired-access|foreign-access|unverified-availability|unavailable-access/,
@@ -1741,10 +1745,7 @@ test('Serverless dropdown accepts public models but rejects stale configured pro
   await state.send('refreshModels');
   assert.deepEqual(
     Array.from(state.modelMessages.at(-1).models, (m) => m.label),
-    [
-      'serverless-test · Serverless · Utilisateur IAM · clé sélectionnée',
-      'missing-access · Serverless · clé API à choisir',
-    ],
+    ['serverless-test · Serverless', 'missing-access · Serverless'],
   );
 });
 
@@ -1758,10 +1759,7 @@ test('agent awaits selected Application IAM credential scope and copies its dist
   );
   state.asyncCredentials = true;
   await host.open('agents');
-  assert.match(
-    state.panels[0].webview.html,
-    /serverless-test · Serverless · Application IAM · clé sélectionnée/,
-  );
+  assert.match(state.panels[0].webview.html, /serverless-test · Serverless/);
   const backend = option(state.panels[0].webview.html, 'backend', 'FastAPI');
   await state.send('backend', backend);
   await state.send('name', undefined, { name: 'application-agent' });
@@ -2443,4 +2441,314 @@ test('Relative path uses explicitly picked base even with several workspace root
   state.confirms.push('Créer dans le projet');
   await state.send('create', backend);
   assert.equal(state.postCreate.project, '/explicit-parent/test-agent');
+});
+
+function safeKey(id = 'd'.repeat(32), overrides = {}) {
+  return {
+    id,
+    description: 'Chosen application',
+    maskedAccessKey: 'SCW••••5678',
+    bearerType: 'application',
+    expiresAt: Date.now() + 3600000,
+    secretAvailable: true,
+    ...overrides,
+  };
+}
+test('separate key selector is closed, independent, scope-bound and copies exact choice after consent', async () => {
+  const { state, host, api } = fixture();
+  for (const action of ['key', 'clearKey', 'addKey']) {
+    const message = { action, token, ...(action === 'key' ? { index } : {}) };
+    assert.ok(api.parseCreationInput(message));
+    assert.equal(
+      api.parseCreationInput({ ...message, secretKey: applicationKey }),
+      undefined,
+    );
+  }
+  state.modelContext.apiKeys = [
+    safeKey(),
+    safeKey('e'.repeat(32), { secretAvailable: false }),
+    safeKey('f'.repeat(32), { expiresAt: 1 }),
+  ];
+  await host.open('agents');
+  const panel = state.panels[0];
+  assert.match(panel.webview.html, /data-action="key"/);
+  assert.doesNotMatch(
+    panel.webview.html,
+    /clé sélectionnée|clé API à choisir|33333333-3333|55555555-5555/,
+  );
+  const backend = option(panel.webview.html, 'backend', 'FastAPI');
+  await state.send('backend', backend);
+  await state.send('name', undefined, { name: 'selected-key-agent' });
+  await state.send('dedicated');
+  await state.send('model', option(panel.webview.html, 'model', 'model-a'));
+  state.confirms.push('Créer dans le projet');
+  await state.send('create', backend);
+  assert.equal(state.creates.length, 0);
+  assert.equal(state.credentialScopes, undefined);
+  const keyIndex = option(panel.webview.html, 'key', 'Chosen application');
+  await state.send('key', '0'.repeat(32));
+  assert.equal(host.keyIndex, undefined);
+  await state.send('key', keyIndex);
+  await state.send('serverless');
+  assert.equal(
+    host.keyIndex,
+    keyIndex,
+    'key selection survives service toggle',
+  );
+  await state.send('dedicated');
+  await state.send('model', option(panel.webview.html, 'model', 'model-a'));
+  await state.send('create', backend);
+  assert.equal(state.preferredKeyId, 'd'.repeat(32));
+  assert.equal(state.creates.length, 1);
+  assert.match(state.envContent, new RegExp(applicationKey));
+  assert.ok(!state.envContent.includes(userKey));
+  state.modelContext.apiKeys = [];
+  host.modelsChanged();
+  assert.equal(host.keyIndex, undefined);
+  assert.match(
+    panel.webview.html,
+    /Aucune clé locale valide|Ajouter \/ importer/,
+  );
+  await state.send('addKey');
+  assert.equal(state.addKeys, 1);
+});
+
+test('key dropdown async refresh preserves selection and rejects old project rows and consent-time deletion', async () => {
+  const { state, host } = fixture();
+  state.modelContext.apiKeys = [safeKey()];
+  await host.open('agents');
+  const panel = state.panels[0];
+  const keyIndex = option(panel.webview.html, 'key', 'Chosen application');
+  await state.send('key', keyIndex);
+  state.refreshModels = async () => {
+    state.modelContext.apiKeys = [safeKey()];
+    host.modelsChanged();
+  };
+  await state.send('refreshModels');
+  assert.equal(host.keyIndex, keyIndex);
+  assert.equal(state.modelMessages.at(-1).selectedKey, keyIndex);
+  assert.equal(state.modelMessages.at(-1).keys.length, 1);
+  state.modelContext.key = 'foreign-project';
+  host.modelsChanged();
+  assert.equal(host.keyIndex, undefined);
+  await state.send('key', keyIndex);
+  assert.equal(host.keyIndex, undefined);
+  await state.send(
+    'key',
+    option(panel.webview.html, 'key', 'Chosen application'),
+  );
+  const backend = option(panel.webview.html, 'backend', 'FastAPI');
+  await state.send('backend', backend);
+  await state.send('name', undefined, { name: 'stale-key' });
+  await state.send('dedicated');
+  await state.send('model', option(panel.webview.html, 'model', 'model-a'));
+  state.confirms.push(() => {
+    state.modelContext.apiKeys = [];
+    return 'Créer dans le projet';
+  });
+  await state.send('create', backend);
+  assert.equal(state.creates.length, 0);
+  assert.equal(state.credentialScopes, undefined);
+});
+
+test('renderer key messages are opaque and updates closed; stale/extra/secret/null rows rejected', () => {
+  const messages = [],
+    listeners = {};
+  let receive;
+  const makeSelect = () => ({
+    dataset: {},
+    value: '',
+    replaceChildren(...options) {
+      this.options = options;
+    },
+  });
+  const modelSelect = makeSelect(),
+    keySelect = makeSelect();
+  const create = { dataset: { destinationReady: 'true' } };
+  vm.runInNewContext(
+    fs.readFileSync(path.join(__dirname, '../media/localCreation.js'), 'utf8'),
+    {
+      acquireVsCodeApi: () => ({ postMessage: (m) => messages.push(m) }),
+      window: {
+        addEventListener: (_, fn) => {
+          receive = fn;
+        },
+      },
+      document: {
+        body: { dataset: { token } },
+        addEventListener: (name, fn) => {
+          listeners[name] = fn;
+        },
+        querySelector: (selector) =>
+          selector.includes('data-action="key"')
+            ? keySelect
+            : selector.includes('data-action="model"')
+              ? modelSelect
+              : selector.includes('data-agent-create')
+                ? create
+                : selector.includes('data-action="name"')
+                  ? { value: 'agent' }
+                  : null,
+        createElement: () => ({}),
+      },
+    },
+  );
+  const update = {
+    type: 'creation-models',
+    token,
+    revision: 1,
+    models: [{ index, label: 'Model' }],
+    selected: index,
+    keys: [{ index: 'c'.repeat(32), label: 'SCW••••1234' }],
+    selectedKey: 'c'.repeat(32),
+  };
+  for (const bad of [
+    { ...update, secretKey: applicationKey },
+    { ...update, keys: [null] },
+    { ...update, keys: [{ ...update.keys[0], secretKey: applicationKey }] },
+    { ...update, token: 'f'.repeat(48) },
+  ]) {
+    receive({ data: bad });
+    assert.equal(keySelect.value, '');
+  }
+  receive({ data: update });
+  assert.equal(keySelect.value, update.selectedKey);
+  assert.equal(create.disabled, false);
+  receive({ data: { ...update, keys: [], selectedKey: '', revision: 2 } });
+  assert.equal(create.disabled, true);
+  receive({ data: update });
+  assert.equal(keySelect.value, '');
+  keySelect.dataset.action = 'key';
+  keySelect.value = update.selectedKey;
+  listeners.change({ target: { closest: () => keySelect } });
+  assert.deepEqual(JSON.parse(JSON.stringify(messages.at(-1))), {
+    action: 'key',
+    token,
+    index: update.selectedKey,
+  });
+  keySelect.value = '';
+  listeners.change({ target: { closest: () => keySelect } });
+  assert.deepEqual(JSON.parse(JSON.stringify(messages.at(-1))), {
+    action: 'clearKey',
+    token,
+  });
+  const button = { dataset: { action: 'addKey' } };
+  listeners.click({
+    target: {
+      closest: (selector) => (selector.startsWith('button') ? button : null),
+    },
+  });
+  assert.deepEqual(JSON.parse(JSON.stringify(messages.at(-1))), {
+    action: 'addKey',
+    token,
+  });
+});
+
+test('dedicated model and independent key selection survive loading snapshots of the same project', async () => {
+  const { state, host } = fixture();
+  state.modelContext.apiKeys = [safeKey()];
+  await host.open('agents');
+  const panel = state.panels[0];
+  await state.send('dedicated');
+  const selected = option(panel.webview.html, 'model', 'model-a');
+  const chosen = option(panel.webview.html, 'key', 'Chosen application');
+  await state.send('model', selected);
+  await state.send('key', chosen);
+  state.refreshModels = async () => {
+    state.modelContext.status = 'Chargement…';
+    host.modelsChanged();
+    assert.equal(host.modelIndex, selected);
+    assert.equal(host.keyIndex, chosen);
+    state.modelContext.status = 'fr-par · projet sélectionné';
+    host.modelsChanged();
+  };
+  await state.send('refreshModels');
+  assert.equal(host.modelIndex, selected);
+  assert.equal(host.keyIndex, chosen);
+});
+
+test('two public models use same explicitly chosen application key even when model has a different key hint', async () => {
+  const { state, host } = fixture();
+  addServerless(state);
+  const model = state.modelContext.rows.at(-1);
+  model.llmAccess = configuredAccess(state.modelContext.projectId, 'user');
+  state.modelContext.rows.push({
+    ...model,
+    id: 'second-model',
+    label: 'Second',
+  });
+  state.modelContext.apiKeys = [safeKey()];
+  await host.open('agents');
+  const panel = state.panels[0];
+  const backend = option(panel.webview.html, 'backend', 'FastAPI');
+  await state.send('backend', backend);
+  const chosen = option(panel.webview.html, 'key', 'Chosen application');
+  await state.send('key', chosen);
+  for (const modelId of ['serverless-test', 'second-model']) {
+    await state.send('name', undefined, { name: modelId });
+    await state.send('model', option(panel.webview.html, 'model', modelId));
+    state.confirms.push('Créer dans le projet');
+    await state.send('create', backend);
+    assert.equal(state.preferredKeyId, safeKey().id);
+    assert.equal(host.keyIndex, chosen);
+    assert.match(state.envContent, new RegExp(applicationKey));
+    assert.ok(!state.envContent.includes(userKey));
+    assert.ok(state.envContent.includes(modelId));
+  }
+  assert.equal(state.creates.length, 2);
+  for (const payload of [
+    panel.webview.html,
+    state.modelMessages,
+    state.warningArgs,
+    ...state.creates.map((args) => args[2]),
+  ])
+    assert.ok(!JSON.stringify(payload ?? null).includes(applicationKey));
+});
+
+test('real local materializer writes 0600 .env with exact selected key, never model hint or login fallback', async (t) => {
+  const fsp = require('node:fs/promises');
+  const parent = await fsp.mkdtemp(
+    path.join(require('node:os').tmpdir(), 'scw-key-selector-'),
+  );
+  t.after(() => fsp.rm(parent, { recursive: true, force: true }));
+  const { state, host, workspace, uri } = fixture();
+  t.after(() => host.dispose());
+  workspace.workspaceFolders = [
+    { name: 'Temporary mock workspace', uri: uri(parent) },
+  ];
+  addServerless(state);
+  state.modelContext.apiKeys = [safeKey()];
+  state.materialize = require('../dist/agentScaffold').materializeTemplate;
+  await host.open('agents');
+  const panel = state.panels[0];
+  await state.send('backend', option(panel.webview.html, 'backend', 'FastAPI'));
+  await state.send('name', undefined, { name: 'exact-key' });
+  await state.send(
+    'key',
+    option(panel.webview.html, 'key', 'Chosen application'),
+  );
+  await state.send(
+    'model',
+    option(panel.webview.html, 'model', 'serverless-test'),
+  );
+  state.confirms.push('Créer dans le projet');
+  await state.send('create', option(panel.webview.html, 'backend', 'FastAPI'));
+  const target = path.join(parent, 'exact-key', '.env');
+  const env = await fsp.readFile(target, 'utf8');
+  assert.equal(
+    env,
+    "SCW_INFERENCE_BASE_URL='https://api.scaleway.ai/" +
+      state.modelContext.projectId +
+      "/v1'\nSCW_INFERENCE_MODEL_ID='serverless-test'\nSCW_API_KEY='" +
+      applicationKey +
+      "'\n",
+  );
+  assert.equal((await fsp.stat(target)).mode & 0o777, 0o600);
+  assert.ok(!env.includes(userKey));
+  assert.equal(state.preferredKeyId, safeKey().id);
+  assert.ok(
+    (
+      await fsp.readFile(path.join(parent, 'exact-key', '.gitignore'), 'utf8')
+    ).includes('/.env'),
+  );
 });

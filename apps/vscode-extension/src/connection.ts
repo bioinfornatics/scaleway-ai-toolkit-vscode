@@ -1396,7 +1396,7 @@ export class Connection implements vscode.Disposable {
     const scope = this.inferenceScope();
     const epoch = ++this.apiKeysEpoch;
     const key = JSON.stringify(scope.project);
-    this.apiKeys = [];
+    if (this.apiKeysScope !== key) this.apiKeys = [];
     this.apiKeysScope = key;
     this.apiKeysState = 'Chargement…';
     this.changed();
@@ -1449,6 +1449,74 @@ export class Connection implements vscode.Disposable {
     }
     if (configured) await this.refreshAPIKeys();
     return configured;
+  }
+  /** Explicit native-only disclosure. Never forward native/storage diagnostics. */
+  async revealAPIKey(id: string): Promise<void> {
+    if (
+      !/^[a-f0-9]{32}$/.test(id) ||
+      !this.connected ||
+      !vscode.workspace.isTrusted ||
+      !this.project ||
+      this.apiKeysScope !== JSON.stringify(this.project) ||
+      !this.apiKeys.some((key) => key.id === id && key.secretAvailable)
+    )
+      return;
+    let scope: ReturnType<Connection['inferenceScope']> | undefined;
+    const epoch = this.apiKeysEpoch;
+    try {
+      scope = this.inferenceScope();
+      const local = await this.llmAccess.revealLocal(
+        this.accessScope(scope),
+        id,
+      );
+      const confirmed = await vscode.window.showWarningMessage(
+        'Afficher la clé API complète et son secret en clair ?',
+        {
+          modal: true,
+          detail:
+            'Affichage natif uniquement. Évitez le partage d’écran et les captures. Aucun secret récupéré depuis IAM, copié ou enregistré ailleurs.',
+        },
+        'Afficher les credentials',
+      );
+      if (
+        confirmed !== 'Afficher les credentials' ||
+        !scope.current() ||
+        epoch !== this.apiKeysEpoch ||
+        !local.current() ||
+        this.apiKeysScope !== JSON.stringify(this.project) ||
+        !this.apiKeys.some((key) => key.id === id && key.secretAvailable)
+      )
+        return;
+      const latest = await this.llmAccess.revealLocal(
+        this.accessScope(scope),
+        id,
+      );
+      if (!local.current() || !latest.current() || epoch !== this.apiKeysEpoch)
+        return;
+      const pair = latest.credentials();
+      await vscode.window.showInformationMessage(
+        'Credentials de la clé API locale',
+        {
+          modal: true,
+          detail:
+            'Access key : ' +
+            pair.accessKey +
+            String.fromCharCode(10) +
+            'Secret key : ' +
+            pair.secretKey,
+        },
+      );
+    } catch {
+      try {
+        await vscode.window.showWarningMessage(
+          'Affichage refusé ou indisponible. Actualisez les clés API.',
+        );
+      } catch {
+        /* no diagnostics */
+      }
+    } finally {
+      scope?.dispose();
+    }
   }
   async useAPIKey(id: string): Promise<ListedModel | undefined> {
     if (!/^[a-f0-9]{32}$/.test(id) || !(await this.ensureProject())) return;
@@ -1533,10 +1601,33 @@ export class Connection implements vscode.Disposable {
     }
   }
   /** Resolve and revalidate the selected access key, never silently use the login key. */
-  async modelCredentialScope(projectId: string, model: ListedModel) {
+  async modelCredentialScope(
+    projectId: string,
+    model: ListedModel,
+    preferredKeyId?: string,
+  ) {
     const scope = this.inferenceScope();
     try {
       if (scope.project.id !== projectId) throw new ReadError('invalid_scope');
+      if (
+        preferredKeyId !== undefined &&
+        (!/^[a-f0-9]{32}$/.test(preferredKeyId) ||
+          this.apiKeysScope !== JSON.stringify(this.project) ||
+          !this.apiKeys.some(
+            (key) =>
+              key.id === preferredKeyId &&
+              key.secretAvailable &&
+              key.expiresAt > Date.now() + 30000,
+          ))
+      )
+        throw new ReadError('invalid_scope');
+      if (model.kind !== 'serverless' && preferredKeyId !== undefined) {
+        const credential = await this.llmAccess.keyCredential(
+          this.accessScope(scope),
+          preferredKeyId,
+        );
+        return { ...credential, dispose: scope.dispose };
+      }
       if (model.kind !== 'serverless')
         return {
           current: scope.current,
@@ -1544,9 +1635,12 @@ export class Connection implements vscode.Disposable {
           dispose: scope.dispose,
         };
       const accessScope = this.accessScope(scope);
-      const selected = model.llmAccess
-        ? model
-        : await this.llmAccess.configure(model, accessScope);
+      const selected =
+        preferredKeyId !== undefined
+          ? await this.llmAccess.configure(model, accessScope, preferredKeyId)
+          : model.llmAccess
+            ? model
+            : await this.llmAccess.configure(model, accessScope);
       if (!selected || !scope.current()) throw new ReadError('invalid_scope');
       const credential = await this.llmAccess.credential(accessScope, selected);
       return { ...credential, dispose: scope.dispose };

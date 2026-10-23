@@ -128,16 +128,22 @@ export function activate(context: vscode.ExtensionContext): void {
           : '',
       projectId: connection.connected ? connection.project?.id : undefined,
       status: connection.dedicatedState,
+      apiKeys:
+        connection.connected && connection.project ? connection.apiKeys : [],
       rows: connection.connected
         ? [...connection.serverless, ...connection.dedicated]
         : [],
     }),
-    credentialScope: (projectId, model) =>
-      connection.modelCredentialScope(projectId, model),
+    credentialScope: (projectId, model, keyId) =>
+      connection.modelCredentialScope(projectId, model, keyId),
+    addKey: async () => {
+      await connection.configureAPIKey();
+    },
     refresh: async () => {
       if (!(await connection.ensureProject())) return;
       await connection.loadPublicCatalog();
       await connection.loadModels();
+      await connection.refreshAPIKeys(true);
     },
   });
   context.subscriptions.push(localCreation);
@@ -480,6 +486,20 @@ export function activate(context: vscode.ExtensionContext): void {
             if (overviewMode !== 'keys') return;
             overviewToken = undefined;
             await connection.configureAPIKey();
+            if (modelsPanel === origin) renderModelsOverview();
+            return;
+          }
+          if (input.type === 'reveal-key') {
+            if (
+              overviewMode !== 'keys' ||
+              !scope.current() ||
+              !connection.apiKeys.some(
+                (key) => key.id === input.id && key.secretAvailable,
+              )
+            )
+              return;
+            overviewToken = undefined;
+            await connection.revealAPIKey(input.id);
             if (modelsPanel === origin) renderModelsOverview();
             return;
           }

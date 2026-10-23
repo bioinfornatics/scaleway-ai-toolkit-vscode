@@ -52,6 +52,9 @@ type Action =
   | 'dedicated'
   | 'backend'
   | 'ai'
+  | 'key'
+  | 'clearKey'
+  | 'addKey'
   | 'model'
   | 'clearBackend'
   | 'clearAi'
@@ -112,6 +115,7 @@ export function parseCreationInput(value: unknown): CreationInput | undefined {
   const indexed = [
     'backend',
     'ai',
+    'key',
     'model',
     'preview',
     'create',
@@ -132,6 +136,9 @@ export function parseCreationInput(value: unknown): CreationInput | undefined {
       'refreshModels',
       'backend',
       'ai',
+      'key',
+      'clearKey',
+      'addKey',
       'model',
       'refresh',
       'clear',
@@ -289,6 +296,12 @@ export class LocalCreation implements vscode.Disposable {
   private destinationRoots = '';
   private serviceKind: 'serverless' | 'dedicated' = 'serverless';
   private modelIndex?: string;
+  private keyIndex?: string;
+  private keyRows: {
+    index: string;
+    key: import('./llmAccessRegistry').ApiKeyResource;
+  }[] = [];
+  private keyScope = '';
   private modelRows: { index: string; model: ListedModel }[] = [];
   private modelKey = '';
   private modelScopeKey = '';
@@ -336,6 +349,7 @@ export class LocalCreation implements vscode.Disposable {
             this.modelSource.current().key,
             this.modelSource.current().status,
             this.modelSource.current().rows,
+            this.modelSource.current().apiKeys,
           ])) &&
       !this.closed &&
       !!this.panel &&
@@ -365,6 +379,7 @@ export class LocalCreation implements vscode.Disposable {
     this.pathEdited = false;
     this.destinationRoots = '';
     this.serviceKind = 'serverless';
+    this.keyIndex = undefined;
     this.draft = undefined;
     if (!this.panel) {
       const media = vscode.Uri.joinPath(this.context.extensionUri, 'media');
@@ -475,10 +490,37 @@ export class LocalCreation implements vscode.Disposable {
   private syncModels(force = false): void {
     const context = this.modelSource?.current();
     const key = context
-      ? JSON.stringify([context.key, context.status, context.rows])
+      ? JSON.stringify([
+          context.key,
+          context.status,
+          context.rows,
+          context.apiKeys,
+        ])
       : '';
     if (!force && key === this.modelKey) return;
     this.modelKey = key;
+    const keyScope = context
+      ? JSON.stringify([context.key, context.projectId])
+      : '';
+    const previousKeys = this.keyScope === keyScope ? this.keyRows : [];
+    this.keyScope = keyScope;
+    this.keyRows = (context?.apiKeys ?? [])
+      .filter(
+        (key) => key.secretAvailable && key.expiresAt > Date.now() + 30000,
+      )
+      .slice(0, 500)
+      .map((key) => ({
+        key,
+        index:
+          previousKeys.find(
+            (r) =>
+              r.key.id === key.id &&
+              r.key.maskedAccessKey === key.maskedAccessKey,
+          )?.index ?? randomBytes(16).toString('hex'),
+      }));
+    if (!this.keyRows.some((r) => r.index === this.keyIndex))
+      this.keyIndex = undefined;
+
     const scopeKey = context
       ? JSON.stringify([
           context.key,
@@ -490,8 +532,14 @@ export class LocalCreation implements vscode.Disposable {
     const previous =
       !force && this.modelScopeKey === scopeKey ? this.modelRows : [];
     this.modelScopeKey = scopeKey;
+    const deployed =
+      context && /Chargement/i.test(context.status) && previous.length
+        ? previous.map((row) => row.model)
+        : context
+          ? deployedAgentModels(context)
+          : [];
     this.modelRows = context
-      ? deployedAgentModels(context)
+      ? deployed
           .filter(
             (model) =>
               this.mode !== 'create' ||
@@ -559,9 +607,27 @@ export class LocalCreation implements vscode.Disposable {
             label: agentModelLabel(r.model),
           })),
           selected: this.modelIndex ?? '',
+          ...(this.modelSource?.current().apiKeys !== undefined
+            ? {
+                keys: this.keyRows.map((r) => ({
+                  index: r.index,
+                  label: this.keyLabel(r.key),
+                })),
+                selectedKey: this.keyIndex ?? '',
+              }
+            : {}),
         });
       } else this.render();
     }
+  }
+  private keyLabel(key: import('./llmAccessRegistry').ApiKeyResource): string {
+    return (
+      (key.description || 'Clé API') +
+      ' · ' +
+      key.maskedAccessKey +
+      ' · ' +
+      (key.bearerType === 'application' ? 'Application IAM' : 'Utilisateur IAM')
+    );
   }
   private agentForm(): boolean {
     return this.kind === 'agents';
@@ -644,6 +710,14 @@ export class LocalCreation implements vscode.Disposable {
       backend: this.backend,
       ai: this.ai,
       modelIndex: this.modelIndex,
+      keys:
+        this.modelSource?.current().apiKeys !== undefined
+          ? this.keyRows.map((r) => ({
+              index: r.index,
+              label: this.keyLabel(r.key),
+            }))
+          : undefined,
+      keyIndex: this.keyIndex,
       serviceKind: this.serviceKind,
       models: this.modelRows.map((r) => ({
         index: r.index,
@@ -725,6 +799,43 @@ export class LocalCreation implements vscode.Disposable {
       ].includes(input.action)
     )
       return;
+    if (['key', 'clearKey', 'addKey'].includes(input.action)) {
+      if (
+        !this.agentForm() ||
+        this.mode !== 'create' ||
+        this.modelSource?.current().apiKeys === undefined
+      )
+        return;
+      if (input.action === 'addKey') {
+        this.busy = true;
+        try {
+          await this.modelSource?.addKey?.();
+        } catch {
+          /* Never expose storage/native diagnostics. */
+        } finally {
+          this.busy = false;
+        }
+        if (
+          !this.closed &&
+          this.panel &&
+          s.roots === this.rootsKey() &&
+          s.kind === this.kind &&
+          s.mode === this.mode &&
+          vscode.workspace.isTrusted
+        )
+          await this.loadDeployedModels();
+        return;
+      }
+      if (
+        input.action === 'key' &&
+        !this.keyRows.some((r) => r.index === input.index)
+      )
+        return;
+      this.keyIndex = input.action === 'key' ? input.index : undefined;
+      this.epoch++;
+      this.render('key');
+      return;
+    }
     if (input.action === 'projectPath') {
       if (!this.agentForm() || this.mode !== 'create') return;
       this.projectPath = input.path ?? '';
@@ -1015,6 +1126,20 @@ export class LocalCreation implements vscode.Disposable {
         this.render();
         return;
       }
+      const selectedKey = this.keyRows.find(
+        (r) => r.index === this.keyIndex,
+      )?.key;
+      if (
+        s.mode === 'create' &&
+        this.modelSource?.current().apiKeys !== undefined &&
+        (!selectedKey?.secretAvailable ||
+          selectedKey.expiresAt <= Date.now() + 30000)
+      ) {
+        this.status =
+          'Sélectionnez une clé API locale valide, ou ajoutez / importez une clé.';
+        this.render();
+        return;
+      }
       const name = this.agentName;
       const selectedTemplate = composeAgentProject(
         row.stack
@@ -1103,10 +1228,16 @@ export class LocalCreation implements vscode.Disposable {
         },
         'Créer dans le projet',
       );
-      if (!this.valid(s) || confirmed !== 'Créer dans le projet') return;
+      if (
+        !this.valid(s) ||
+        confirmed !== 'Créer dans le projet' ||
+        (selectedKey && selectedKey.expiresAt <= Date.now() + 30000)
+      )
+        return;
       const credentials = await this.modelSource.credentialScope(
         projectId,
         model,
+        selectedKey?.id,
       );
       let project: string;
       try {

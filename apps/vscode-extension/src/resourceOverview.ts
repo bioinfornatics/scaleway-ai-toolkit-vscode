@@ -5,7 +5,7 @@ import type { ListedModel } from './provider';
 
 export type OverviewInput =
   | { type: 'catalog' | 'refresh' | 'add-key'; token: string }
-  | { type: 'import-key' | 'use-key'; id: string; token: string }
+  | { type: 'import-key' | 'use-key' | 'reveal-key'; id: string; token: string }
   | {
       type: 'open';
       kind: 'dedicated';
@@ -26,7 +26,9 @@ export function parseOverviewInput(value: unknown): OverviewInput | undefined {
   }
   if (
     Object.keys(row).length === 3 &&
-    (row.type === 'import-key' || row.type === 'use-key') &&
+    (row.type === 'import-key' ||
+      row.type === 'use-key' ||
+      row.type === 'reveal-key') &&
     typeof row.id === 'string' &&
     /^[a-f0-9]{32}$/.test(row.id)
   )
@@ -175,7 +177,6 @@ export function modelsOverviewHtml(
       : '') +
     '<button data-action="catalog">Catalogue de modèles</button><button data-action="refresh">Actualiser</button></div>';
   const keyBody =
-    '<p class="note">Une clé IAM appartient à un utilisateur ou une application, pas à un modèle. Elle est réutilisable selon les politiques IAM, les quotas et la disponibilité. Le secret n’est retourné qu’à la création : l’inventaire ne permet pas de le récupérer. « Présent localement » indique seulement un secret conservé dans SecretStorage pour ce contexte ; ni ses droits sur le projet ni une inférence réussie ne sont certifiés.</p>' +
     '<p role="status">Clés API : ' +
     escapeHtml(keyState) +
     '</p>' +
@@ -212,6 +213,11 @@ export function modelsOverviewHtml(
           (key.secretAvailable ? 'Présent localement' : 'Non enregistré') +
           '</td><td>' +
           action +
+          (key.secretAvailable
+            ? ' <button data-action="reveal-key" data-id="' +
+              escapeHtml(key.id) +
+              '">Afficher access + secret…</button>'
+            : '') +
           '</td></tr>'
         );
       })

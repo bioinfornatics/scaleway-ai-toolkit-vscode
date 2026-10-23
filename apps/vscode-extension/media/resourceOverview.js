@@ -7,7 +7,11 @@
       const type = button.dataset.action;
       if (type === 'catalog' || type === 'refresh' || type === 'add-key') {
         api.postMessage({ type, token: main.dataset.token });
-      } else if (type === 'import-key' || type === 'use-key') {
+      } else if (
+        type === 'import-key' ||
+        type === 'use-key' ||
+        type === 'reveal-key'
+      ) {
         api.postMessage({
           type,
           id: button.dataset.id,

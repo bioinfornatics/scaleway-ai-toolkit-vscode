@@ -1313,3 +1313,108 @@ test('key registration preserves the 32-slot bound but can reuse an exact creden
   assert.equal(h.state.get(namespace(h.scope)).length, 32);
   assert.equal(h.count('models'), 0);
 });
+
+test('local reveal is exact, HTTP-free, expiry-tolerant and invalidated by deletion/rotation/scope changes', async (t) => {
+  const s = setup(t);
+  const record = s.seed(1, { metadata: { ...s.metadata(), expiresAt: 1 } });
+  iam.inspectAccessAPIKey = async () => ({ ...s.metadata(), expiresAt: 1 });
+  await s.registry.inventory(s.scope);
+  const before = s.events.length;
+  const handle = await s.registry.revealLocal(s.scope, record.id);
+  assert.deepEqual(handle.credentials(), login);
+  assert.equal(s.events.length, before, 'no IAM/HTTP/UI writes');
+  await assert.rejects(s.registry.revealLocal(s.scope, idAt(99)));
+  await assert.rejects(
+    s.registry.revealLocal(
+      { ...s.scope, project: { ...project, id: userId } },
+      record.id,
+    ),
+  );
+  await assert.rejects(s.registry.keyCredential(s.scope, record.id));
+  s.secrets.set(
+    slot(record.id),
+    JSON.stringify({ ...record, secretKey: applicationKey.secretKey }),
+  );
+  s.emit(slot(record.id));
+  assert.equal(handle.current(), false);
+  assert.throws(() => handle.credentials());
+  await assert.rejects(s.registry.revealLocal(s.scope, record.id));
+  await s.registry.inventory(s.scope);
+  const next = await s.registry.revealLocal(s.scope, record.id);
+  s.state.set(namespace(s.scope), []);
+  assert.equal(next.current(), false);
+  await assert.rejects(s.registry.revealLocal(s.scope, record.id));
+});
+
+test('reveal rejects in-flight storage deletion, replacement and registry generation changes', async (t) => {
+  for (const mutation of ['delete', 'identity', 'clear', 'stale']) {
+    const s = setup(t);
+    const record = s.seed();
+    await s.registry.inventory(s.scope);
+    const original = s.context.secrets.get;
+    let reads = 0;
+    s.context.secrets.get = async (key) => {
+      const value = await original(key);
+      if (++reads === 1) {
+        if (mutation === 'delete') {
+          s.secrets.delete(key);
+          s.emit(key);
+        }
+        if (mutation === 'identity')
+          s.secrets.set(
+            key,
+            JSON.stringify({ ...record, accessKey: applicationKey.accessKey }),
+          );
+        if (mutation === 'clear') s.registry.clear();
+        if (mutation === 'stale') s.stale();
+      }
+      return value;
+    };
+    await assert.rejects(s.registry.revealLocal(s.scope, record.id));
+  }
+});
+
+test('explicit key can be reused across model selections and dedicated lookup never substitutes login key', async (t) => {
+  const s = setup(t);
+  s.seed(1);
+  const application = s.seed(2, {
+    ...applicationKey,
+    metadata: s.metadata(applicationKey.accessKey),
+  });
+  await s.registry.inventory(s.scope);
+  const dedicated = await s.registry.keyCredential(s.scope, application.id);
+  assert.equal(dedicated.secretKey(), applicationKey.secretKey);
+  assert.notEqual(dedicated.secretKey(), login.secretKey);
+  const first = await s.registry.configure(model, s.scope, application.id);
+  assert.equal(first.llmAccess.id, application.id);
+  provider.listServerlessAvailability = async () => [
+    { id: model.id },
+    { id: 'second-model' },
+  ];
+  const second = await s.registry.configure(
+    { ...model, id: 'second-model' },
+    s.scope,
+    application.id,
+  );
+  assert.equal(second.llmAccess.id, application.id);
+  assert.equal(dedicated.current(), true);
+  assert.equal(s.count('pick'), 0);
+  assert.equal(s.count('create'), 0);
+  assert.equal(await s.registry.configure(model, s.scope, 'forged'), undefined);
+});
+
+test('local reveal handle invalidates on revision event, scope loss, and refreshed/deleted IAM membership', async (t) => {
+  const s = setup(t);
+  const record = s.seed();
+  await s.registry.inventory(s.scope);
+  const handle = await s.registry.revealLocal(s.scope, record.id);
+  s.emit(namespace(s.scope) + '.revision');
+  assert.equal(handle.current(), false);
+  await assert.rejects(s.registry.revealLocal(s.scope, record.id));
+  await s.registry.inventory(s.scope);
+  const refreshed = await s.registry.revealLocal(s.scope, record.id);
+  iam.listAccessAPIKeys = async () => [];
+  await s.registry.inventory(s.scope);
+  assert.equal(refreshed.current(), false);
+  await assert.rejects(s.registry.revealLocal(s.scope, record.id));
+});

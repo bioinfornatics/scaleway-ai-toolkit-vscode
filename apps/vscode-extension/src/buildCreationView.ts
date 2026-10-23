@@ -23,6 +23,8 @@ interface BuildView {
   ai?: string;
   models?: { index: string; label: string }[];
   modelIndex?: string;
+  keys?: { index: string; label: string }[];
+  keyIndex?: string;
   serviceKind?: 'serverless' | 'dedicated';
   modelStatus?: string;
   title: string;
@@ -213,15 +215,19 @@ export function buildCreationView(v: BuildView): string {
       : '';
   const ready =
     !!row &&
-    (!v.agentForm || v.templateMode || (!!v.modelIndex && !!v.destination));
+    (!v.agentForm ||
+      v.templateMode ||
+      (!!v.modelIndex &&
+        !!v.destination &&
+        (v.keys === undefined || !!v.keyIndex)));
   const create = row
     ? '<button type="button" data-action="create" data-index="' +
       row.index +
       '"' +
       (v.agentForm
-        ? ` data-agent-create="true" data-ready="${ready}" data-destination-ready="${v.templateMode || !!v.destination}"`
+        ? ` data-agent-create="true" data-ready="${ready}" data-key-ready="${v.keys === undefined || !!v.keyIndex}" data-destination-ready="${v.templateMode || !!v.destination}"`
         : '') +
-      (!ready || (v.agentForm && !v.agentName) ? ' disabled' : '') +
+      (!ready || (v.agentForm && !validAgentName) ? ' disabled' : '') +
       '>' +
       (v.templateMode ? 'Créer le template' : `Créer un ${noun}`) +
       '</button>'
@@ -375,7 +381,34 @@ export function buildCreationView(v: BuildView): string {
               '</option>',
           )
           .join('') +
-        '</select></label></div><p class="scope-note">' +
+        '</select></label>' +
+        (!v.templateMode && v.keys !== undefined
+          ? '<label>Clé API<select data-action="key"' +
+            (!v.trusted ? ' disabled' : '') +
+            '><option value="">' +
+            (v.keys.length
+              ? 'Sélectionner une clé API locale'
+              : 'Aucune clé locale valide') +
+            '</option>' +
+            v.keys
+              .map(
+                (key) =>
+                  '<option value="' +
+                  key.index +
+                  '"' +
+                  (key.index === v.keyIndex ? ' selected' : '') +
+                  '>' +
+                  escapeHtml(key.label) +
+                  '</option>',
+              )
+              .join('') +
+            '</select></label>'
+          : '') +
+        '</div>' +
+        (!v.templateMode && v.keys !== undefined
+          ? button('addKey', 'Ajouter / importer une clé API…')
+          : '') +
+        '<p class="scope-note">' +
         escapeHtml(v.modelStatus ?? '') +
         '</p>' +
         (v.templateMode

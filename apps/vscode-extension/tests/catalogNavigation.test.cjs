@@ -67,6 +67,9 @@ function setup() {
     async configureAPIKey(id) {
       this.keyActions.push({ type: 'import', id });
     }
+    async revealAPIKey(id) {
+      this.keyActions.push({ type: 'reveal', id });
+    }
     async useAPIKey(id) {
       this.keyActions.push({ type: 'use', id });
       return this.keyResult;
@@ -622,6 +625,7 @@ test('model overview renderer dispatches current actions and ignores removed pre
     { dataset: { action: 'add-key' } },
     { dataset: { action: 'import-key', id: 'b'.repeat(32) } },
     { dataset: { action: 'use-key', id: 'c'.repeat(32) } },
+    { dataset: { action: 'reveal-key', id: 'd'.repeat(32) } },
     { dataset: { action: 'open', kind: 'dedicated', id: 'dep' } },
   ];
   for (const button of buttons)
@@ -644,6 +648,7 @@ test('model overview renderer dispatches current actions and ignores removed pre
       { type: 'add-key', token: 'a'.repeat(48) },
       { type: 'import-key', id: 'b'.repeat(32), token: 'a'.repeat(48) },
       { type: 'use-key', id: 'c'.repeat(32), token: 'a'.repeat(48) },
+      { type: 'reveal-key', id: 'd'.repeat(32), token: 'a'.repeat(48) },
       { type: 'open', kind: 'dedicated', id: 'dep', token: 'a'.repeat(48) },
     ],
   );
@@ -665,8 +670,39 @@ test('agent model source uses public Serverless catalogue and real dedicated dep
   ]);
   assert.ok(!f.modelSource.current().rows.some((r) => r.id === serverless.id));
   await f.modelSource.refresh();
-  assert.deepEqual(f.refreshCalls, ['catalog', 'dedicated']);
+  assert.deepEqual(f.refreshCalls, ['catalog', 'dedicated', 'keys']);
   f.connection.connected = false;
   assert.deepEqual(f.modelSource.current().rows, []);
   assert.equal(f.modelSource.current().projectId, undefined);
+});
+
+test('reveal IPC requires current token, connected trusted scope and local inventory membership; expired allowed', async () => {
+  const f = setup(),
+    key = inventoryKey();
+  key.expiresAt = 1;
+  f.connection.apiKeys = [key];
+  await f.commands.get('scalewayAI.openAPIKeys')();
+  const panel = f.panelRecords[0];
+  const oldToken = panel.token();
+  for (const value of [
+    { type: 'reveal-key', id: key.id, token: oldToken, secretKey: 'forbidden' },
+    { type: 'reveal-key', id: 'f'.repeat(32), token: oldToken },
+    { type: 'reveal-key', id: key.id, token: 'f'.repeat(48) },
+  ])
+    await panel.send(value);
+  assert.deepEqual(f.connection.keyActions, []);
+  await panel.send({ type: 'reveal-key', id: key.id, token: oldToken });
+  assert.deepEqual(f.connection.keyActions, [{ type: 'reveal', id: key.id }]);
+  await panel.send({ type: 'reveal-key', id: key.id, token: oldToken });
+  assert.equal(f.connection.keyActions.length, 1);
+  key.secretAvailable = false;
+  f.connection.refresh();
+  await panel.send({ type: 'reveal-key', id: key.id, token: panel.token() });
+  assert.equal(f.connection.keyActions.length, 1);
+  key.secretAvailable = true;
+  f.connection.refresh();
+  f.api.workspace.isTrusted = false;
+  await panel.send({ type: 'reveal-key', id: key.id, token: panel.token() });
+  assert.equal(f.connection.keyActions.length, 1);
+  panel.dispose();
 });

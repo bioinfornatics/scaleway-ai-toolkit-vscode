@@ -99,6 +99,7 @@ export class LlmAccessRegistry {
   private generation = 0;
   private proofEpoch = 0;
   private inventoryEpoch = 0;
+  private localInventory = new Map<string, StoredAccess>();
   // Only active/in-flight slots are watched; refresh bounds these to 32 bindings.
   private secretVersions = new Map<string, object>();
   private watch(id: string): object {
@@ -119,6 +120,7 @@ export class LlmAccessRegistry {
         // SecretStorage is the cross-window invalidation bus. Memento snapshots
         // can lag; replacement must invalidate peer proofs before index writes.
         this.proofEpoch++;
+        this.localInventory.clear();
         if (key === `${this.scopeKey}.revision`) {
           this.verified.clear();
           this.secretVersions.clear();
@@ -131,6 +133,7 @@ export class LlmAccessRegistry {
       // Configure publishes only after its new slot has been stored/read back.
       const id = key.slice(prefix.length);
       this.inventoryEpoch++;
+      this.localInventory.clear();
       this.secretVersions.delete(id);
       this.verified.delete(id);
     });
@@ -143,6 +146,7 @@ export class LlmAccessRegistry {
   }
   clear(): void {
     this.generation++;
+    this.localInventory.clear();
     this.verified.clear();
     this.secretVersions.clear();
     this.scopeKey = '';
@@ -203,6 +207,7 @@ export class LlmAccessRegistry {
       this.proofEpoch === epoch &&
       this.inventoryEpoch === inventoryEpoch;
     if (!current()) return [];
+    this.localInventory.clear();
     const keys = await listAccessAPIKeys(
       s.project.organizationId,
       s.controlCredential(),
@@ -218,6 +223,14 @@ export class LlmAccessRegistry {
       if (record?.id === id && this.secretVersions.get(id) === revision)
         if (!local.has(record.accessKey)) local.set(record.accessKey, record);
     }
+    if (this.scopeKey !== namespace(s)) this.clear();
+    this.scopeKey = namespace(s);
+    this.localInventory = new Map(
+      keys.flatMap((metadata) => {
+        const record = local.get(metadata.accessKey);
+        return record ? [[record.id, { ...record }] as const] : [];
+      }),
+    );
     return keys.map((metadata) => ({
       id:
         local.get(metadata.accessKey)?.id ??
@@ -241,6 +254,80 @@ export class LlmAccessRegistry {
       }),
     );
   }
+  /** Exact local lookup after explicit native reveal. No HTTP; expiry is not a read gate. */
+  async revealLocal(
+    s: LlmAccessScope,
+    id: string,
+  ): Promise<{
+    current(): boolean;
+    credentials(): { accessKey: string; secretKey: string };
+  }> {
+    const expected = this.localInventory.get(id);
+    const generation = this.generation;
+    const proofEpoch = this.proofEpoch;
+    const inventoryEpoch = this.inventoryEpoch;
+    if (!opaque(id) || !expected || this.scopeKey !== namespace(s))
+      throw new IAMAccessError('invalid_request');
+    const revision = this.watch(id);
+    const current = () =>
+      this.scopeKey === namespace(s) &&
+      opaque(id) &&
+      !this.disposed &&
+      s.current() &&
+      this.generation === generation &&
+      this.proofEpoch === proofEpoch &&
+      this.inventoryEpoch === inventoryEpoch &&
+      this.secretVersions.get(id) === revision &&
+      this.localInventory.get(id) === expected &&
+      !!expected &&
+      this.ids(s).includes(id);
+    if (!current()) throw new IAMAccessError('invalid_request');
+    const raw = await this.context.secrets.get(slot(id));
+    const record = parse(raw, s);
+    if (
+      !current() ||
+      !record ||
+      record.id !== id ||
+      record.accessKey !== expected?.accessKey ||
+      record.secretKey !== expected?.secretKey ||
+      JSON.stringify(record.metadata?.bearer) !==
+        JSON.stringify(expected?.metadata?.bearer) ||
+      raw !== (await this.context.secrets.get(slot(id))) ||
+      !current()
+    )
+      throw new IAMAccessError('invalid_request');
+    return {
+      current,
+      credentials: () => {
+        if (!current()) throw new IAMAccessError('invalid_request');
+        return { accessKey: record.accessKey, secretKey: record.secretKey };
+      },
+    };
+  }
+  /** Dedicated agents validate chosen IAM credentials, never substitute login. */
+  async keyCredential(
+    s: LlmAccessScope,
+    id: string,
+  ): Promise<{
+    current(): boolean;
+    secretKey(): string;
+  }> {
+    const local = await this.revealLocal(s, id);
+    const pair = local.credentials();
+    const expected = this.localInventory.get(id);
+    if (!expected) throw new IAMAccessError('invalid_request');
+    const metadata = await this.inspect(expected, s);
+    const current = () =>
+      local.current() && metadata.expiresAt > Date.now() + 30000;
+    if (!current()) throw new IAMAccessError('invalid_request');
+    return {
+      current,
+      secretKey: () => {
+        if (!current()) throw new IAMAccessError('expired');
+        return pair.secretKey;
+      },
+    };
+  }
   async configureKey(s: LlmAccessScope, id?: string): Promise<boolean> {
     if (id !== undefined && !opaque(id)) return false;
     return !!(await this.register(undefined, s, id));
@@ -254,7 +341,8 @@ export class LlmAccessRegistry {
       this.disposed ||
       this.busy ||
       !s.current() ||
-      model.kind !== 'serverless'
+      model.kind !== 'serverless' ||
+      (preferredKeyId !== undefined && !opaque(preferredKeyId))
     )
       return;
     const generation = this.generation,

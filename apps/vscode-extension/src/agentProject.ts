@@ -8,13 +8,16 @@ export interface AgentModelContext {
   projectId?: string;
   status: string;
   rows: ListedModel[];
+  apiKeys?: import('./llmAccessRegistry').ApiKeyResource[];
 }
 export interface AgentModelSource {
   current(): AgentModelContext;
   refresh(): Promise<void>;
+  addKey?(): Promise<void>;
   credentialScope?(
     projectId: string,
     model: ListedModel,
+    preferredKeyId?: string,
   ):
     | {
         current(): boolean;
@@ -66,13 +69,7 @@ export function agentModelLabel(model: ListedModel): string {
     safe +
     ' · ' +
     (model.kind === 'serverless' ? 'Serverless' : 'Dédié') +
-    (model.kind === 'serverless'
-      ? model.llmAccess
-        ? ` · ${model.llmAccess.bearerType === 'application' ? 'Application IAM' : 'Utilisateur IAM'} · clé sélectionnée`
-        : ' · clé API à choisir'
-      : model.status
-        ? ` · ${model.status}`
-        : '')
+    (model.kind === 'dedicated' && model.status ? ' · ' + model.status : '')
   );
 }
 /** Compose two inspectable bases; collisions must be explicitly reconciled. */

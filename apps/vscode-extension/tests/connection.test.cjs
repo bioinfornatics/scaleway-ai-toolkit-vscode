@@ -2826,3 +2826,135 @@ test('IAM inventory error state distinguishes fixed reasons and never renders pr
     s.restore();
   }
 });
+
+test('explicit agent key reused for two models and dedicated; no picker fallback for forged id', async () => {
+  const s = setup();
+  const iam = require('../dist/llmAccessIam');
+  const old = iam.listAccessAPIKeys;
+  const list = provider.listServerless;
+  const handles = [];
+  try {
+    await s.connection.ensureProject();
+    iam.listAccessAPIKeys = async () => [
+      {
+        accessKey,
+        organizationId: org,
+        bearer: { type: 'user', id: org },
+        description: 'Shared key',
+        expiresAt: Date.now() + 3600000,
+      },
+    ];
+    provider.listServerless = async () => [
+      { id: 'public-model', label: 'First', kind: 'serverless' },
+      {
+        id: 'fixture-chat-never-live-tested',
+        label: 'Second',
+        kind: 'serverless',
+      },
+    ];
+    await s.connection.loadPublicCatalog();
+    assert.equal(await s.connection.configureAPIKey(), true);
+    const key = s.connection.apiKeys[0];
+    s.vscode.window.showQuickPick = async () =>
+      assert.fail('explicit key may not fall back to picker');
+    for (const row of s.connection.serverless) {
+      const handle = await s.connection.modelCredentialScope(id, row, key.id);
+      handles.push(handle);
+      assert.equal(handle.secretKey(), secretKey);
+      assert.equal(handle.current(), true);
+    }
+    assert.equal(
+      handles[0].current(),
+      true,
+      'same key identity survives another model',
+    );
+    const dedicated = await s.connection.modelCredentialScope(
+      id,
+      { id: 'dedicated', kind: 'dedicated', label: 'Dedicated' },
+      key.id,
+    );
+    handles.push(dedicated);
+    assert.equal(dedicated.secretKey(), secretKey);
+    await assert.rejects(
+      s.connection.modelCredentialScope(
+        id,
+        s.connection.serverless[0],
+        'f'.repeat(32),
+      ),
+    );
+    assert.equal(s.planCalls.length, 1);
+  } finally {
+    handles.forEach((handle) => {
+      handle.dispose();
+    });
+    iam.listAccessAPIKeys = old;
+    provider.listServerless = list;
+    s.connection.dispose();
+    s.restore();
+  }
+});
+
+test('native reveal reads only local credentials, expired allowed; consent/trust/foreign/deleted gates and masked errors', async () => {
+  const s = setup();
+  const iam = require('../dist/llmAccessIam');
+  const old = iam.listAccessAPIKeys;
+  const dialogs = [];
+  try {
+    await s.connection.ensureProject();
+    iam.listAccessAPIKeys = async () => [
+      {
+        accessKey,
+        organizationId: org,
+        bearer: { type: 'user', id: org },
+        description: 'Local key',
+        expiresAt: Date.now() + 3600000,
+      },
+    ];
+    assert.equal(await s.connection.configureAPIKey(), true);
+    const key = s.connection.apiKeys[0];
+    s.connection.apiKeys[0].expiresAt = 1;
+    const noHttp = async () => assert.fail('no HTTP for native reveal');
+    iam.listAccessAPIKeys = noHttp;
+    s.accessIam.inspectAccessAPIKey = noHttp;
+    s.vscode.window.showInformationMessage = async (...args) => {
+      dialogs.push(args);
+    };
+    s.vscode.window.showWarningMessage = async (_message, _options, action) =>
+      action;
+    await s.connection.revealAPIKey(key.id);
+    assert.equal(dialogs.length, 1);
+    assert.equal(dialogs[0][1].modal, true);
+    assert.ok(dialogs[0][1].detail.includes(accessKey));
+    assert.ok(dialogs[0][1].detail.includes(secretKey));
+    s.vscode.window.showWarningMessage = async () => undefined;
+    await s.connection.revealAPIKey(key.id);
+    assert.equal(dialogs.length, 1);
+    await s.connection.revealAPIKey('f'.repeat(32));
+    s.vscode.workspace.isTrusted = false;
+    await s.connection.revealAPIKey(key.id);
+    assert.equal(dialogs.length, 1);
+    s.vscode.workspace.isTrusted = true;
+    s.vscode.window.showWarningMessage = async (_message, _options, action) => {
+      if (action) s.connection.apiKeys = [];
+      return action;
+    };
+    await s.connection.revealAPIKey(key.id);
+    assert.equal(dialogs.length, 1);
+    s.connection.apiKeys = [key];
+    s.vscode.window.showWarningMessage = async (_message, _options, action) =>
+      action;
+    s.vscode.window.showInformationMessage = async () => {
+      throw new Error(secretKey);
+    };
+    await s.connection.revealAPIKey(key.id);
+    assert.ok(!s.warnings.some((warning) => warning.includes(secretKey)));
+    assert.ok(!s.errors.some((error) => error.includes(secretKey)));
+    await s.connection.disconnect();
+    await s.connection.revealAPIKey(key.id);
+    assert.equal(dialogs.length, 1);
+  } finally {
+    iam.listAccessAPIKeys = old;
+    s.connection.dispose();
+    s.restore();
+  }
+});
