@@ -1,0 +1,43 @@
+{
+  "record_id": "dedicated-offline-validation-2026-10-20",
+  "verified_at_utc": "2026-10-20T19:15:37.963638+00:00",
+  "method": "Offline standard-library source hashes, deterministic extraction, JSON parsing, local schema references and markdown links; NOT provider conformance",
+  "task": "scaleway_ai_vscode-jgh.1.3",
+  "source_hashes_checked": 55,
+  "source_hashes": "passed",
+  "deterministic_regeneration": "passed",
+  "json_parse": "passed",
+  "local_schema_references": "passed",
+  "local_markdown_links": "passed",
+  "derived_artifacts": [
+    {
+      "file": "specifications/references/schemas/dedicated-extract.py",
+      "sha256": "39556e6aebc232444d7cc613e623de40facf6192a28a16610dc0c2abcfb31015"
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-response-shapes.schema.json",
+      "sha256": "f65c466d07092c1415605a6dad110e5d49920023b4365a61925e23f7ff663903"
+    },
+    {
+      "file": "specifications/references/schemas/projects-response-shapes.schema.json",
+      "sha256": "3d90ae730c7856dc1747f5043dd935357724d125d195df176aaa9180a67637cf"
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-read-operations.source-derived.json",
+      "sha256": "6cc6de5215a8192b390551ad444065300ec42f90db50d0f3d723d930d2cf7522"
+    }
+  ],
+  "commands": [
+    "python3 specifications/references/schemas/dedicated-validate.py",
+    "python3 specifications/references/schemas/dedicated-extract.py"
+  ],
+  "not_run": [
+    "authenticated discovery",
+    "inference",
+    "provisioning",
+    "IAM tests",
+    "quota or stock observations",
+    "private reachability",
+    "package installs or builds"
+  ]
+}

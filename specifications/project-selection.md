@@ -19,7 +19,7 @@ Beads .3.24 owns full selector/creation scope and production prerequisites; .3.2
 
 The previously unavailable creation action is now wired to a fixed-origin,
 fixed-path, single POST transport after final native confirmation. Source:
-evidence/schemas/projects-go-account_sdk.go CreateProjectRequest/CreateProject;
+specifications/references/schemas/projects-go-account_sdk.go CreateProjectRequest/CreateProject;
 body name/organization_id/description. User-token control header reuses the pinned
 SDK JWT mapping. No default provider organization/name, retries, redirects or IAM
 escalation. Unknown outcomes preserve the previous project. Trust/session invalidation

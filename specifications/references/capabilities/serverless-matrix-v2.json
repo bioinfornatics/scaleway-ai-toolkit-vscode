@@ -1,0 +1,620 @@
+{
+  "version": "2.0.0",
+  "date": "2026-10-20",
+  "endpoint_pattern": "https://api.scaleway.ai/{project_id}/v1/chat/completions",
+  "models": [
+    {
+      "id": "llama-3.3-70b-instruct",
+      "discovery": "observed",
+      "features": {
+        "generation": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "stream": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "final_usage": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "tool_proposal": {
+          "status": "unknown",
+          "method": "not_run"
+        }
+      },
+      "quota_candidates": [
+        {
+          "quota_name": "gapi_llama_3_3_70b_instruct_rpm",
+          "limit": 600,
+          "unit": "Requests"
+        },
+        {
+          "quota_name": "gapi_llama_3_3_70b_instruct_tpm",
+          "limit": 400000,
+          "unit": "Tokens"
+        }
+      ],
+      "quota_mapping_verified": false,
+      "tool_execution": "not_run"
+    },
+    {
+      "id": "bge-multilingual-gemma2",
+      "discovery": "observed",
+      "features": {
+        "generation": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "stream": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "final_usage": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "tool_proposal": {
+          "status": "unknown",
+          "method": "not_run"
+        }
+      },
+      "quota_candidates": [
+        {
+          "quota_name": "gapi_bge_multilingual_gemma2_rpm",
+          "limit": 600,
+          "unit": "Requests"
+        },
+        {
+          "quota_name": "gapi_bge_multilingual_gemma2_tpm",
+          "limit": 400000,
+          "unit": "Tokens"
+        }
+      ],
+      "quota_mapping_verified": false,
+      "tool_execution": "not_run"
+    },
+    {
+      "id": "qwen3-235b-a22b-instruct-2507",
+      "discovery": "observed",
+      "features": {
+        "generation": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "stream": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "final_usage": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "tool_proposal": {
+          "status": "unknown",
+          "method": "not_run"
+        }
+      },
+      "quota_candidates": [
+        {
+          "quota_name": "gapi_qwen3_235b_a22b_instruct_2507_rpm",
+          "limit": 600,
+          "unit": "Requests"
+        },
+        {
+          "quota_name": "gapi_qwen3_235b_a22b_instruct_2507_tpm",
+          "limit": 1000000,
+          "unit": "Tokens"
+        }
+      ],
+      "quota_mapping_verified": false,
+      "tool_execution": "not_run"
+    },
+    {
+      "id": "mistral-small-3.2-24b-instruct-2506",
+      "discovery": "observed",
+      "features": {
+        "generation": {
+          "status": "supported",
+          "method": "live_Strands_smoke"
+        },
+        "stream": {
+          "status": "supported",
+          "method": "live_Strands_smoke"
+        },
+        "final_usage": {
+          "status": "supported",
+          "method": "live_Strands_smoke"
+        },
+        "tool_proposal": {
+          "status": "supported",
+          "method": "live_Strands_smoke"
+        }
+      },
+      "quota_candidates": [
+        {
+          "quota_name": "gapi_mistral_small_3_2_24b_instruct_2506_rpm",
+          "limit": 600,
+          "unit": "Requests"
+        },
+        {
+          "quota_name": "gapi_mistral_small_3_2_24b_instruct_2506_tpm",
+          "limit": 2000000,
+          "unit": "Tokens"
+        }
+      ],
+      "quota_mapping_verified": false,
+      "tool_execution": "not_run"
+    },
+    {
+      "id": "gpt-oss-120b",
+      "discovery": "observed",
+      "features": {
+        "generation": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "stream": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "final_usage": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "tool_proposal": {
+          "status": "unknown",
+          "method": "not_run"
+        }
+      },
+      "quota_candidates": [
+        {
+          "quota_name": "gapi_gpt_oss_120b_rpm",
+          "limit": 600,
+          "unit": "Requests"
+        },
+        {
+          "quota_name": "gapi_gpt_oss_120b_tpm",
+          "limit": 1000000,
+          "unit": "Tokens"
+        }
+      ],
+      "quota_mapping_verified": false,
+      "tool_execution": "not_run"
+    },
+    {
+      "id": "whisper-large-v3",
+      "discovery": "observed",
+      "features": {
+        "generation": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "stream": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "final_usage": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "tool_proposal": {
+          "status": "unknown",
+          "method": "not_run"
+        }
+      },
+      "quota_candidates": [
+        {
+          "quota_name": "gapi_whisper_large_v3_rpm",
+          "limit": 600,
+          "unit": "Requests"
+        },
+        {
+          "quota_name": "gapi_whisper_large_v3_spm",
+          "limit": 3600,
+          "unit": "Seconds"
+        }
+      ],
+      "quota_mapping_verified": false,
+      "tool_execution": "not_run"
+    },
+    {
+      "id": "qwen3-embedding-8b",
+      "discovery": "observed",
+      "features": {
+        "generation": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "stream": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "final_usage": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "tool_proposal": {
+          "status": "unknown",
+          "method": "not_run"
+        }
+      },
+      "quota_candidates": [
+        {
+          "quota_name": "gapi_qwen3_embedding_8b_rpm",
+          "limit": 600,
+          "unit": "Requests"
+        },
+        {
+          "quota_name": "gapi_qwen3_embedding_8b_tpm",
+          "limit": 1000000,
+          "unit": "Tokens"
+        }
+      ],
+      "quota_mapping_verified": false,
+      "tool_execution": "not_run"
+    },
+    {
+      "id": "qwen3.5-397b-a17b",
+      "discovery": "observed",
+      "features": {
+        "generation": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "stream": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "final_usage": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "tool_proposal": {
+          "status": "unknown",
+          "method": "not_run"
+        }
+      },
+      "quota_candidates": [
+        {
+          "quota_name": "gapi_qwen3_5_397b_a17b_rpm",
+          "limit": 600,
+          "unit": "Requests"
+        },
+        {
+          "quota_name": "gapi_qwen3_5_397b_a17b_tpm",
+          "limit": 2000000,
+          "unit": "Tokens"
+        }
+      ],
+      "quota_mapping_verified": false,
+      "tool_execution": "not_run"
+    },
+    {
+      "id": "gemma-4-26b-a4b-it",
+      "discovery": "observed",
+      "features": {
+        "generation": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "stream": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "final_usage": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "tool_proposal": {
+          "status": "unknown",
+          "method": "not_run"
+        }
+      },
+      "quota_candidates": [
+        {
+          "quota_name": "gapi_gemma_4_26b_a4b_it_rpm",
+          "limit": 600,
+          "unit": "Requests"
+        },
+        {
+          "quota_name": "gapi_gemma_4_26b_a4b_it_tpm",
+          "limit": 2000000,
+          "unit": "Tokens"
+        }
+      ],
+      "quota_mapping_verified": false,
+      "tool_execution": "not_run"
+    },
+    {
+      "id": "qwen3.6-35b-a3b",
+      "discovery": "observed",
+      "features": {
+        "generation": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "stream": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "final_usage": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "tool_proposal": {
+          "status": "unknown",
+          "method": "not_run"
+        }
+      },
+      "quota_candidates": [
+        {
+          "quota_name": "gapi_qwen3_6_35b_a3b_rpm",
+          "limit": 600,
+          "unit": "Requests"
+        },
+        {
+          "quota_name": "gapi_qwen3_6_35b_a3b_tpm",
+          "limit": 2000000,
+          "unit": "Tokens"
+        }
+      ],
+      "quota_mapping_verified": false,
+      "tool_execution": "not_run"
+    },
+    {
+      "id": "mistral-medium-3.5-128b",
+      "discovery": "observed",
+      "features": {
+        "generation": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "stream": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "final_usage": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "tool_proposal": {
+          "status": "unknown",
+          "method": "not_run"
+        }
+      },
+      "quota_candidates": [
+        {
+          "quota_name": "gapi_mistral_medium_3_5_128b_rpm",
+          "limit": 600,
+          "unit": "Requests"
+        },
+        {
+          "quota_name": "gapi_mistral_medium_3_5_128b_tpm",
+          "limit": 1000000,
+          "unit": "Tokens"
+        }
+      ],
+      "quota_mapping_verified": false,
+      "tool_execution": "not_run"
+    },
+    {
+      "id": "glm-5.2",
+      "discovery": "observed",
+      "features": {
+        "generation": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "stream": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "final_usage": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "tool_proposal": {
+          "status": "unknown",
+          "method": "not_run"
+        }
+      },
+      "quota_candidates": [
+        {
+          "quota_name": "gapi_glm_5_2_rpm",
+          "limit": 600,
+          "unit": "Requests"
+        },
+        {
+          "quota_name": "gapi_glm_5_2_tpm",
+          "limit": 1000000,
+          "unit": "Tokens"
+        }
+      ],
+      "quota_mapping_verified": false,
+      "tool_execution": "not_run"
+    },
+    {
+      "id": "glm-5.3",
+      "discovery": "observed",
+      "features": {
+        "generation": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "stream": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "final_usage": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "tool_proposal": {
+          "status": "unknown",
+          "method": "not_run"
+        }
+      },
+      "quota_candidates": [
+        {
+          "quota_name": "gapi_glm_5_3_rpm",
+          "limit": 600,
+          "unit": "Requests"
+        },
+        {
+          "quota_name": "gapi_glm_5_3_tpm",
+          "limit": 2000000,
+          "unit": "Tokens"
+        }
+      ],
+      "quota_mapping_verified": false,
+      "tool_execution": "not_run"
+    },
+    {
+      "id": "deepseek-v4-flash-0731",
+      "discovery": "observed",
+      "features": {
+        "generation": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "stream": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "final_usage": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "tool_proposal": {
+          "status": "unknown",
+          "method": "not_run"
+        }
+      },
+      "quota_candidates": [],
+      "quota_mapping_verified": false,
+      "tool_execution": "not_run"
+    },
+    {
+      "id": "qwen3.8-27b",
+      "discovery": "observed",
+      "features": {
+        "generation": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "stream": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "final_usage": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "tool_proposal": {
+          "status": "unknown",
+          "method": "not_run"
+        }
+      },
+      "quota_candidates": [
+        {
+          "quota_name": "gapi_qwen3_8_27b_rpm",
+          "limit": 600,
+          "unit": "Requests"
+        },
+        {
+          "quota_name": "gapi_qwen3_8_27b_tpm",
+          "limit": 5000000,
+          "unit": "Tokens"
+        }
+      ],
+      "quota_mapping_verified": false,
+      "tool_execution": "not_run"
+    },
+    {
+      "id": "lightonocr-3-0.8b",
+      "discovery": "observed",
+      "features": {
+        "generation": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "stream": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "final_usage": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "tool_proposal": {
+          "status": "unknown",
+          "method": "not_run"
+        }
+      },
+      "quota_candidates": [
+        {
+          "quota_name": "gapi_lightonocr_3_0_8b_rpm",
+          "limit": 600,
+          "unit": "Requests"
+        },
+        {
+          "quota_name": "gapi_lightonocr_3_0_8b_tpm",
+          "limit": 1000000,
+          "unit": "Tokens"
+        }
+      ],
+      "quota_mapping_verified": false,
+      "tool_execution": "not_run"
+    },
+    {
+      "id": "deepseek-v4.1-flash",
+      "discovery": "observed",
+      "features": {
+        "generation": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "stream": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "final_usage": {
+          "status": "unknown",
+          "method": "not_run"
+        },
+        "tool_proposal": {
+          "status": "unknown",
+          "method": "not_run"
+        }
+      },
+      "quota_candidates": [
+        {
+          "quota_name": "gapi_deepseek_v4_1_flash_rpm",
+          "limit": 600,
+          "unit": "Requests"
+        },
+        {
+          "quota_name": "gapi_deepseek_v4_1_flash_tpm",
+          "limit": 5000000,
+          "unit": "Tokens"
+        }
+      ],
+      "quota_mapping_verified": false,
+      "tool_execution": "not_run"
+    }
+  ],
+  "provenance": [
+    "specifications/references/validation/provider-live-discovery-v1.json",
+    "specifications/references/validation/strands-live-smoke-v1.json"
+  ],
+  "invalidation": [
+    "credential/org/project",
+    "endpoint/model serving revision",
+    "IAM/quota/pricing",
+    "SDK/tokenizer/schema revision",
+    "unexpected responses"
+  ],
+  "limitations": "v1 remains historical documentation; v2 is bounded observed evidence, not blanket production/model compatibility."
+}

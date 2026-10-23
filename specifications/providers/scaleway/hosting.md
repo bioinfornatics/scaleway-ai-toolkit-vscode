@@ -11,18 +11,17 @@ Current maintainer request authorizes documentation and local tests (streaming,
 duration, concurrency, authentication, sessions), commits when necessary, **no push**.
 No provisioning, credential access, inference or new spend was authorized by that
 first slice. The later request accepts doing the spike and local commits, no push;
-[the executable transport spike and cloud envelope](../../../tooling/hosting-spike/README.md)
-now exist. Exact target/budget/credentials and reviewed hosted image remain missing,
+the transport spike and cloud envelope were assessed historically. Their executable tooling has since been retired. Exact target/budget/credentials and reviewed hosted image remain missing,
 so no cloud write or live hosting test has executed.
 
 Ten public Scaleway pages are pinned to docs-content commit
 **d3f08c7b3d7b60a982572ca6ce5e18b91b1ce811** in
-[the manifest](../../../evidence/documentation/hosting-sources-v1.json), with
+[the manifest](../../references/documentation/hosting-sources-v1.json), with
 retrieval timestamps, source/public URLs and SHA256. Page validation dates differ
 from retrieval dates; recheck freshness before deployment. Public snapshots are
 unchanged; placeholder secrets in them are upstream examples, not account secrets.
 
-[Local evidence](../../../evidence/validation/hosting-local-v1.json) records the
+[Local evidence](../../../specifications/references/validation/hosting-local-v1.json) records the
 Python version/platform, input hashes, command and results. Documentation proves
 what sources state; loopback tests prove the **synthetic probe only**, neither
 Scaleway ingress nor Strands/runtime-http/runtime-events implementation.
@@ -66,21 +65,7 @@ Forwarding headers do not mint identity/authority.
 
 ## Reproducible checks
 
-From repository root, no install/credentials required:
-
-    python3 -m unittest discover -s tests/hosting -v
-    python3 tooling/validate_hosting.py
-    python3 tooling/validate_hosting.py --record
-
-The last command explicitly refreshes sanitized evidence. The test-only probe
-starts on OS-assigned 127.0.0.1 ports through its context manager. No public server,
-provider client, agent/tools, telemetry, process bootstrap or image implemented.
-Routes are /probe/* with synthetic event: probe, deliberately not runtime v1.
-The seeded fake store shares a Python object between servers, not durable or
-cross-process state. Scaled monotonic deadlines/heartbeats do not test actual
-15-minute/60-minute boundaries. Cleanup joins handlers and closes listeners.
-The stdlib thread-per-request server is non-hardened; semaphore bounds active
-**streams**, not all connections/slow clients or infrastructure DoS.
+The historical synthetic probe and its validators have been retired from the active tree. The archived reports below record the old candidate, not reproducible checks of current source. Current offline runtime checks are documented in [the runtime README](../../../runtimes/strands-python/README.md); they do not certify hosting.
 
 ## Conditional decision and next gate
 

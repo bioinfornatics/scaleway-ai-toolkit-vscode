@@ -21,7 +21,7 @@ Create agent = portable project/spec. Run = local wrapper. Deploy = host that ap
 ## Verification and remaining decisions
 Verify selected-model tool calls, streamed arguments/results, structured output and parameters; cumulative/missing usage, errors/retries/cancellation; pre-effect deny/revoke/step/token/concurrency checks; no unintended providers/network telemetry; redacted origin/version model/tool/error/partial events; SDK/license/Python/dependency footprint; independently runnable exports/container and external durable state where required. Fixture tests cannot prove live provider availability.
 
-If required contracts fail, file evidence/blocker for stakeholder review; do not silently switch SDK. SDK version, control-plane SDK/REST adapter and complete event/spec contracts remain open in Beads.
+If required contracts fail, file specifications/references/blocker for stakeholder review; do not silently switch SDK. SDK version, control-plane SDK/REST adapter and complete event/spec contracts remain open in Beads.
 
 ## Output-validation decision refinement
 

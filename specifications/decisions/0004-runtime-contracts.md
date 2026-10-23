@@ -4,7 +4,15 @@ Date 2026-10-20. Owner: requesting stakeholder/maintainer; .1.5. Contract-first 
 on 2026-10-20 21:48 +02:00. Design baseline approval only, not production proof or
 new cloud-spending/provisioning authority.
 
-## Decision
+## État actuel — 2026-10-22
+
+Le mainteneur a supprimé les schémas externes et le suivi a retiré les
+validateurs hors ligne qui les consommaient. Les tests portent désormais sur
+les contrôles TypeScript et Python réellement implémentés, sans dépendance à
+`contracts/`. Les décisions ci-dessous restent un historique de conception,
+pas une description de modules livrés ni une preuve de conformité actuelle.
+
+## Decision historique
 
 - Four Draft7 closed JSON schemas v1.0.0 and shared synthetic conformance cases in
   contracts/. Opaque model target reused across basic model and advanced agent use.
@@ -58,7 +66,7 @@ Unknown usage/endpoints/capabilities preserve explicit unknown states.
 
 ## Evidence and acceptance boundary
 
-[Live discovery review](../../evidence/reviews/provider-acceptance-20261020.md):
+[Live discovery review](../references/reviews/provider-acceptance-20261020.md):
 three bounded actual SDK calls for one serverless Mistral model; no full Agent loop,
 private endpoint, native JSON or complete tools/security compatibility. Five actual
 SDK mocks exercise auth/redirect/no-retry/local cancel and unsupported option handling.

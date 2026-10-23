@@ -9,10 +9,11 @@
 __pycache__/
 *.py[cod]
 
-# Isolated contract validation tooling
+# Local dependencies
 node_modules/
-tooling/contract-validation/dist/
 
 # Built experimental extension and local install artifact
 apps/vscode-extension/dist/
 artifacts/*.vsix
+# Local validation reports are build artifacts, not source
+artifacts/validation/

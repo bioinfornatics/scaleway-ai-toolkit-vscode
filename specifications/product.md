@@ -77,4 +77,4 @@ labels as historical grouping; the dependency graph carries the approved order.
 Serverless remains usable without dedicated deployment. No writes/spend implied.
 
 Contracts: [ADR0004](decisions/0004-runtime-contracts.md),
-[runtime protocol](runtime-protocol.md), [schemas/examples](../contracts/README.md).
+[runtime protocol](runtime-protocol.md).

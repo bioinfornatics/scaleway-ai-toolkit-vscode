@@ -6,7 +6,7 @@ Tracking: scaleway_ai_vscode-jgh.1.9 records this decision; implementation and a
 
 ## Context
 
-[Strands release inspection](../../evidence/compatibility/strands-review-v1.md) found that BeforeModelCallEvent excludes structured_output calls. Native schema-constrained provider features are also endpoint/model dependent. A prompt-requested JSON output with local validation avoids requiring that special SDK path. This is a bounded output-repair workflow, not a replacement agent/model/tool orchestration loop.
+[Strands release inspection](../references/compatibility/strands-review-v1.md) found that BeforeModelCallEvent excludes structured_output calls. Native schema-constrained provider features are also endpoint/model dependent. A prompt-requested JSON output with local validation avoids requiring that special SDK path. This is a bounded output-repair workflow, not a replacement agent/model/tool orchestration loop.
 
 ## Accepted baseline
 

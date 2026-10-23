@@ -1,0 +1,503 @@
+{
+  "record_id": "dedicated-public-sources-2026-10-20",
+  "retrieved_at_utc": "2026-10-20T14:57:29.675420+00:00",
+  "method": "Unauthenticated public GitHub raw-source retrieval; exact bytes, no live provider requests. Generated SDK sources are NOT official OpenAPI.",
+  "owning_task": "scaleway_ai_vscode-jgh.1.3",
+  "files": [
+    {
+      "file": "specifications/references/schemas/projects-go-account_sdk.go",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-go/46763ab9fc78781eca1af94bd3a83750d3a2068f/api/account/v3/account_sdk.go",
+      "repository": "scaleway-sdk-go",
+      "commit": "46763ab9fc78781eca1af94bd3a83750d3a2068f",
+      "source_path": "api/account/v3/account_sdk.go",
+      "sha256": "10879b484e4a696e3a5c2e888e4cfd412a701c5c35ccf3115294a564fe6dbad5",
+      "bytes": 45460
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-go-inference_sdk.go",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-go/46763ab9fc78781eca1af94bd3a83750d3a2068f/api/inference/v1/inference_sdk.go",
+      "repository": "scaleway-sdk-go",
+      "commit": "46763ab9fc78781eca1af94bd3a83750d3a2068f",
+      "source_path": "api/inference/v1/inference_sdk.go",
+      "sha256": "4ab66570f2260c7f9b8ab39574d06fc8f1b703370e831475cd424323ff9f13ed",
+      "bytes": 36372
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-go-inference_utils.go",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-go/46763ab9fc78781eca1af94bd3a83750d3a2068f/api/inference/v1/inference_utils.go",
+      "repository": "scaleway-sdk-go",
+      "commit": "46763ab9fc78781eca1af94bd3a83750d3a2068f",
+      "source_path": "api/inference/v1/inference_utils.go",
+      "sha256": "068859d96a4a2834777e17272aac31310239557d55f6e3298b4e57b5e0680466",
+      "bytes": 2589
+    },
+    {
+      "file": "specifications/references/schemas/projects-js-packages_generated_account_README.md",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages_generated/account/README.md",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages_generated/account/README.md",
+      "sha256": "2f64fdbaf04462db18171fb395eef2656ceeb017dde3d44815a67a51b01bd64d",
+      "bytes": 3261
+    },
+    {
+      "file": "specifications/references/schemas/projects-js-packages_generated_account_package.json",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages_generated/account/package.json",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages_generated/account/package.json",
+      "sha256": "461e8695d84543e78ca835683264ec0762ea58be4f67944eb215dd65ba679705",
+      "bytes": 1214
+    },
+    {
+      "file": "specifications/references/schemas/projects-js-packages_generated_account_src_metadata.gen.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages_generated/account/src/metadata.gen.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages_generated/account/src/metadata.gen.ts",
+      "sha256": "f9e248078dd6c393553cf775948f1c0de2863ea6662fb63b2fb69e298f50aaa7",
+      "bytes": 289
+    },
+    {
+      "file": "specifications/references/schemas/projects-js-packages_generated_account_src_v3_api.gen.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages_generated/account/src/v3/api.gen.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages_generated/account/src/v3/api.gen.ts",
+      "sha256": "913cc7e607810ceccaa83501bd89a6cfd776b338f794f9c0c36eb8fe0765b31c",
+      "bytes": 12682
+    },
+    {
+      "file": "specifications/references/schemas/projects-js-packages_generated_account_src_v3_constants.gen.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages_generated/account/src/v3/constants.gen.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages_generated/account/src/v3/constants.gen.ts",
+      "sha256": "1109c1d0d8519068f9182914103749efb01230af2f6a87fb98f7ff1fdcf9d795",
+      "bytes": 3949
+    },
+    {
+      "file": "specifications/references/schemas/projects-js-packages_generated_account_src_v3_marshalling.gen.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages_generated/account/src/v3/marshalling.gen.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages_generated/account/src/v3/marshalling.gen.ts",
+      "sha256": "1b71cc8a6ab7bd6638861ac4a29dcfb70f3337c3489a4fc60b4ccf78d52e5dca",
+      "bytes": 14008
+    },
+    {
+      "file": "specifications/references/schemas/projects-js-packages_generated_account_src_v3_metadata.gen.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages_generated/account/src/v3/metadata.gen.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages_generated/account/src/v3/metadata.gen.ts",
+      "sha256": "ec56502fc94ec171057e362120596362d212ca216b8fbc4ac5663eb4cde27b0d",
+      "bytes": 1884
+    },
+    {
+      "file": "specifications/references/schemas/projects-js-packages_generated_account_src_v3_types.gen.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages_generated/account/src/v3/types.gen.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages_generated/account/src/v3/types.gen.ts",
+      "sha256": "dd0b4d24c5fe94bda408fd05179e7b0f9a81e666c9c8bb4386c416665c37cc2d",
+      "bytes": 10917
+    },
+    {
+      "file": "specifications/references/schemas/projects-js-packages_generated_account_src_v3_validation-rules.gen.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages_generated/account/src/v3/validation-rules.gen.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages_generated/account/src/v3/validation-rules.gen.ts",
+      "sha256": "76121d48c92da17913fe88be13e7b0df86a11cdeb2f4f3e71536fc8ce74c3897",
+      "bytes": 1216
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_generated_inference_README.md",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages_generated/inference/README.md",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages_generated/inference/README.md",
+      "sha256": "5a1d21049fe83443941ad26a5a7a18ed13358c9fda9dc8d7c6c6300dc29342dd",
+      "bytes": 3297
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_generated_inference_package.json",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages_generated/inference/package.json",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages_generated/inference/package.json",
+      "sha256": "be68f392efd44469364d34be3ae7a5245b4469e5264247f953460d9eb1273c8c",
+      "bytes": 1220
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_generated_inference_src_metadata.gen.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages_generated/inference/src/metadata.gen.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages_generated/inference/src/metadata.gen.ts",
+      "sha256": "689e3dd95eae16b7f46991d87025de66f4c27df494b3630ccc7ce8c87371c798",
+      "bytes": 295
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_generated_inference_src_v1_api.gen.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages_generated/inference/src/v1/api.gen.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages_generated/inference/src/v1/api.gen.ts",
+      "sha256": "85ebb1c52631e80aede7bd86648d6df7411e1b149d38d5303bd97ffa9946c0fb",
+      "bytes": 13724
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_generated_inference_src_v1_constants.gen.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages_generated/inference/src/v1/constants.gen.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages_generated/inference/src/v1/constants.gen.ts",
+      "sha256": "4508b8d92a6a59a41ea9834b201e4a314ea53374c458b4e7b12f0cf937b07015",
+      "bytes": 1363
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_generated_inference_src_v1_marshalling.gen.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages_generated/inference/src/v1/marshalling.gen.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages_generated/inference/src/v1/marshalling.gen.ts",
+      "sha256": "7cab140de36ee6715e03217e1d71d8301b3ffad310e7fde8927a00cff77062e5",
+      "bytes": 10209
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_generated_inference_src_v1_metadata.gen.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages_generated/inference/src/v1/metadata.gen.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages_generated/inference/src/v1/metadata.gen.ts",
+      "sha256": "d4a4c6ae95e1fab111e5c95408ccee434c847827fd13d70f01032fc75e127444",
+      "bytes": 2948
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_generated_inference_src_v1_types.gen.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages_generated/inference/src/v1/types.gen.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages_generated/inference/src/v1/types.gen.ts",
+      "sha256": "a43360236783487428f3947efef3167ec7fcbd4d2094703e6ce0646eb5545a74",
+      "bytes": 13106
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_generated_inference_src_v1_validation-rules.gen.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages_generated/inference/src/v1/validation-rules.gen.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages_generated/inference/src/v1/validation-rules.gen.ts",
+      "sha256": "ee7aab0e4ab6447029fe4092ac51a275efc78ee09f8f62833d1d3e75bb572937",
+      "bytes": 1127
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-pages_generative-apis_concepts.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/generative-apis/concepts.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/generative-apis/concepts.mdx",
+      "sha256": "ea9ea770be776d0fceb606e7359cbc88c2d2b1f6d3c55b1c0a943e36bfd0a9b7",
+      "bytes": 11061
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-pages_generative-apis_faq.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/generative-apis/faq.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/generative-apis/faq.mdx",
+      "sha256": "a0a35ad04443df66f7c98708484f2a905c9a442a16e9a6c40b4c959cc2ff252c",
+      "bytes": 30923
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-pages_generative-apis_how-to_change-model.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/generative-apis/how-to/change-model.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/generative-apis/how-to/change-model.mdx",
+      "sha256": "a594b2b83ba7aaab5d6e9d05e973f6fd4c1593597cf3d792379dba36dc8f4b81",
+      "bytes": 2420
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-pages_generative-apis_how-to_configure-autoscaling.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/generative-apis/how-to/configure-autoscaling.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/generative-apis/how-to/configure-autoscaling.mdx",
+      "sha256": "e68234be726ca8403630c07ec5181364554e57ccafda9176bc20c91061516f59",
+      "bytes": 1796
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-pages_generative-apis_how-to_create-deployment.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/generative-apis/how-to/create-deployment.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/generative-apis/how-to/create-deployment.mdx",
+      "sha256": "727e1daffbd9409f3934966d1e670e2b67422b1fd2e45bd2ef7416d043b63aac",
+      "bytes": 3789
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-pages_generative-apis_how-to_dedicated-deployment-with-private-network.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/generative-apis/how-to/dedicated-deployment-with-private-network.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/generative-apis/how-to/dedicated-deployment-with-private-network.mdx",
+      "sha256": "d3c52e967fba8057f360ca6a6df9d95850a0529748c0356294ebae3c696e033e",
+      "bytes": 8878
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-pages_generative-apis_how-to_delete-deployment.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/generative-apis/how-to/delete-deployment.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/generative-apis/how-to/delete-deployment.mdx",
+      "sha256": "e10a4ea011e39ec14dd7371560bd3b4a6fd71c93d8ee3dc78347dc104bd05b8b",
+      "bytes": 1767
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-pages_generative-apis_how-to_manage-allowed-ips.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/generative-apis/how-to/manage-allowed-ips.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/generative-apis/how-to/manage-allowed-ips.mdx",
+      "sha256": "9d847d6426d3c62f5cecbf995aadc29b6b5eee619d888f6d46e55fab2ca3eb90",
+      "bytes": 10044
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-pages_generative-apis_how-to_query-language-models.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/generative-apis/how-to/query-language-models.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/generative-apis/how-to/query-language-models.mdx",
+      "sha256": "78b9dac9ca8c00505808946ccd5b083ab161792ee399e45b097d0c772445216e",
+      "bytes": 12001
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-pages_generative-apis_quickstart.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/generative-apis/quickstart.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/generative-apis/quickstart.mdx",
+      "sha256": "8abe5ffd6799209c49ea78612ac4379fe3f0675305f1ec2d48830b758f1d4616",
+      "bytes": 6554
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-pages_generative-apis_reference-content_model-lifecycle.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/generative-apis/reference-content/model-lifecycle.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/generative-apis/reference-content/model-lifecycle.mdx",
+      "sha256": "93a3d79d26d9d5ac03a53dc15af7e9bd31213b04520d55a9a3656f1b6956e860",
+      "bytes": 11702
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-pages_generative-apis_reference-content_security-and-reliability.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/generative-apis/reference-content/security-and-reliability.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/generative-apis/reference-content/security-and-reliability.mdx",
+      "sha256": "541ffa45b8bb5cfb08914fcb210e964318705eb58efe039d4aaa1f7391ffac47",
+      "bytes": 10010
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-pages_generative-apis_troubleshooting_fixing-common-issues.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/generative-apis/troubleshooting/fixing-common-issues.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/generative-apis/troubleshooting/fixing-common-issues.mdx",
+      "sha256": "394ab783be27b5cbdab0d7573e2a3db646d8dbdc6a48c3145a4664da1a968c27",
+      "bytes": 20588
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-pages_iam_credentials_create-api-keys.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/iam/credentials/create-api-keys.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/iam/credentials/create-api-keys.mdx",
+      "sha256": "621439dcb60da3292c2a155e4446e89ca36868e58a039a7e1378fa9eac2ab0af",
+      "bytes": 4255
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-pages_iam_policies-permissions_create-policy.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/iam/policies-permissions/create-policy.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/iam/policies-permissions/create-policy.mdx",
+      "sha256": "fff5c04f50f74ff7dd374808e2bee2259923b4f9908d258cf86277cf6fca63ba",
+      "bytes": 5345
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-pages_iam_policies-permissions_permission-sets.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/iam/policies-permissions/permission-sets.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/iam/policies-permissions/permission-sets.mdx",
+      "sha256": "113d2c002805c5968acb756168f556607aca4d72c5701b657f5f5e93274be8cd",
+      "bytes": 38033
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-pages_iam_policies-permissions_policy.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/iam/policies-permissions/policy.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/iam/policies-permissions/policy.mdx",
+      "sha256": "d8c3b7efb2764124fc862a9d4ad5926408008031828ad56b8864cf670c8e5f23",
+      "bytes": 5765
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-pages_iam_policies-permissions_supported-products-resource-level.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/iam/policies-permissions/supported-products-resource-level.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/iam/policies-permissions/supported-products-resource-level.mdx",
+      "sha256": "780926e38e3e666fab2a87e232ad01d1431ed75e2d8dba0565d80ec16ffa1091",
+      "bytes": 1395
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-pages_iam_policies-permissions_view-permission-sets.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/iam/policies-permissions/view-permission-sets.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/iam/policies-permissions/view-permission-sets.mdx",
+      "sha256": "e38c5f4384186849aabd95bd7f8108c1ff43fd055ad0117243f08d3864d374c0",
+      "bytes": 3318
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_client_package.json",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages/client/package.json",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages/client/package.json",
+      "sha256": "b14fdf7d4ecba1df57636ad06a6988d91eac58493b8965eceedf7b827863c159",
+      "bytes": 741
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_client_src_scw_auth.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages/client/src/scw/auth.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages/client/src/scw/auth.ts",
+      "sha256": "62412499e1b0532928c1b5c3bd030856112c88603c5be2ac2a0b5e1bdbb241bb",
+      "bytes": 2807
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_client_src_scw_client-settings.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages/client/src/scw/client-settings.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages/client/src/scw/client-settings.ts",
+      "sha256": "7351ecfde12bae500f0cdc4824fa1b367526cc2bc8d4f8abd98bcc3561e91533",
+      "bytes": 4064
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_client_src_scw_client.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages/client/src/scw/client.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages/client/src/scw/client.ts",
+      "sha256": "06c3992bf5eca0afa3842e89a75990e927dabcfeea761b044c527fff2370e9b0",
+      "bytes": 2973
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_client_src_scw_errors_standard_denied-authentication-error.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages/client/src/scw/errors/standard/denied-authentication-error.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages/client/src/scw/errors/standard/denied-authentication-error.ts",
+      "sha256": "6cb6ee7efdddc781aa5cd08d8136eefd220e3393740bf7a219a0a1817b9c4d40",
+      "bytes": 1902
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_client_src_scw_fetch_build-fetcher.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages/client/src/scw/fetch/build-fetcher.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages/client/src/scw/fetch/build-fetcher.ts",
+      "sha256": "dc92c4b8b28aa2e7fc9e4fd9927e37b00791535bf5cd9def9fe4f3cb1cecbe9a",
+      "bytes": 4308
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_client_src_scw_fetch_http-dumper.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages/client/src/scw/fetch/http-dumper.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages/client/src/scw/fetch/http-dumper.ts",
+      "sha256": "43e105c205e440c61ea5e6355f85669a2e85e9a494ed73433e673c79cceb3d68",
+      "bytes": 1560
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_client_src_scw_fetch_http-interceptors.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages/client/src/scw/fetch/http-interceptors.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages/client/src/scw/fetch/http-interceptors.ts",
+      "sha256": "187de543b1ab3b0658de426ab9de9ca8347df5ca7bf552eeaff726fc45081a94",
+      "bytes": 2824
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_client_src_scw_fetch_resource-paginator.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages/client/src/scw/fetch/resource-paginator.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages/client/src/scw/fetch/resource-paginator.ts",
+      "sha256": "f760548cff4020135535f4ac9681dd31ec23a4dbe09fb46bfb7c0f5d0dcc5c32",
+      "bytes": 9772
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_client_src_scw_fetch_response-parser.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages/client/src/scw/fetch/response-parser.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages/client/src/scw/fetch/response-parser.ts",
+      "sha256": "38c5b33170aa10811f2a7ff081011aeebe750c8be13f5925b00c83e0a0f9e3ae",
+      "bytes": 2623
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_client_src_scw_fetch_types.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages/client/src/scw/fetch/types.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages/client/src/scw/fetch/types.ts",
+      "sha256": "e0bcb9db2226333cd07d183cf878389c06c08bb86c5ac00567f86c92f63ca53e",
+      "bytes": 758
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-pages_organizations-and-projects_organization_organization-quotas.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/organizations-and-projects/organization/organization-quotas.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/organizations-and-projects/organization/organization-quotas.mdx",
+      "sha256": "e528f810002594cdc8309c3d6f564d602f2eb9b95796538012987580e16909c3",
+      "bytes": 64962
+    },
+    {
+      "file": "specifications/references/documentation/projects-docs-pages_iam_policies-permissions_policy.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/pages/iam/policies-permissions/policy.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "pages/iam/policies-permissions/policy.mdx",
+      "sha256": "d8c3b7efb2764124fc862a9d4ad5926408008031828ad56b8864cf670c8e5f23",
+      "bytes": 5765
+    },
+    {
+      "file": "specifications/references/documentation/dedicated-docs-macros_ai_ai-managed-inference.mdx",
+      "url": "https://raw.githubusercontent.com/scaleway/docs-content/1dd79adcf1f8ccbded698d2776871c21d50bac06/macros/ai/ai-managed-inference.mdx",
+      "repository": "docs-content",
+      "commit": "1dd79adcf1f8ccbded698d2776871c21d50bac06",
+      "source_path": "macros/ai/ai-managed-inference.mdx",
+      "sha256": "72954fff65711a69c7781144c5494c990456f0d043ac3adbbff84a6827a84a39",
+      "bytes": 216
+    },
+    {
+      "file": "specifications/references/schemas/dedicated-js-packages_client_src_scw_constants.ts",
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-js/e05f031e8590090311adf028747139fe7b490d59/packages/client/src/scw/constants.ts",
+      "repository": "scaleway-sdk-js",
+      "commit": "e05f031e8590090311adf028747139fe7b490d59",
+      "source_path": "packages/client/src/scw/constants.ts",
+      "sha256": "7b8d9df0dc02c910600c6231dc4f2c01765b593e0808c603323f7229ed07aaf5",
+      "bytes": 222
+    }
+  ]
+}

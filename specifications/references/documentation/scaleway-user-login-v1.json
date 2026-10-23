@@ -1,0 +1,47 @@
+{
+  "recorded_at": "2026-10-20T21:06:19.255362+00:00",
+  "cli_commit": "f4d37a5a30f960d714f96323514f41f8c3ee2ab1",
+  "sdk_commit": "46763ab9fc78781eca1af94bd3a83750d3a2068f",
+  "sources": [
+    {
+      "url": "https://github.com/scaleway/scaleway-cli/blob/f4d37a5a30f960d714f96323514f41f8c3ee2ab1/internal/namespaces/login/login.go",
+      "snapshot": "specifications/references/documentation/user-login-cli-login.go",
+      "sha256": "d6df27d78af8b24602f557fc30bd5d87b91e537923028e436dbdecac5b22dd5e"
+    },
+    {
+      "url": "https://github.com/scaleway/scaleway-cli/blob/f4d37a5a30f960d714f96323514f41f8c3ee2ab1/internal/namespaces/login/webcallback/webcallback.go",
+      "snapshot": "specifications/references/documentation/user-login-cli-webcallback.go",
+      "sha256": "c823bd10a03081c8bf965ecc9e57306098dbca7e176e9502b91a75653bf42e90"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-go/46763ab9fc78781eca1af94bd3a83750d3a2068f/internal/auth/jwt.go",
+      "snapshot": "specifications/references/documentation/user-login-sdk-jwt.go",
+      "sha256": "5e5c410d3e4ac4be0fb983a9512102b6d5f8bad0a2b09171b99e2320bb76ed0a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-go/46763ab9fc78781eca1af94bd3a83750d3a2068f/scw/client_option.go",
+      "snapshot": "specifications/references/documentation/user-login-sdk-client_option.go",
+      "sha256": "9b0dd8fa27f21f7a9c7079e0af5298864610628cf1a6aaa00f7d23d73d85ed85"
+    }
+  ],
+  "flow": {
+    "authorize": "https://account.scaleway.com/authenticate",
+    "parameter": "redirectToUrl",
+    "response": "Base64 JSON envelope token/jwt/renewToken",
+    "control_header": "X-Session-Token",
+    "api_key_creation": "omitted",
+    "renewal": "not implemented; renewToken discarded",
+    "standard_oauth_pkce": "not established",
+    "storage": "host memory only"
+  },
+  "live_browser_login": "not_run",
+  "live_project_and_dedicated_jwt_acceptance": "not_run",
+  "serverless_jwt": "unverified; no dispatch",
+  "callback_variant": "localhost OS port with random path ending /callback; acceptance not verified live",
+  "security_limits": [
+    "No provider-verified PKCE/state binding",
+    "Browser URL carries token as in CLI; success history replacement mitigates, not eliminates, URL exposure",
+    "Local callback peer/Host/origin/path checks do not protect against malicious local processes",
+    "Local shape/expiry checks are not JWT signature validation; API authenticates"
+  ]
+}

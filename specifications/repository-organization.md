@@ -1,4 +1,28 @@
+## État courant — améliorations apps après revue 2026-10-22
+
+Le registre historique LocalResources a été retiré : la découverte workspace
+LocalInventory possède la liste locale. Les destinations de création externes
+restent permises ; l'ouverture explicite du projet ne dépend d'aucun enregistrement.
+Les handles IAM stables, invalidation SecretStorage, statuts de scan complets/incomplets,
+annulation bornée des écritures et purge playground sont vérifiés localement.
+Le build récursif et le gate VSIX final isolé préparent des refactors ultérieurs,
+pas une migration massive déjà livrée. Les suites arrêtées restent opt-in ; les
+12 wheels Python prouvent installation/configuration, pas intégration SDK/DeepEval.
+Le plan et la matrice exhaustive d'actions sont rattachés aux Beads .3.23.39–.43 ;
+installed/native/live/whole-product restent séparés des preuves locales.
+
 # Repository organization
+
+## Mise à jour — rationalisation 2026-10-22
+
+Les anciens générateur portable, politique MCP non raccordée, moteur futur de
+création dédié et sondes de recherche ont été retirés du produit. Les anciens
+rapports et sections historiques ne décrivent pas ces chemins comme actifs.
+Le parcours courant utilise LocalCreation/composeAgentProject, les accès IAM
+vérifiés et deployService avec journal/reconciliation. Le runtime Python reste
+expérimental et séparé, sans liaison au host. Les checks de sources sont des
+tests documentaires, pas des preuves de disponibilité ou de runtime.
+
 
 Accepted organization: [ADR 0002](decisions/0002-contract-first-repository.md). This document describes ownership and structure, not task status or implementation approval. Beads is the work authority.
 
@@ -12,8 +36,7 @@ Directories marked “later” are introduced only when relevant work is authori
 | specifications/ | Requirements, architecture, UX, security, provider synthesis and ADRs |
 | .gates/ | Approval records; no credentials; organization approval does not satisfy other gates |
 | .beads/ | Sole task/status and durable project-memory authority |
-| evidence/ | Sanitized, reproducible documentation/schema/capability/compatibility findings |
-| contracts/ (later) | Language-neutral agent-spec/v1, runtime-events/v1, runtime-http/v1 and webview-ipc/v1 |
+| specifications/references/ | Sanitized, reproducible documentation/schema/capability/compatibility findings |
 | apps/vscode-extension/ (later) | Extension activation, features, VS Code platform services and webview presentation |
 | packages/core/ (later) | VS Code-independent TypeScript state and capability decisions |
 | packages/scaleway-adapter/ (later) | Separate discovery, control-plane and inference transports/normalization |
@@ -43,8 +66,8 @@ Extension features are grouped by outcome: connections, catalog, playground, exp
 | Beads task (prefix scaleway_ai_vscode-jgh) | Owning artifacts |
 |---|---|
 | .1.4 | security/threat-model.md, authorization-policy.md, security-test-cases.md when authored |
-| .1.2 | providers/scaleway/serverless.md and evidence/capabilities/ findings when authored |
-| .1.3 | providers/scaleway/dedicated.md and evidence/schemas/ snapshots when verified |
+| .1.2 | providers/scaleway/serverless.md and specifications/references/capabilities/ findings when authored |
+| .1.3 | providers/scaleway/dedicated.md and specifications/references/schemas/ snapshots when verified |
 | .1.1 | validation/developer-scenario.md when its scenario and comparative criteria are agreed |
 | .1.5 | Versioned portable/runtime contracts after its prerequisites |
 | .1.6 | providers/scaleway/hosting.md and hosting evidence after its prerequisites |
@@ -55,7 +78,7 @@ Assign parallel contributors separate owning files. One integration owner synthe
 
 Our protocol/spec versions and provider API/schema snapshots have independent lifecycles. Never substitute provider response schemas for the portable agent format. Protocol definitions include compatibility rules, unsupported-version errors, terminal/partial/error/cancellation semantics and unknown usage. Generate bindings where practical; check generated drift and TypeScript/Python conformance in offline tests. SDK releases and source/schema revisions are pinned during verification, not guessed now.
 
-Evidence records follow [evidence rules](../evidence/README.md). Supported/unsupported/unknown capabilities retain endpoint/model/context and provenance; documentation, source inspection, fixtures and live verification are not interchangeable.
+Evidence records follow [evidence rules](references/README.md). Supported/unsupported/unknown capabilities retain endpoint/model/context and provenance; documentation, source inspection, fixtures and live verification are not interchangeable.
 
 ## Quality and operational defaults
 

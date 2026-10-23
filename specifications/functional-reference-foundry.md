@@ -64,7 +64,7 @@ No advanced placeholders. Central editor owns prompt/run/stop/response/JSON acti
 sidebar is navigation, not response surface. Theme tokens and text-only rendering
 remain provisional native styling, not copied Foundry code/assets or brand.
 This is scoped incremental build approval, not production/value validation.
-Owning implementation apps/vscode-extension; evidence/validation/vscode-navigation-preview-v2.json.
+Owning implementation apps/vscode-extension; specifications/references/validation/vscode-navigation-preview-v2.json.
 
 Scaleway navigation should preserve resources vs actions separation and contextual
 project selection. Labels/services such as Classic, Foundry project and Ask Copilot

@@ -1,15 +1,14 @@
 # Catalog/quota observations — offline contract boundary
 
 2026-10-20. Supplements .1.2/.1.3; no authenticated request or new public-source
-retrieval. The fixture at tests/discovery/fixtures/catalog-quota-observations.json
-is a SYNTHETIC normalized projection of stakeholder-capture notes already in
+retrieval. The historical fixture (now retired with tests/discovery) was a SYNTHETIC normalized projection of stakeholder-capture notes already in
 Beads and existing pinned source research, NOT the complete original JSON, a
 provider schema, or independently recaptured evidence. No numeric quota or
 technical quota-name/model mapping was invented.
 
-Run: python3 -m unittest discover -s tests/discovery -v
+The former discovery tests are retired; this document records their historical boundary, not a runnable current acceptance suite.
 
-## What is checked locally
+## What was checked locally
 
 - Separate inference serverless /v1/models (Bearer), regional dedicated /models
   (X-Auth-Token), commercial /product-catalog/v2alpha1/catalog and console views.

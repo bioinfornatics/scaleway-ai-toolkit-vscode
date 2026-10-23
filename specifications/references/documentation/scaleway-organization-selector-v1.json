@@ -1,0 +1,16 @@
+{
+  "recorded_at": "2026-10-20T21:34:04.458225+00:00",
+  "source": "https://raw.githubusercontent.com/scaleway/scaleway-sdk-go/46763ab9fc78781eca1af94bd3a83750d3a2068f/api/iam/v1alpha1/iam_sdk.go",
+  "snapshot": "specifications/references/documentation/organization-iam-sdk.go",
+  "sha256": "124802a00436ff113f5e150658f5da8972257e2b0d77931479bc2ecd21fb07eb",
+  "route": "GET /iam/v1alpha1/users/{user_id}/connections",
+  "method": "GetUserConnections",
+  "projection": "connections[].organization{id,name,locked}; user fields discarded",
+  "scope": "userId from browser JWT envelope audienceId",
+  "limits": "one GET, 10s, 2MiB, max500 connections; no retries/redirects",
+  "not_run": [
+    "Live user JWT route acceptance",
+    "Cross-organization project IAM acceptance"
+  ],
+  "writes": "none; no initiate/join connection or token exchange"
+}

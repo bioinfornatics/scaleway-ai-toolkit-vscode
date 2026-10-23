@@ -1,1 +1,0 @@
-{"name":"scaleway-contract-validation","private":true,"version":"0.0.0","description":"Offline cross-language contract checks only","devDependencies":{"ajv":"8.17.1","typescript":"5.9.3","@types/node":"22.19.0"}}
