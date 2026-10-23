@@ -15,6 +15,7 @@ import {
 } from './deploymentLifecycle';
 import { deploymentWizard } from './deploymentWizard';
 import { createService, reviewService } from './deployService';
+import { inventoryFailureReason } from './llmAccessIam';
 import {
   type ApiKeyResource,
   LlmAccessRegistry,
@@ -1406,10 +1407,12 @@ export class Connection implements vscode.Disposable {
       this.apiKeysState = rows.length
         ? 'Inventaire IAM · organisation sélectionnée'
         : 'Aucune clé visible dans IAM';
-    } catch {
+    } catch (error) {
       if (scope.current() && epoch === this.apiKeysEpoch) {
         this.apiKeys = [];
-        this.apiKeysState = 'Erreur · inventaire IAM non vérifié';
+        this.apiKeysState =
+          'Erreur · inventaire IAM non vérifié · ' +
+          inventoryFailureReason(error);
       }
     } finally {
       const current = scope.current() && epoch === this.apiKeysEpoch;

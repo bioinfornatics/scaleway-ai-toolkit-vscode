@@ -37,6 +37,42 @@ export class IAMAccessError extends Error {
     this.name = 'IAMAccessError';
   }
 }
+/** Fixed local labels only. Never render an arbitrary error message/body/code. */
+export function inventoryFailureReason(error: unknown): string {
+  if (!(error instanceof IAMAccessError)) return 'erreur locale inattendue';
+  switch (error.code) {
+    case 'access_denied':
+      return 'accès IAM refusé (401/403)';
+    case 'invalid_api_key':
+      return 'identifiant API invalide';
+    case 'invalid_request':
+      return 'requête locale invalide';
+    case 'expired':
+      return 'clé expirée';
+    case 'invalid_response':
+      return 'réponse IAM invalide';
+    case 'pagination_limit':
+      return 'limite d’inventaire atteinte';
+    case 'timeout':
+      return 'délai de lecture dépassé';
+    case 'cancelled':
+      return 'lecture annulée';
+    case 'rate_limited':
+      return 'limitation IAM (429)';
+    case 'transport_error':
+      return 'échec du transport sécurisé';
+    case 'response_limit':
+      return 'réponse trop volumineuse';
+    case 'truncated_response':
+      return 'réponse incomplète';
+    case 'redirect_rejected':
+      return 'redirection refusée';
+    case 'http_error':
+      return 'échec HTTP IAM';
+    default:
+      return 'erreur locale inattendue';
+  }
+}
 function fail(code: IAMAccessErrorCode): never {
   throw new IAMAccessError(code);
 }
@@ -92,10 +128,12 @@ function bearerOf(data: Row): Bearer {
   if (uuid(app) && absent(user)) return { type: 'application', id: app };
   return fail('invalid_response');
 }
+// RFC3339/protobuf fractions through nanoseconds; Date truncates to milliseconds.
+// Keep real-calendar validation and conservative expiry (never round upward).
 function timestamp(v: unknown): number {
   if (
     typeof v !== 'string' ||
-    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.test(v)
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/.test(v)
   )
     fail('invalid_response');
   const n = Date.parse(v);
@@ -553,7 +591,8 @@ export async function listAccessAPIKeys(
         if (!key(r.access_key) || seen.has(r.access_key))
           fail('invalid_response');
         const m: AccessKeyInventory = metadata(r, r.access_key, orgId, true);
-        if ('created_at' in r) {
+        // Optional SDK date: explicit null means unknown, never a fabricated date.
+        if ('created_at' in r && r.created_at !== null) {
           timestamp(r.created_at);
           m.createdAt = r.created_at as string;
         }

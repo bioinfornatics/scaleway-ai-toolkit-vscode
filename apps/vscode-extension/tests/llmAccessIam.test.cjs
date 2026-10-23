@@ -204,6 +204,63 @@ test('inventory uses installed SDK org-only GET with JWT and key; expired/null a
   }
 });
 
+// Synthetic SDK-contract fixtures, not a captured account response.
+test('inventory accepts SDK nullable creation and micro/nanosecond timestamps', async (t) => {
+  for (const fraction of ['1', '123', '123456', '123456789']) {
+    const at = '2026-10-23T17:34:00.' + fraction + 'Z';
+    const fixture = mockHTTP(t, () => ({
+      json: {
+        api_keys: [
+          inventoryKey(1, {
+            created_at: null,
+            managed: true,
+            expires_at: null,
+          }),
+          inventoryKey(2, {
+            created_at: at,
+            expires_at: at,
+            user_id: '',
+            application_id: app,
+            managed: true,
+          }),
+        ],
+        total_count: 2,
+      },
+    }));
+    const rows = await iam.listAccessAPIKeys(org, jwt, signal());
+    assert.equal(rows.length, 2);
+    assert.equal(rows[0].createdAt, undefined);
+    assert.equal(rows[0].expiresAt, Number.MAX_SAFE_INTEGER);
+    assert.equal(rows[1].createdAt, at);
+    assert.equal(rows[1].expiresAt, Date.parse(at));
+    assert.deepEqual(rows[1].bearer, { type: 'application', id: app });
+    assert.equal(rows[0].managed, undefined);
+    assert.equal(fixture.sent.length, 1);
+    await iam.__test.sdkRaw(
+      {
+        method: 'GET',
+        path:
+          '/iam/v1alpha1/api-keys?organization_id=' +
+          org +
+          '&page=1&page_size=100',
+      },
+      jwt,
+      false,
+      signal(),
+      async (api) => {
+        const normalized = await api.listAPIKeys({
+          organizationId: org,
+          page: 1,
+          pageSize: 100,
+        });
+        assert.equal(normalized.apiKeys[0].createdAt, null);
+        assert.equal(normalized.apiKeys[1].createdAt.getTime(), Date.parse(at));
+        assert.equal(normalized.apiKeys[1].expiresAt.getTime(), Date.parse(at));
+      },
+    );
+  }
+});
+
 test('inventory completes at most five sequential pages of 100 including empty and partial last page', async (t) => {
   for (const total of [0, 101, 500]) {
     let previous;
@@ -311,8 +368,13 @@ test('inventory validates raw shapes, strict bearer, description, timestamps and
       { expires_at: 'tomorrow' },
       { expires_at: '2099-02-30T00:00:00Z' },
       { expires_at: '2099-01-01T00:00:00+00:00' },
-      { created_at: null },
+      { created_at: '2020-01-01T00:00:00.1234567890Z' },
+      { expires_at: '2099-01-01T00:00:00.1234567890Z' },
+      { user_id: null, application_id: null, managed: true },
       { created_at: 123 },
+      { created_at: '2020-01-01T00:00:00.1234567890Z' },
+      { expires_at: '2099-01-01T00:00:00.1234567890Z' },
+      { user_id: null, application_id: null, managed: true },
       { created_at: 'bad' },
       { created_at: '2020-02-30T00:00:00Z' },
     ].map((change) => ({

@@ -2784,3 +2784,45 @@ test('one registered API key supports two catalog models without per-model regis
     s.restore();
   }
 });
+
+test('IAM inventory error state distinguishes fixed reasons and never renders provider data', async () => {
+  const s = setup();
+  const iam = require('../dist/llmAccessIam');
+  const old = iam.listAccessAPIKeys;
+  try {
+    await s.connection.ensureProject();
+    for (const [error, expected] of [
+      [new iam.IAMAccessError('access_denied'), 'accès IAM refusé (401/403)'],
+      [new iam.IAMAccessError('invalid_response'), 'réponse IAM invalide'],
+      [new iam.IAMAccessError('timeout'), 'délai de lecture dépassé'],
+      [
+        new iam.IAMAccessError('pagination_limit'),
+        'limite d’inventaire atteinte',
+      ],
+      [new Error(secretKey), 'erreur locale inattendue'],
+      [
+        Object.assign(new Error(secretKey), { code: 'access_denied' }),
+        'erreur locale inattendue',
+      ],
+      [new iam.IAMAccessError(secretKey), 'erreur locale inattendue'],
+    ]) {
+      error.message = secretKey;
+      iam.listAccessAPIKeys = async () => {
+        throw error;
+      };
+      await s.connection.refreshAPIKeys(true);
+      assert.equal(
+        s.connection.apiKeysState,
+        'Erreur · inventaire IAM non vérifié · ' + expected,
+      );
+      assert.deepEqual(s.connection.apiKeys, []);
+      assert.ok(!s.connection.apiKeysState.includes(secretKey));
+    }
+    assert.equal(s.availabilityCalls.length, 0);
+    assert.equal(s.planCalls.length, 0);
+  } finally {
+    iam.listAccessAPIKeys = old;
+    s.connection.dispose();
+    s.restore();
+  }
+});
