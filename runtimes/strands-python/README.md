@@ -1,7 +1,6 @@
 # Offline JSON repair helper
 
-Implementation of ADR 0003 / R07a only. No Strands dependency, live transport,
-agent loop, native structured output, tools, fallback or credentials.
+Implementation of ADR 0003 / R07a plus experimental offline dispatch and loopback lifecycle modules. No live transport, production agent loop, tools or credentials.
 
 ## Packaging decision
 
@@ -81,3 +80,9 @@ Integration .4.2 must separately prove pinned Strands ordinary-call interception
 all physical retries, reservation pricing/input bounds, durable budget/revocation,
 cancellation, origin/scope/spec correlation and actual provider usage contracts.
 No live/provider or production security test is claimed by these offline tests.
+
+## Experimental offline modules
+
+`dispatch.py` exercises a bounded Strands 1.61.1 ordinary-call adapter through trusted injected dependencies and a process-local fake ledger. Live mode is disabled. The optional installed-SDK test is skipped when the exact SDK is absent; no dependency is installed by the tests.
+
+`lifecycle.py` supplies synthetic loopback control with dedicated-pipe bootstrap, per-instance capability, authorization, bounded replay, idempotency and cooperative cancellation. Tests bind only OS-assigned localhost ports. Worker cancellation is cooperative, not process isolation or remote rollback. Neither module is wired into the extension or accepted for cloud/production use. Durable authority, dependency locking and provider acceptance remain separate gates.
