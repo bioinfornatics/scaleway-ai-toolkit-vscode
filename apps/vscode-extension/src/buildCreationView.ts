@@ -153,28 +153,29 @@ export function buildCreationView(v: BuildView): string {
         '</article>',
     )
     .join('');
-  const selection = row
-    ? '<p class="selection">' +
-      escapeHtml(
-        row.stack
-          ? v.agentForm
-            ? [
-                v.rows.find((r) => r.index === v.backend)?.stack?.label,
-                v.rows.find((r) => r.index === v.ai)?.stack?.label,
-                names[row.stack.language],
-              ]
-                .filter(Boolean)
-                .join(' · ')
-            : `${row.stack.label} · ${names[row.stack.language]}`
-          : `Template · ${row.template.label}`,
-      ) +
-      '</p><p class="scope-note">' +
-      escapeHtml(
-        row.stack?.description ??
-          'Les fichiers du template seront copiés tels quels, sans conversion de langage.',
-      ) +
-      '</p>'
-    : '';
+  const selection =
+    row && !(v.agentForm && row.stack)
+      ? '<p class="selection">' +
+        escapeHtml(
+          row.stack
+            ? v.agentForm
+              ? [
+                  v.rows.find((r) => r.index === v.backend)?.stack?.label,
+                  v.rows.find((r) => r.index === v.ai)?.stack?.label,
+                  names[row.stack.language],
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
+              : `${row.stack.label} · ${names[row.stack.language]}`
+            : `Template · ${row.template.label}`,
+        ) +
+        '</p><p class="scope-note">' +
+        escapeHtml(
+          row.stack?.description ??
+            'Les fichiers du template seront copiés tels quels, sans conversion de langage.',
+        ) +
+        '</p>'
+      : '';
   const validAgentName =
     /^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/.test(v.agentName ?? '') &&
     !/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i.test(v.agentName ?? '');

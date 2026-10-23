@@ -1996,6 +1996,13 @@ test('Given agent stack and shared inputs, When switching tabs and returning, Th
   await state.send('backend', backend);
   const ai = option(panel.webview.html, 'ai', 'Strands');
   await state.send('ai', ai);
+  assert.doesNotMatch(panel.webview.html, /class="selection"/);
+  assert.doesNotMatch(
+    panel.webview.html,
+    /<p(?:\s[^>]*)?>[^<]*(?:FastAPI · Strands · Python|Base backend · SDK agent à intégrer)/,
+  );
+  assert.equal(option(panel.webview.html, 'backend', 'FastAPI'), backend);
+  assert.equal(option(panel.webview.html, 'ai', 'Strands'), ai);
   await state.send('name', undefined, { name: 'retained-agent' });
   await state.send('dedicated');
   const model = option(panel.webview.html, 'model', 'model-a');
