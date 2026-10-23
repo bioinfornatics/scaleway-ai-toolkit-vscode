@@ -1277,24 +1277,23 @@ export class LocalCreation implements vscode.Disposable {
           project,
           template,
           () => this.valid(s),
-        );
+        ).catch(() => false);
       }
-      if (
-        !(
-          dependenciesPrepared &&
-          template.version === 2 &&
-          template.project &&
-          ['python', 'typescript', 'rust'].includes(template.project.language)
-        )
-      )
-        await openLocalAgentEntry(project, () => this.valid(s));
+      // Editing is independent of IDE readiness. Root registration below can
+      // reload the extension host, so pin the verified source before attempting it.
+      const entryOpened = await openLocalAgentEntry(project, () =>
+        this.valid(s),
+      );
       if (
         dependenciesPrepared &&
         template.version === 2 &&
         template.project?.language === 'python'
       ) {
-        await configureCreatedPythonIde(project, this.context, () =>
-          this.valid(s),
+        await configureCreatedPythonIde(
+          project,
+          this.context,
+          () => this.valid(s),
+          entryOpened,
         );
       }
       if (
@@ -1308,6 +1307,7 @@ export class LocalCreation implements vscode.Disposable {
           template.project.language,
           this.context,
           () => this.valid(s),
+          entryOpened,
         );
       }
       if (!this.valid(s)) return;

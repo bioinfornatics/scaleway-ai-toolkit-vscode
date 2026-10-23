@@ -80,14 +80,16 @@ function fixture() {
   mod.paths = Module._nodeModulePaths(path.dirname(filename));
   mod.require = (r) => {
     if (r === 'vscode') return api;
-    if (r === './localAgentRunner') return {
-      openLocalAgentEntry: async (project, current) => {
-        if (!current()) return;
-        state.openedEntries ??= [];
-        state.openedEntries.push(project);
-        state.order.push('open');
-      },
-    };
+    if (r === './localAgentRunner')
+      return {
+        openLocalAgentEntry: async (project, current) => {
+          if (!current() || state.entryUnavailable) return false;
+          state.openedEntries ??= [];
+          state.openedEntries.push(project);
+          state.order.push('open');
+          return true;
+        },
+      };
     return Module.prototype.require.call(mod, r);
   };
   mod._compile(require('node:fs').readFileSync(filename, 'utf8'), filename);
@@ -435,7 +437,11 @@ async function ideFixture(t) {
         value === undefined ? store.delete(key) : store.set(key, value),
     },
   };
-  t.after(() => context.subscriptions.forEach((s) => s.dispose()));
+  t.after(() =>
+    context.subscriptions.forEach((s) => {
+      s.dispose();
+    }),
+  );
   f.api.workspace.onDidChangeWorkspaceFolders = (fn) => {
     f.state.rootsChanged = fn;
     return { dispose() {} };
@@ -450,7 +456,8 @@ async function ideFixture(t) {
       return { dispose() {} };
     },
     getExtension: (id) => {
-      if (id === 'ms-python.vscode-python-envs') return f.state.projectsExtension;
+      if (id === 'ms-python.vscode-python-envs')
+        return f.state.projectsExtension;
       assert.equal(id, 'ms-python.python');
       return f.state.missingExtension
         ? undefined
@@ -459,13 +466,24 @@ async function ideFixture(t) {
               await f.state.onActivate?.();
               return {
                 environments: {
-                  getActiveEnvironmentPath: f.state.missingGetter ? undefined : (resource) => {
-                    assert.equal(resource.fsPath, path.join(root, 'pyproject.toml'));
-                    f.state.reads = (f.state.reads ?? 0) + 1;
-                    const confirmed = !f.state.mismatch && f.state.reads > (f.state.delayedReads ?? 0);
-                    f.state.order.push(confirmed ? 'confirmed' : 'waiting');
-                    return { path: confirmed ? f.state.activePath : '/usr/bin/python3' };
-                  },
+                  getActiveEnvironmentPath: f.state.missingGetter
+                    ? undefined
+                    : (resource) => {
+                        assert.equal(
+                          resource.fsPath,
+                          path.join(root, 'pyproject.toml'),
+                        );
+                        f.state.reads = (f.state.reads ?? 0) + 1;
+                        const confirmed =
+                          !f.state.mismatch &&
+                          f.state.reads > (f.state.delayedReads ?? 0);
+                        f.state.order.push(confirmed ? 'confirmed' : 'waiting');
+                        return {
+                          path: confirmed
+                            ? f.state.activePath
+                            : '/usr/bin/python3',
+                        };
+                      },
                   updateActiveEnvironmentPath: async (executable, resource) => {
                     f.state.selections ??= [];
                     f.state.selections.push({ executable, resource });
@@ -511,7 +529,10 @@ test('Prepared Python project automatically adds exact root and selects lexical 
     f.state.selections[0].executable,
     path.join(f.root, '.venv/bin/python'),
   );
-  assert.equal(f.state.selections[0].resource.fsPath, path.join(f.root, 'pyproject.toml'));
+  assert.equal(
+    f.state.selections[0].resource.fsPath,
+    path.join(f.root, 'pyproject.toml'),
+  );
 });
 test('Queued selection resumes after extension host reload, without migrating arbitrary existing roots', async (t) => {
   const f = await ideFixture(t);
@@ -522,7 +543,7 @@ test('Queued selection resumes after extension host reload, without migrating ar
   f.initializeIde(f.context);
   await waitIde(() => f.store.size === 0);
   assert.equal(f.state.selections.length, 1);
-  assert.deepEqual(f.state.order, ['select', 'confirmed', 'open']);
+  assert.deepEqual(f.state.order, ['open', 'select', 'confirmed']);
   assert.deepEqual(f.state.openedEntries, [f.root]);
   f.state.rootsChanged();
   await new Promise((r) => setTimeout(r, 10));
@@ -571,36 +592,48 @@ test('Root removed during Python extension activation never mutates parent inter
   assert.equal(f.state.selections, undefined);
 });
 
-test('Python entry waits for active environment confirmation, not just API update completion', async (t) => {
+test('Python entry opens before active environment confirmation; IDE queue waits for confirmation', async (t) => {
   const f = await ideFixture(t);
   f.state.delayedReads = 2;
-  f.api.workspace.workspaceFolders = [{ uri: { scheme: 'file', fsPath: f.root } }];
+  f.api.workspace.workspaceFolders = [
+    { uri: { scheme: 'file', fsPath: f.root } },
+  ];
   await f.configureIde(f.root, f.context, () => true);
   await waitIde(() => f.state.reads === 1);
-  assert.equal(f.state.openedEntries, undefined);
+  assert.deepEqual(f.state.openedEntries, [f.root]);
   assert.equal(f.store.size, 1);
   await waitIde(() => f.store.size === 0);
-  assert.deepEqual(f.state.order, ['select', 'waiting', 'waiting', 'confirmed', 'open']);
+  assert.deepEqual(f.state.order, [
+    'open',
+    'select',
+    'waiting',
+    'waiting',
+    'confirmed',
+  ]);
   assert.deepEqual(f.state.openedEntries, [f.root]);
 });
-test('Missing Python verification API leaves entry closed and operation queued', async (t) => {
+test('Missing Python verification API leaves entry editable and operation queued', async (t) => {
   const f = await ideFixture(t);
   f.state.missingGetter = true;
-  f.api.workspace.workspaceFolders = [{ uri: { scheme: 'file', fsPath: f.root } }];
+  f.api.workspace.workspaceFolders = [
+    { uri: { scheme: 'file', fsPath: f.root } },
+  ];
   await f.configureIde(f.root, f.context, () => true);
   await waitIde(() => !!f.state.warning);
   assert.equal(f.state.selections, undefined);
-  assert.equal(f.state.openedEntries, undefined);
+  assert.deepEqual(f.state.openedEntries, [f.root]);
   assert.equal(f.store.size, 1);
 });
-test('Unconfirmed Python environment has bounded retry, keeps queue and opens nothing', async (t) => {
+test('Unconfirmed Python environment has bounded retry, keeps queue and opens entry once', async (t) => {
   const f = await ideFixture(t);
   f.state.mismatch = true;
-  f.api.workspace.workspaceFolders = [{ uri: { scheme: 'file', fsPath: f.root } }];
+  f.api.workspace.workspaceFolders = [
+    { uri: { scheme: 'file', fsPath: f.root } },
+  ];
   await f.configureIde(f.root, f.context, () => true);
   await waitIde(() => !!f.state.warning, 1200);
   assert.equal(f.state.reads, 40);
-  assert.equal(f.state.openedEntries, undefined);
+  assert.deepEqual(f.state.openedEntries, [f.root]);
   assert.equal(f.store.size, 1);
   f.state.mismatch = false;
   f.state.extensionsChanged();
@@ -608,20 +641,29 @@ test('Unconfirmed Python environment has bounded retry, keeps queue and opens no
   assert.deepEqual(f.state.openedEntries, [f.root]);
 });
 for (const mode of ['removed', 'untrusted', 'superseded']) {
-  test('Python entry is not opened when selection becomes ' + mode, async (t) => {
-    const f = await ideFixture(t);
-    f.api.workspace.workspaceFolders = [{ uri: { scheme: 'file', fsPath: f.root } }];
-    f.state.onSelect = async () => {
-      if (mode === 'removed') f.api.workspace.workspaceFolders = [];
-      if (mode === 'untrusted') f.api.workspace.isTrusted = false;
-      if (mode === 'superseded') f.store.set('scalewayAI.pendingPythonIdeProject', path.join(f.root, 'another'));
-    };
-    await f.configureIde(f.root, f.context, () => true);
-    await waitIde(() => f.state.selections?.length === 1);
-    await new Promise((resolve) => setTimeout(resolve, 20));
-    assert.equal(f.state.openedEntries, undefined);
-    assert.equal(f.store.size, 1);
-  });
+  test(
+    'Python IDE queue is retained when selection becomes ' + mode,
+    async (t) => {
+      const f = await ideFixture(t);
+      f.api.workspace.workspaceFolders = [
+        { uri: { scheme: 'file', fsPath: f.root } },
+      ];
+      f.state.onSelect = async () => {
+        if (mode === 'removed') f.api.workspace.workspaceFolders = [];
+        if (mode === 'untrusted') f.api.workspace.isTrusted = false;
+        if (mode === 'superseded')
+          f.store.set(
+            'scalewayAI.pendingPythonIdeProject',
+            path.join(f.root, 'another'),
+          );
+      };
+      await f.configureIde(f.root, f.context, () => true);
+      await waitIde(() => f.state.selections?.length === 1);
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      assert.deepEqual(f.state.openedEntries, [f.root]);
+      assert.equal(f.store.size, 1);
+    },
+  );
 }
 
 async function projectApiFixture(t) {
@@ -630,11 +672,21 @@ async function projectApiFixture(t) {
   const parentUri = { scheme: 'file', fsPath: path.dirname(f.root) };
   f.api.workspace.workspaceFolders = [{ uri: parentUri }, { uri: projectUri }];
   f.state.owner = { name: 'parent', uri: parentUri };
-  const local = { envId: { id: 'child-venv', managerId: 'venv-manager' }, sysPrefix: path.join(f.root, '.venv'), execInfo: { run: { executable: path.join(f.root, '.venv/bin/python') } } };
-  const system = { envId: { id: 'system', managerId: 'system-manager' }, sysPrefix: '/usr', execInfo: { run: { executable: '/usr/bin/python' } } };
+  const local = {
+    envId: { id: 'child-venv', managerId: 'venv-manager' },
+    sysPrefix: path.join(f.root, '.venv'),
+    execInfo: { run: { executable: path.join(f.root, '.venv/bin/python') } },
+  };
+  const system = {
+    envId: { id: 'system', managerId: 'system-manager' },
+    sysPrefix: '/usr',
+    execInfo: { run: { executable: '/usr/bin/python' } },
+  };
   const projectApi = {
     getPythonProject: (uri) => {
-      assert.ok([f.root, path.join(f.root, 'pyproject.toml')].includes(uri.fsPath));
+      assert.ok(
+        [f.root, path.join(f.root, 'pyproject.toml')].includes(uri.fsPath),
+      );
       return f.state.owner;
     },
     addPythonProject: (project) => {
@@ -657,9 +709,13 @@ async function projectApiFixture(t) {
       await f.state.onProjectSelect?.();
     },
     getEnvironment: async (uri) => {
-      assert.ok([f.root, path.join(f.root, 'pyproject.toml')].includes(uri.fsPath));
+      assert.ok(
+        [f.root, path.join(f.root, 'pyproject.toml')].includes(uri.fsPath),
+      );
       f.state.projectReads = (f.state.projectReads ?? 0) + 1;
-      const stale = f.state.projectReads <= (f.state.staleReads ?? 0) || (f.state.fileMismatch && uri.fsPath !== f.root);
+      const stale =
+        f.state.projectReads <= (f.state.staleReads ?? 0) ||
+        (f.state.fileMismatch && uri.fsPath !== f.root);
       return stale ? system : local;
     },
   };
@@ -671,12 +727,21 @@ test('Python Environments registers exact nested child and selects/verifies file
   f.state.staleReads = 2;
   await f.configureIde(f.root, f.context, () => true);
   await waitIde(() => f.state.projectReads === 2);
-  assert.equal(f.state.openedEntries, undefined);
+  assert.deepEqual(f.state.openedEntries, [f.root]);
   await waitIde(() => f.store.size === 0);
   assert.equal(f.state.added.uri.fsPath, f.root);
   assert.equal(f.state.projectSelection.uri.fsPath, f.root);
-  assert.equal(f.state.selections, undefined, 'do not call legacy settings setter with Python Environments present');
-  assert.deepEqual(f.state.order, ['register-child', 'resolve', 'select-child', 'open']);
+  assert.equal(
+    f.state.selections,
+    undefined,
+    'do not call legacy settings setter with Python Environments present',
+  );
+  assert.deepEqual(f.state.order, [
+    'open',
+    'register-child',
+    'resolve',
+    'select-child',
+  ]);
   assert.deepEqual(f.state.openedEntries, [f.root]);
 });
 test('Existing exact Python child is reused during queued reload resumption', async (t) => {
@@ -694,7 +759,7 @@ test('System environment returned by resolver is refused before any selection', 
   await f.configureIde(f.root, f.context, () => true);
   await waitIde(() => !!f.state.warning);
   assert.equal(f.state.projectSelection, undefined);
-  assert.equal(f.state.openedEntries, undefined);
+  assert.deepEqual(f.state.openedEntries, [f.root]);
   assert.equal(f.store.size, 1);
 });
 test('Child ownership refusal never falls back to selecting parent', async (t) => {
@@ -705,7 +770,7 @@ test('Child ownership refusal never falls back to selecting parent', async (t) =
   await new Promise((r) => setTimeout(r, 20));
   assert.equal(f.state.projectSelection, undefined);
   assert.equal(f.state.selections, undefined);
-  assert.equal(f.state.openedEntries, undefined);
+  assert.deepEqual(f.state.openedEntries, [f.root]);
   assert.equal(f.store.size, 1);
 });
 test('Python Environments API failure never silently falls back to legacy API', async (t) => {
@@ -714,7 +779,7 @@ test('Python Environments API failure never silently falls back to legacy API', 
   await f.configureIde(f.root, f.context, () => true);
   await waitIde(() => !!f.state.warning);
   assert.equal(f.state.selections, undefined);
-  assert.equal(f.state.openedEntries, undefined);
+  assert.deepEqual(f.state.openedEntries, [f.root]);
   assert.equal(f.store.size, 1);
 });
 test('File-level environment must match child selection even when folder getter matches', async (t) => {
@@ -723,7 +788,7 @@ test('File-level environment must match child selection even when folder getter 
   await f.configureIde(f.root, f.context, () => true);
   await waitIde(() => !!f.state.warning, 1200);
   assert.equal(f.state.projectReads, 80);
-  assert.equal(f.state.openedEntries, undefined);
+  assert.deepEqual(f.state.openedEntries, [f.root]);
   assert.equal(f.store.size, 1);
 });
 for (const mode of ['removed', 'untrusted', 'superseded']) {
@@ -732,13 +797,17 @@ for (const mode of ['removed', 'untrusted', 'superseded']) {
     f.state.onResolve = async () => {
       if (mode === 'removed') f.api.workspace.workspaceFolders = [];
       if (mode === 'untrusted') f.api.workspace.isTrusted = false;
-      if (mode === 'superseded') f.store.set('scalewayAI.pendingPythonIdeProject', path.join(f.root, 'another'));
+      if (mode === 'superseded')
+        f.store.set(
+          'scalewayAI.pendingPythonIdeProject',
+          path.join(f.root, 'another'),
+        );
     };
     await f.configureIde(f.root, f.context, () => true);
     await waitIde(() => f.state.order.includes('resolve'));
     await new Promise((r) => setTimeout(r, 20));
     assert.equal(f.state.projectSelection, undefined);
-    assert.equal(f.state.openedEntries, undefined);
+    assert.deepEqual(f.state.openedEntries, [f.root]);
   });
 }
 
@@ -746,74 +815,143 @@ async function compiledFixture(t, language) {
   const f = await ideFixture(t);
   if (language === 'typescript') {
     await fs.writeFile(path.join(f.root, 'tsconfig.json'), '{}');
-    await fs.mkdir(path.join(f.root, 'node_modules/typescript/lib'), { recursive: true });
-    for (const name of ['tsserver.js', 'tsc.js']) await fs.writeFile(path.join(f.root, 'node_modules/typescript/lib', name), 'never executed');
+    await fs.mkdir(path.join(f.root, 'node_modules/typescript/lib'), {
+      recursive: true,
+    });
+    for (const name of ['tsserver.js', 'tsc.js'])
+      await fs.writeFile(
+        path.join(f.root, 'node_modules/typescript/lib', name),
+        'never executed',
+      );
   } else await fs.writeFile(path.join(f.root, 'Cargo.toml'), '[package]');
-  f.api.workspace.getConfiguration = (section, uri) => {
-    assert.equal(uri.fsPath, path.join(f.root, language === 'typescript' ? 'tsconfig.json' : 'Cargo.toml'));
-    return { get: (key) => f.state.badConfig ? undefined : key === 'tsdk' ? 'node_modules/typescript/lib' : ['./Cargo.toml'] };
+  f.api.workspace.getConfiguration = (_section, uri) => {
+    assert.equal(
+      uri.fsPath,
+      path.join(
+        f.root,
+        language === 'typescript' ? 'tsconfig.json' : 'Cargo.toml',
+      ),
+    );
+    return {
+      get: (key) =>
+        f.state.badConfig
+          ? undefined
+          : key === 'tsdk'
+            ? 'node_modules/typescript/lib'
+            : ['./Cargo.toml'],
+    };
   };
   f.api.extensions.getExtension = (id) => {
-    assert.equal(id, language === 'typescript' ? 'vscode.typescript-language-features' : 'rust-lang.rust-analyzer');
-    return f.state.missingLanguageExtension ? undefined : { activate: async () => { f.state.order.push('activate'); await f.state.onLanguageActivate?.(); } };
+    assert.equal(
+      id,
+      language === 'typescript'
+        ? 'vscode.typescript-language-features'
+        : 'rust-lang.rust-analyzer',
+    );
+    return f.state.missingLanguageExtension
+      ? undefined
+      : {
+          activate: async () => {
+            f.state.order.push('activate');
+            await f.state.onLanguageActivate?.();
+          },
+        };
   };
   return f;
 }
 for (const language of ['typescript', 'rust']) {
-  test(language + ' queues exact workspace root before activating language IDE and opening entry', async (t) => {
-    const f = await compiledFixture(t, language);
-    f.api.workspace.workspaceFolders = [{ uri: { scheme: 'file', fsPath: path.dirname(f.root) } }];
-    assert.equal(await f.configureCompiledIde(f.root, language, f.context, () => true), true);
-    assert.equal(f.state.updates[0][2].uri.fsPath, f.root);
-    assert.equal(f.state.openedEntries, undefined);
-    f.api.workspace.workspaceFolders.push({ uri: { scheme: 'file', fsPath: f.root } });
-    f.state.rootsChanged();
-    await waitIde(() => f.store.size === 0);
-    assert.deepEqual(f.state.order, ['activate', 'open']);
-    assert.deepEqual(f.state.openedEntries, [f.root]);
-    assert.equal(f.state.tasks.length, 0);
-  });
-  test(language + ' resumes queued project after simulated activation without scanning existing projects', async (t) => {
-    const f = await compiledFixture(t, language);
-    f.api.workspace.workspaceFolders = [{ uri: { scheme: 'file', fsPath: f.root } }];
-    f.store.set('scalewayAI.pendingCompiledIdeProject', { project: f.root, language });
-    f.initializeCompiledIde(f.context);
-    await waitIde(() => f.store.size === 0);
-    f.state.rootsChanged();
-    await new Promise(r => setTimeout(r, 15));
-    assert.deepEqual(f.state.openedEntries, [f.root]);
-  });
-  test(language + ' missing extension opens source with explicit warning and no installation', async (t) => {
-    const f = await compiledFixture(t, language);
-    f.state.missingLanguageExtension = true;
-    f.api.workspace.workspaceFolders = [{ uri: { scheme: 'file', fsPath: f.root } }];
-    await f.configureCompiledIde(f.root, language, f.context, () => true);
-    await waitIde(() => !!f.state.warning);
-    assert.deepEqual(f.state.openedEntries, [f.root]);
-    assert.equal(f.state.commands.length, 0);
-  });
-  test(language + ' invalid local configuration leaves entry closed and queue retained', async (t) => {
-    const f = await compiledFixture(t, language);
-    f.state.badConfig = true;
-    f.api.workspace.workspaceFolders = [{ uri: { scheme: 'file', fsPath: f.root } }];
-    await f.configureCompiledIde(f.root, language, f.context, () => true);
-    await waitIde(() => !!f.state.warning);
-    assert.equal(f.state.openedEntries, undefined);
-    assert.equal(f.store.size, 1);
-  });
+  test(
+    language +
+      ' queues exact workspace root before activating language IDE and opening entry',
+    async (t) => {
+      const f = await compiledFixture(t, language);
+      f.api.workspace.workspaceFolders = [
+        { uri: { scheme: 'file', fsPath: path.dirname(f.root) } },
+      ];
+      assert.equal(
+        await f.configureCompiledIde(f.root, language, f.context, () => true),
+        true,
+      );
+      assert.equal(f.state.updates[0][2].uri.fsPath, f.root);
+      assert.equal(f.state.openedEntries, undefined);
+      f.api.workspace.workspaceFolders.push({
+        uri: { scheme: 'file', fsPath: f.root },
+      });
+      f.state.rootsChanged();
+      await waitIde(() => f.store.size === 0);
+      assert.deepEqual(f.state.order, ['open', 'activate']);
+      assert.deepEqual(f.state.openedEntries, [f.root]);
+      assert.equal(f.state.tasks.length, 0);
+    },
+  );
+  test(
+    language +
+      ' resumes queued project after simulated activation without scanning existing projects',
+    async (t) => {
+      const f = await compiledFixture(t, language);
+      f.api.workspace.workspaceFolders = [
+        { uri: { scheme: 'file', fsPath: f.root } },
+      ];
+      f.store.set('scalewayAI.pendingCompiledIdeProject', {
+        project: f.root,
+        language,
+      });
+      f.initializeCompiledIde(f.context);
+      await waitIde(() => f.store.size === 0);
+      f.state.rootsChanged();
+      await new Promise((r) => setTimeout(r, 15));
+      assert.deepEqual(f.state.openedEntries, [f.root]);
+    },
+  );
+  test(
+    language +
+      ' missing extension opens source with explicit warning and no installation',
+    async (t) => {
+      const f = await compiledFixture(t, language);
+      f.state.missingLanguageExtension = true;
+      f.api.workspace.workspaceFolders = [
+        { uri: { scheme: 'file', fsPath: f.root } },
+      ];
+      await f.configureCompiledIde(f.root, language, f.context, () => true);
+      await waitIde(() => !!f.state.warning);
+      assert.deepEqual(f.state.openedEntries, [f.root]);
+      assert.equal(f.state.commands.length, 0);
+    },
+  );
+  test(
+    language +
+      ' invalid local configuration leaves entry editable and queue retained',
+    async (t) => {
+      const f = await compiledFixture(t, language);
+      f.state.badConfig = true;
+      f.api.workspace.workspaceFolders = [
+        { uri: { scheme: 'file', fsPath: f.root } },
+      ];
+      await f.configureCompiledIde(f.root, language, f.context, () => true);
+      await waitIde(() => !!f.state.warning);
+      assert.deepEqual(f.state.openedEntries, [f.root]);
+      assert.equal(f.store.size, 1);
+    },
+  );
   for (const mode of ['removed', 'untrusted', 'superseded']) {
     test(language + ' activation guards ' + mode, async (t) => {
       const f = await compiledFixture(t, language);
-      f.api.workspace.workspaceFolders = [{ uri: { scheme: 'file', fsPath: f.root } }];
+      f.api.workspace.workspaceFolders = [
+        { uri: { scheme: 'file', fsPath: f.root } },
+      ];
       f.state.onLanguageActivate = async () => {
         if (mode === 'removed') f.api.workspace.workspaceFolders = [];
         if (mode === 'untrusted') f.api.workspace.isTrusted = false;
-        if (mode === 'superseded') f.store.set('scalewayAI.pendingCompiledIdeProject', { project: path.join(f.root, 'other'), language });
+        if (mode === 'superseded')
+          f.store.set('scalewayAI.pendingCompiledIdeProject', {
+            project: path.join(f.root, 'other'),
+            language,
+          });
       };
       await f.configureCompiledIde(f.root, language, f.context, () => true);
       await waitIde(() => f.state.order.includes('activate'));
-      await new Promise(r => setTimeout(r, 15));
-      assert.equal(f.state.openedEntries, undefined);
+      await new Promise((r) => setTimeout(r, 15));
+      assert.deepEqual(f.state.openedEntries, [f.root]);
       assert.equal(f.store.size, 1);
     });
   }
@@ -824,7 +962,15 @@ test('Compiled IDE rejects untrusted/stale/refused root addition without opening
     const f = await compiledFixture(t, 'rust');
     if (mode === 'untrusted') f.api.workspace.isTrusted = false;
     if (mode === 'refused') f.state.updateResult = false;
-    assert.equal(await f.configureCompiledIde(f.root, 'rust', f.context, () => mode !== 'stale'), false);
+    assert.equal(
+      await f.configureCompiledIde(
+        f.root,
+        'rust',
+        f.context,
+        () => mode !== 'stale',
+      ),
+      false,
+    );
     assert.equal(f.state.openedEntries, undefined);
     assert.equal(f.store.size, 0);
   }
@@ -832,9 +978,110 @@ test('Compiled IDE rejects untrusted/stale/refused root addition without opening
 test('Missing TypeScript local compiler is not treated as prepared IDE', async (t) => {
   const f = await compiledFixture(t, 'typescript');
   await fs.rm(path.join(f.root, 'node_modules/typescript/lib/tsserver.js'));
-  f.api.workspace.workspaceFolders = [{ uri: { scheme: 'file', fsPath: f.root } }];
+  f.api.workspace.workspaceFolders = [
+    { uri: { scheme: 'file', fsPath: f.root } },
+  ];
   await f.configureCompiledIde(f.root, 'typescript', f.context, () => true);
   await waitIde(() => !!f.state.warning);
-  assert.equal(f.state.openedEntries, undefined);
+  assert.deepEqual(f.state.openedEntries, [f.root]);
   assert.equal(f.store.size, 1);
+});
+
+test('Refused Python root addition retains IDE queue; reloaded host opens entry even without Python extension', async (t) => {
+  const f = await ideFixture(t);
+  f.state.updateResult = false;
+  assert.equal(
+    await f.configureIde(f.root, f.context, () => true, true),
+    false,
+  );
+  assert.equal(f.store.get('scalewayAI.pendingPythonIdeProject'), f.root);
+  assert.equal(
+    f.state.openedEntries,
+    undefined,
+    'creation already opened in this host',
+  );
+  const reloaded = { ...f.context, subscriptions: [] };
+  t.after(() =>
+    reloaded.subscriptions.forEach((s) => {
+      s.dispose();
+    }),
+  );
+  f.state.missingExtension = true;
+  f.state.warning = undefined;
+  f.api.workspace.workspaceFolders = [
+    { uri: { scheme: 'file', fsPath: f.root } },
+  ];
+  f.initializeIde(reloaded);
+  await waitIde(() => !!f.state.warning);
+  assert.deepEqual(f.state.openedEntries, [f.root]);
+  assert.equal(f.store.size, 1);
+  f.state.missingExtension = false;
+  f.state.extensionsChanged();
+  await waitIde(() => f.store.size === 0);
+  assert.deepEqual(
+    f.state.openedEntries,
+    [f.root],
+    'do not focus again after IDE retry',
+  );
+  assert.equal(f.state.tasks.length, 0);
+});
+test('Reloaded Python queue opens entry before invalid venv check, retaining environment work', async (t) => {
+  const f = await ideFixture(t);
+  await fs.rm(path.join(f.root, '.venv'), { recursive: true, force: true });
+  f.store.set('scalewayAI.pendingPythonIdeProject', f.root);
+  f.api.workspace.workspaceFolders = [
+    { uri: { scheme: 'file', fsPath: f.root } },
+  ];
+  f.initializeIde(f.context);
+  await waitIde(() => !!f.state.warning);
+  assert.deepEqual(f.state.openedEntries, [f.root]);
+  assert.equal(f.store.size, 1);
+  assert.equal(f.state.selections, undefined);
+});
+test('Already opened creation entry is not refocused by same-host IDE preparation', async (t) => {
+  const f = await ideFixture(t);
+  f.api.workspace.workspaceFolders = [
+    { uri: { scheme: 'file', fsPath: f.root } },
+  ];
+  await f.configureIde(f.root, f.context, () => true, true);
+  await waitIde(() => f.store.size === 0);
+  assert.equal(f.state.openedEntries, undefined);
+  assert.equal(f.state.selections.length, 1);
+});
+
+test('Queued Python entry respects trust/root/pending identity before opening', async (t) => {
+  for (const mode of ['untrusted', 'no-root', 'superseded']) {
+    const f = await ideFixture(t);
+    f.store.set('scalewayAI.pendingPythonIdeProject', f.root);
+    f.api.workspace.workspaceFolders = [
+      { uri: { scheme: 'file', fsPath: f.root } },
+    ];
+    if (mode === 'untrusted') f.api.workspace.isTrusted = false;
+    if (mode === 'no-root') f.api.workspace.workspaceFolders = [];
+    if (mode === 'superseded')
+      f.store.set(
+        'scalewayAI.pendingPythonIdeProject',
+        path.join(f.root, 'other'),
+      );
+    f.initializeIde(f.context);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    assert.equal(f.state.openedEntries, undefined, mode);
+    assert.equal(f.state.selections, undefined, mode);
+  }
+});
+test('Failed source open is retried on IDE resumption, without claiming environment success', async (t) => {
+  const f = await ideFixture(t);
+  f.api.workspace.workspaceFolders = [
+    { uri: { scheme: 'file', fsPath: f.root } },
+  ];
+  f.state.missingExtension = true;
+  f.state.entryUnavailable = true;
+  await f.configureIde(f.root, f.context, () => true);
+  await waitIde(() => !!f.state.warning);
+  assert.equal(f.state.openedEntries, undefined);
+  f.state.entryUnavailable = false;
+  f.state.extensionsChanged();
+  await waitIde(() => f.state.openedEntries?.length === 1);
+  assert.equal(f.store.size, 1);
+  assert.equal(f.state.selections, undefined);
 });

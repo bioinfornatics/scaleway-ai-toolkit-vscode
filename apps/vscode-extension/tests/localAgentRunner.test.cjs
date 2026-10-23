@@ -60,7 +60,10 @@ async function fixture(t) {
           return state.confirm ? state.confirm() : 'Exécuter';
       },
       showInformationMessage: async (message) => state.info.push(message),
-      showTextDocument: async (doc) => state.shows.push(doc),
+      showTextDocument: async (doc, options) => {
+        state.showOptions = options;
+        state.shows.push(doc);
+      },
     },
     Task: class {
       constructor(definition, scope, name, source, execution) {
@@ -328,6 +331,7 @@ test('Open uses declared unready entry, not authoring; absent config falls back 
     'link',
     'changed',
     'stale',
+    'untrusted',
   ]) {
     const f = await fixture(t);
     const entry = path.join(f.directory, 'src/agent_app/agent.py');
@@ -365,12 +369,14 @@ test('Open uses declared unready entry, not authoring; absent config falls back 
       f.state.document = uri;
       if (scenario === 'changed') await fsp.writeFile(entry, 'changed content');
       if (scenario === 'stale') current = false;
+      if (scenario === 'untrusted') f.api.workspace.isTrusted = false;
       return { uri, isClosed: false };
     };
     await f.runner.openEntry(f.directory, () => current);
     if (['configured', 'fallback'].includes(scenario)) {
       assert.equal(f.state.shows.length, 1, scenario);
       assert.equal(f.state.shows[0].uri.fsPath, entry, scenario);
+      assert.deepEqual(f.state.showOptions, { preview: false });
     } else assert.equal(f.state.shows.length, 0, scenario);
     assert.equal(f.state.tasks.length, 0);
   }
@@ -423,19 +429,48 @@ test('Python symlink-backed venv preserves virtualenv context when dispatched', 
 test('Version 2 Python console entry runs installed command with args only and guards manifest mutation', async (t) => {
   const f = await fixture(t);
   await fsp.mkdir(path.join(f.directory, 'src/agent_app'), { recursive: true });
-  await fsp.writeFile(path.join(f.directory, 'src/agent_app/agent.py'), '# offline');
+  await fsp.writeFile(
+    path.join(f.directory, 'src/agent_app/agent.py'),
+    '# offline',
+  );
   await fsp.mkdir(path.join(f.directory, '.venv/bin'), { recursive: true });
-  await fsp.writeFile(path.join(f.directory, '.venv/bin/python'), '# fake python', { mode: 0o700 });
-  await fsp.writeFile(path.join(f.directory, '.venv/bin/agent'), '# fake installed entry', { mode: 0o700 });
+  await fsp.writeFile(
+    path.join(f.directory, '.venv/bin/python'),
+    '# fake python',
+    { mode: 0o700 },
+  );
+  await fsp.writeFile(
+    path.join(f.directory, '.venv/bin/agent'),
+    '# fake installed entry',
+    { mode: 0o700 },
+  );
   const manifest = '[project.scripts]\nagent = "agent_app.agent:main"\n';
   await fsp.writeFile(path.join(f.directory, 'pyproject.toml'), manifest);
-  const config = { ...f.config, version: 2, consoleScript: 'agent', entry: 'src/agent_app/agent.py', args: ['Bonjour'] };
-  await fsp.writeFile(path.join(f.directory, '.vscode/scaleway-agent-run.json'), JSON.stringify(config));
+  const config = {
+    ...f.config,
+    version: 2,
+    consoleScript: 'agent',
+    entry: 'src/agent_app/agent.py',
+    args: ['Bonjour'],
+  };
+  await fsp.writeFile(
+    path.join(f.directory, '.vscode/scaleway-agent-run.json'),
+    JSON.stringify(config),
+  );
   await f.runner.start(f.directory, 'console', () => true);
-  assert.equal(f.state.tasks[0].execution.executable, path.join(f.directory, '.venv/bin/agent'));
+  assert.equal(
+    f.state.tasks[0].execution.executable,
+    path.join(f.directory, '.venv/bin/agent'),
+  );
   assert.deepEqual(f.state.tasks[0].execution.args, ['Bonjour']);
   f.state.listeners.processEnd({ execution: f.state.execution, exitCode: 0 });
-  f.state.confirm = async () => { await fsp.writeFile(path.join(f.directory, 'pyproject.toml'), manifest + '# changed'); return 'Exécuter'; };
+  f.state.confirm = async () => {
+    await fsp.writeFile(
+      path.join(f.directory, 'pyproject.toml'),
+      manifest + '# changed',
+    );
+    return 'Exécuter';
+  };
   await f.runner.start(f.directory, 'changed', () => true);
   assert.equal(f.state.tasks.length, 1);
   assert.throws(() => f.parse({ ...config, runtime: 'node' }));
@@ -444,11 +479,41 @@ test('Version 2 Python console entry runs installed command with args only and g
 test('Missing installed Python console command refuses launch instead of installing or falling back', async (t) => {
   const f = await fixture(t);
   await fsp.mkdir(path.join(f.directory, 'src/agent_app'), { recursive: true });
-  await fsp.writeFile(path.join(f.directory, 'src/agent_app/agent.py'), '# offline');
+  await fsp.writeFile(
+    path.join(f.directory, 'src/agent_app/agent.py'),
+    '# offline',
+  );
   await fsp.mkdir(path.join(f.directory, '.venv/bin'), { recursive: true });
-  await fsp.writeFile(path.join(f.directory, '.venv/bin/python'), '# fake', { mode: 0o700 });
-  await fsp.writeFile(path.join(f.directory, 'pyproject.toml'), '[project.scripts]\nagent="agent_app.agent:main"');
-  await fsp.writeFile(path.join(f.directory, '.vscode/scaleway-agent-run.json'), JSON.stringify({ ...f.config, version: 2, consoleScript: 'agent', entry: 'src/agent_app/agent.py' }));
+  await fsp.writeFile(path.join(f.directory, '.venv/bin/python'), '# fake', {
+    mode: 0o700,
+  });
+  await fsp.writeFile(
+    path.join(f.directory, 'pyproject.toml'),
+    '[project.scripts]\nagent="agent_app.agent:main"',
+  );
+  await fsp.writeFile(
+    path.join(f.directory, '.vscode/scaleway-agent-run.json'),
+    JSON.stringify({
+      ...f.config,
+      version: 2,
+      consoleScript: 'agent',
+      entry: 'src/agent_app/agent.py',
+    }),
+  );
   await f.runner.start(f.directory, 'missing', () => true);
+  assert.equal(f.state.tasks.length, 0);
+});
+
+test('Rust without Python/Node launch config opens pinned main.rs fallback without execution', async (t) => {
+  const f = await fixture(t);
+  await fsp.unlink(path.join(f.directory, '.vscode/scaleway-agent-run.json'));
+  await fsp.unlink(path.join(f.directory, 'agent.py'));
+  await fsp.mkdir(path.join(f.directory, 'src'));
+  const entry = path.join(f.directory, 'src/main.rs');
+  await fsp.writeFile(entry, 'fn main() {}');
+  f.api.workspace.openTextDocument = async (uri) => ({ uri, isClosed: false });
+  await f.runner.openEntry(f.directory, () => true);
+  assert.equal(f.state.shows[0].uri.fsPath, entry);
+  assert.deepEqual(f.state.showOptions, { preview: false });
   assert.equal(f.state.tasks.length, 0);
 });

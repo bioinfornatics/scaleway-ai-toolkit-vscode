@@ -13,16 +13,17 @@ const compiled = transformSync(source, {
   format: 'cjs',
   target: 'node22',
 }).code;
-function actualModule(name) {
+function actualModule(name, overrides = {}) {
   const Module = require('node:module');
   const filename = path.join(__dirname, '../src', `${name}.ts`);
   const mod = new Module(filename);
   mod.filename = filename;
   mod.paths = Module._nodeModulePaths(path.dirname(filename));
   mod.require = (request) =>
-    request.startsWith('./')
-      ? actualModule(request.slice(2))
-      : Module.prototype.require.call(mod, request);
+    overrides[request] ??
+    (request.startsWith('./')
+      ? actualModule(request.slice(2), overrides)
+      : Module.prototype.require.call(mod, request));
   mod._compile(
     transformSync(fs.readFileSync(filename, 'utf8'), {
       loader: 'ts',
@@ -156,7 +157,8 @@ function fixture() {
         state.pickerOptions = options;
         return state.filePick;
       },
-      showTextDocument: async (document) => {
+      showTextDocument: async (document, options) => {
+        state.showOptions = options;
         state.shows.push(document);
       },
     },
@@ -244,8 +246,13 @@ function fixture() {
         return {
           openLocalAgentEntry: async (project, current) => {
             if (current()) {
+              if (state.openEntry && !(await state.openEntry(project, current)))
+                return false;
               state.openedEntries ??= [];
               state.openedEntries.push(project);
+              state.creationOrder ??= [];
+              state.creationOrder.push('open');
+              return true;
             }
           },
         };
@@ -259,6 +266,10 @@ function fixture() {
             return true;
           },
           configureCreatedPythonIde: async (project) => {
+            state.creationOrder ??= [];
+            state.creationOrder.push('root-registration');
+            assert.deepEqual(state.openedEntries, [project]);
+            await state.configureIde?.(project);
             state.configuredPython ??= [];
             state.configuredPython.push(project);
             return true;
@@ -266,7 +277,10 @@ function fixture() {
           prepareCreatedAgentProject: async (project) => {
             state.preparedPython ??= [];
             state.preparedPython.push(project);
-            return true;
+            state.creationOrder ??= [];
+            state.creationOrder.push('prepare');
+            await state.onPrepare?.();
+            return state.preparationResult ?? true;
           },
           offerProjectActions: async (project, template) => {
             state.postCreate = { project, template };
@@ -360,7 +374,7 @@ function fixture() {
   };
   state.row = () =>
     state.panels.at(-1).webview.html.match(/data-index="([a-f0-9]+)"/)[1];
-  return { state, host, workspace, api, uri };
+  return { state, host, workspace, api, uri, vscode };
 }
 test('closed parser rejects extra fields, kinds, malformed tokens and indices', () => {
   const { api } = fixture();
@@ -474,6 +488,7 @@ test('stale async workspace/trust/panel actions never materialize', async () => 
     });
     await state.send('create', row);
     assert.equal(state.creates.length, 0);
+    assert.equal(state.openedEntries, undefined);
   }
 });
 test('virtual roots excluded, invalid native name refused, refresh invalidates token', async () => {
@@ -1922,7 +1937,11 @@ test('Given external destination, When an agent is confirmed, Then real exclusiv
     path.join(require('node:os').tmpdir(), 'scw-external-creation-'),
   );
   t.after(() => fsp.rm(external, { recursive: true, force: true }));
-  const { state, host } = fixture();
+  const { state, host, vscode } = fixture();
+  state.openEntry = actualModule('localAgentRunner', {
+    vscode,
+  }).openLocalAgentEntry;
+  state.openDocument = async (uri) => ({ uri, isClosed: false });
   const actualWriter = actualModule('agentScaffold').materializeTemplate;
   state.materialize = async (...args) => {
     state.creates.push(args);
@@ -1938,6 +1957,7 @@ test('Given external destination, When an agent is confirmed, Then real exclusiv
   await state.send('destination');
   const backend = option(panel.webview.html, 'backend', 'FastAPI');
   await state.send('backend', backend);
+  await state.send('ai', option(panel.webview.html, 'ai', 'Strands'));
   await state.send('name', undefined, { name: 'external-agent' });
   await state.send(
     'model',
@@ -1951,11 +1971,17 @@ test('Given external destination, When an agent is confirmed, Then real exclusiv
   assert.match(panel.webview.html, /Projet créé, environnement Python préparé/);
   assert.deepEqual(state.preparedPython, [project]);
   assert.deepEqual(state.configuredPython, [project]);
+  assert.deepEqual(state.openedEntries, [project]);
   assert.equal(
-    state.openedEntries,
-    undefined,
-    'prepared Python entry is deferred to verified IDE selection',
+    state.shows[0].uri.fsPath,
+    path.join(project, 'src/agent_app/agent.py'),
   );
+  assert.deepEqual(state.showOptions, { preview: false });
+  assert.deepEqual(state.creationOrder, [
+    'prepare',
+    'open',
+    'root-registration',
+  ]);
   assert.match(panel.webview.html, /Python avec uv préparé automatiquement/);
   assert.doesNotMatch(
     panel.webview.html,
@@ -2758,4 +2784,103 @@ test('real local materializer writes 0600 .env with exact selected key, never mo
       await fsp.readFile(path.join(parent, 'exact-key', '.gitignore'), 'utf8')
     ).includes('/.env'),
   );
+});
+
+test('Python Strands entry opens after preparation, before IDE/root handoff, including incomplete preparation', async () => {
+  for (const mode of [
+    'prepared',
+    'incomplete',
+    'throwing-preparation',
+    'missing-ide',
+    'failed-ide',
+    'refused-root',
+  ]) {
+    const { state, host } = fixture();
+    addServerless(state);
+    await host.open('agents');
+    const panel = state.panels[0];
+    await state.send(
+      'backend',
+      option(panel.webview.html, 'backend', 'FastAPI'),
+    );
+    await state.send('ai', option(panel.webview.html, 'ai', 'Strands'));
+    await state.send('name', undefined, { name: 'editable-agent' });
+    await state.send(
+      'model',
+      option(panel.webview.html, 'model', 'serverless-test'),
+    );
+    state.preparationResult = mode !== 'incomplete';
+    if (mode === 'throwing-preparation')
+      state.onPrepare = async () => {
+        throw new Error('preparation unavailable');
+      };
+    state.configureIde = async () => {
+      assert.deepEqual(state.openedEntries, ['/mock/project/editable-agent']);
+      if (mode === 'failed-ide') throw new Error('IDE activation failed');
+      return mode === 'prepared';
+    };
+    state.confirms.push('Créer dans le projet');
+    await state.send(
+      'create',
+      option(panel.webview.html, 'backend', 'FastAPI'),
+    );
+    assert.equal(state.creates.length, 1, mode);
+    assert.deepEqual(
+      state.openedEntries,
+      ['/mock/project/editable-agent'],
+      mode,
+    );
+    assert.deepEqual(
+      state.creationOrder,
+      ['incomplete', 'throwing-preparation'].includes(mode)
+        ? ['prepare', 'open']
+        : ['prepare', 'open', 'root-registration'],
+      mode,
+    );
+  }
+});
+test('Created entry never opens after cancellation, failed write, or stale/trust/disposal during preparation', async () => {
+  for (const mode of [
+    'cancel',
+    'failed-write',
+    'stale',
+    'untrusted',
+    'disposed',
+  ]) {
+    const { state, host, workspace, uri } = fixture();
+    addServerless(state);
+    await host.open('agents');
+    const panel = state.panels[0];
+    await state.send(
+      'backend',
+      option(panel.webview.html, 'backend', 'FastAPI'),
+    );
+    await state.send('name', undefined, { name: 'guarded-agent' });
+    await state.send(
+      'model',
+      option(panel.webview.html, 'model', 'serverless-test'),
+    );
+    if (mode === 'failed-write')
+      state.materialize = async () => {
+        throw new Error('write failed');
+      };
+    state.onPrepare = async () => {
+      if (mode === 'stale')
+        workspace.workspaceFolders = [{ name: 'Other', uri: uri('/other') }];
+      if (mode === 'untrusted') workspace.isTrusted = false;
+      if (mode === 'disposed') host.dispose();
+    };
+    if (mode !== 'cancel') state.confirms.push('Créer dans le projet');
+    await state.send(
+      'create',
+      option(panel.webview.html, 'backend', 'FastAPI'),
+    );
+    assert.equal(
+      state.creates.length,
+      ['cancel', 'failed-write'].includes(mode) ? 0 : 1,
+      mode,
+    );
+    assert.equal(state.openedEntries, undefined, mode);
+    assert.equal(state.configuredPython, undefined, mode);
+  }
 });

@@ -361,6 +361,16 @@ La création d’agent affiche le chemin final prévu (dossier parent + nom), ac
 
 L’action post-création proposée en premier est **Ajouter au workspace actuel**, pour privilégier la construction d’agents/outils dans un monorepo. L’ouverture dans une nouvelle fenêtre reste une alternative. L’ordre ne déclenche aucune action : l’ajout, l’installation et l’exécution restent des choix explicites distincts ; la présentation native des boutons dépend de VS Code.
 
+Après création et tentative de préparation des dépendances, le point d’entrée source
+vérifié (par exemple `src/agent_app/agent.py` pour Python/Strands) s’ouvre dans un
+onglet **épinglé**, avant toute tentative d’ajout du dossier au workspace. Cette
+ouverture pour modifier le code ne dépend pas de l’extension Python ni de la
+confirmation du `.venv`. La sélection Python reste en attente et reprend après
+ajout de la racine ou rechargement de l’hôte ; le point d’entrée peut alors être
+rouvert indépendamment. Les avertissements de préparation/sélection restent
+applicables : un fichier ouvert ne prouve ni analyse IDE prête, ni environnement
+confirmé, ni agent exécuté. Aucun appel modèle n’est déclenché par cette ouverture.
+
 ### Retirer un agent local
 
 « − Retirer… » distingue retrait de racine workspace (fichiers conservés) et demande de corbeille du dossier complet, incluant le `.env`. Seuls les projets marqués imbriqués dans une autre racine peuvent être mis à la corbeille : racine principale, dépôt Git, sous-projets, liens, arbres trop volumineux ou exécutions propres actives sont bloqués. Confirmation et revalidation de l’arbre obligatoires. La corbeille est demandée via VS Code, sans second essai définitif par l’extension ; disponibilité et comportement effectifs dépendent du fournisseur/hôte. Une suppression réussie peut précéder un refus de retrait workspace, signalé séparément. Aucun effet Scaleway, aucune révocation clé API. Des changements concurrents après dernière revalidation restent possibles avec l’API pathname ; le retrait de fichiers ne sauvegarde pas les buffers éditeur.

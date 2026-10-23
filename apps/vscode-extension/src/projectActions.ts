@@ -2,8 +2,8 @@ import { randomUUID } from 'node:crypto';
 import { lstat, stat } from 'node:fs/promises';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { installCommand } from './projectGenerator';
 import { openLocalAgentEntry } from './localAgentRunner';
+import { installCommand } from './projectGenerator';
 import type { TemplateDefinition } from './templateLibrary';
 /** Fixed executable/argv in a visible task. Templates cannot supply commands.
  * Package installation may execute dependency build scripts, with separate consent. */
@@ -228,6 +228,33 @@ export async function prepareCreatedAgentProject(
   }
 }
 
+// Durable IDE queues also carry the entry handoff across host reloads. This
+// host-local set avoids stealing focus again when extensions/settings change.
+const openedCreatedEntries = new WeakMap<
+  vscode.ExtensionContext,
+  Set<string>
+>();
+function rememberCreatedEntry(
+  context: vscode.ExtensionContext,
+  project: string,
+): void {
+  let opened = openedCreatedEntries.get(context);
+  if (!opened) {
+    opened = new Set();
+    openedCreatedEntries.set(context, opened);
+  }
+  opened.add(project);
+}
+async function resumeCreatedEntry(
+  context: vscode.ExtensionContext,
+  project: string,
+  current: () => boolean,
+): Promise<void> {
+  if (!current() || openedCreatedEntries.get(context)?.has(project)) return;
+  const opened = await openLocalAgentEntry(project, current);
+  if (opened && current()) rememberCreatedEntry(context, project);
+}
+
 const PYTHON_IDE_PENDING = 'scalewayAI.pendingPythonIdeProject';
 const pythonIdeResumers = new WeakMap<vscode.ExtensionContext, () => void>();
 /** Resume only an explicitly queued newly-created project, never scan/migrate existing roots. */
@@ -252,6 +279,11 @@ export function initializePythonIde(context: vscode.ExtensionContext): void {
     if (!exactRoot()) return;
     busy = true;
     try {
+      const entryCurrent = () =>
+        exactRoot() &&
+        context.workspaceState.get<string>(PYTHON_IDE_PENDING) === project;
+      await resumeCreatedEntry(context, project, entryCurrent);
+      if (!entryCurrent()) return;
       const directory = await lstat(project);
       const env = await lstat(path.join(project, '.venv'));
       const bin = await lstat(path.join(project, '.venv/bin'));
@@ -310,40 +342,60 @@ export function initializePythonIde(context: vscode.ExtensionContext): void {
         const projectsApi = (await environmentsExtension.activate()) as {
           getPythonProject: (uri: vscode.Uri) => PythonProject | undefined;
           addPythonProject: (project: PythonProject) => void;
-          resolveEnvironment: (uri: vscode.Uri) => Promise<Environment | undefined>;
+          resolveEnvironment: (
+            uri: vscode.Uri,
+          ) => Promise<Environment | undefined>;
           setEnvironment: (uri: vscode.Uri, env: Environment) => Promise<void>;
           getEnvironment: (uri: vscode.Uri) => Promise<Environment | undefined>;
         };
         if (!stillPending()) return;
         if (
-          !projectsApi.getPythonProject || !projectsApi.addPythonProject ||
-          !projectsApi.resolveEnvironment || !projectsApi.setEnvironment ||
+          !projectsApi.getPythonProject ||
+          !projectsApi.addPythonProject ||
+          !projectsApi.resolveEnvironment ||
+          !projectsApi.setEnvironment ||
           !projectsApi.getEnvironment
-        ) throw new Error('python_projects_api_unavailable');
+        )
+          throw new Error('python_projects_api_unavailable');
         const ownsChild = () =>
           projectsApi.getPythonProject(resource)?.uri.fsPath === project &&
           projectsApi.getPythonProject(projectUri)?.uri.fsPath === project;
         if (!ownsChild())
-          projectsApi.addPythonProject({ name: path.basename(project), uri: projectUri });
+          projectsApi.addPythonProject({
+            name: path.basename(project),
+            uri: projectUri,
+          });
         if (!stillPending() || !ownsChild()) return;
-        const resolved = await projectsApi.resolveEnvironment(vscode.Uri.file(executable));
+        const resolved = await projectsApi.resolveEnvironment(
+          vscode.Uri.file(executable),
+        );
         const isLocal = (value: Environment | undefined) =>
           value?.execInfo?.run?.executable === executable &&
           value.sysPrefix === path.join(project, '.venv') &&
-          !!value.envId?.id && !!value.envId.managerId;
+          !!value.envId?.id &&
+          !!value.envId.managerId;
         if (!stillPending() || !ownsChild()) return;
-        if (!isLocal(resolved) || !resolved) throw new Error('python_environment_unresolved');
+        if (!isLocal(resolved) || !resolved)
+          throw new Error('python_environment_unresolved');
         await projectsApi.setEnvironment(projectUri, resolved);
-        for (let attempt = 0; attempt < 40 && stillPending() && ownsChild(); attempt++) {
+        for (
+          let attempt = 0;
+          attempt < 40 && stillPending() && ownsChild();
+          attempt++
+        ) {
           const folderEnv = await projectsApi.getEnvironment(projectUri);
           const fileEnv = await projectsApi.getEnvironment(resource);
           if (
-            isLocal(folderEnv) && isLocal(fileEnv) &&
+            isLocal(folderEnv) &&
+            isLocal(fileEnv) &&
             folderEnv?.envId.id === resolved.envId.id &&
             folderEnv.envId.managerId === resolved.envId.managerId &&
             fileEnv?.envId.id === resolved.envId.id &&
             fileEnv.envId.managerId === resolved.envId.managerId
-          ) { selected = true; break; }
+          ) {
+            selected = true;
+            break;
+          }
           await new Promise((resolve) => setTimeout(resolve, 100));
         }
         if (!ownsChild()) return;
@@ -351,18 +403,25 @@ export function initializePythonIde(context: vscode.ExtensionContext): void {
         if (
           !api.environments?.updateActiveEnvironmentPath ||
           !api.environments.getActiveEnvironmentPath
-        ) throw new Error('python_api_unavailable');
-        await api.environments.updateActiveEnvironmentPath(executable, resource);
+        )
+          throw new Error('python_api_unavailable');
+        await api.environments.updateActiveEnvironmentPath(
+          executable,
+          resource,
+        );
         for (let attempt = 0; attempt < 40 && stillPending(); attempt++) {
-          if (api.environments.getActiveEnvironmentPath(resource).path === executable) {
-            selected = true; break;
+          if (
+            api.environments.getActiveEnvironmentPath(resource).path ===
+            executable
+          ) {
+            selected = true;
+            break;
           }
           await new Promise((resolve) => setTimeout(resolve, 100));
         }
       }
       if (!stillPending()) return;
       if (!selected) throw new Error('python_selection_unconfirmed');
-      await openLocalAgentEntry(project, stillPending);
       if (context.workspaceState.get<string>(PYTHON_IDE_PENDING) === project)
         await context.workspaceState.update(PYTHON_IDE_PENDING, undefined);
     } catch {
@@ -394,9 +453,11 @@ export async function configureCreatedPythonIde(
   project: string,
   context: vscode.ExtensionContext,
   current: () => boolean,
+  entryAlreadyOpened = false,
 ): Promise<boolean> {
   if (!current() || !vscode.workspace.isTrusted || !path.isAbsolute(project))
     return false;
+  if (entryAlreadyOpened) rememberCreatedEntry(context, project);
   initializePythonIde(context);
   await context.workspaceState.update(PYTHON_IDE_PENDING, project);
   if (!current() || !vscode.workspace.isTrusted) {
@@ -416,7 +477,7 @@ export async function configureCreatedPythonIde(
       name: path.basename(project),
     });
     if (!updated) {
-      await context.workspaceState.update(PYTHON_IDE_PENDING, undefined);
+      // Keep queued selection for a later explicit root addition.
       await vscode.window.showWarningMessage(
         'Environnement Python préparé, mais VS Code a refusé l’ajout du projet au workspace. Ouvrez ce dossier pour activer sa configuration Python.',
       );
@@ -432,75 +493,149 @@ const compiledIdeResumers = new WeakMap<vscode.ExtensionContext, () => void>();
 /** Resume only explicitly queued new projects. Activation is not analyzer readiness proof. */
 export function initializeCompiledIde(context: vscode.ExtensionContext): void {
   const existing = compiledIdeResumers.get(context);
-  if (existing) { existing(); return; }
+  if (existing) {
+    existing();
+    return;
+  }
   let busy = false;
   const resume = async () => {
     if (busy || !vscode.workspace.isTrusted) return;
-    const pending = context.workspaceState.get<CompiledIdeProject>(COMPILED_IDE_PENDING);
-    if (!pending || !path.isAbsolute(pending.project) || !['typescript', 'rust'].includes(pending.language)) return;
+    const pending =
+      context.workspaceState.get<CompiledIdeProject>(COMPILED_IDE_PENDING);
+    if (
+      !pending ||
+      !path.isAbsolute(pending.project) ||
+      !['typescript', 'rust'].includes(pending.language)
+    )
+      return;
     const { project, language } = pending;
     const current = () => {
-      const value = context.workspaceState.get<CompiledIdeProject>(COMPILED_IDE_PENDING);
-      return vscode.workspace.isTrusted && value?.project === project && value.language === language &&
-        (vscode.workspace.workspaceFolders ?? []).some(f => f.uri.scheme === 'file' && path.resolve(f.uri.fsPath) === project);
+      const value =
+        context.workspaceState.get<CompiledIdeProject>(COMPILED_IDE_PENDING);
+      return (
+        vscode.workspace.isTrusted &&
+        value?.project === project &&
+        value.language === language &&
+        (vscode.workspace.workspaceFolders ?? []).some(
+          (f) =>
+            f.uri.scheme === 'file' && path.resolve(f.uri.fsPath) === project,
+        )
+      );
     };
     if (!current()) return;
     busy = true;
     try {
+      await resumeCreatedEntry(context, project, current);
+      if (!current()) return;
       const root = await lstat(project);
-      if (!root.isDirectory() || root.isSymbolicLink()) throw new Error('invalid_project');
+      if (!root.isDirectory() || root.isSymbolicLink())
+        throw new Error('invalid_project');
       const file = async (relative: string) => {
         const info = await lstat(path.join(project, relative));
-        if (!info.isFile() || info.isSymbolicLink()) throw new Error('invalid_project_file');
+        if (!info.isFile() || info.isSymbolicLink())
+          throw new Error('invalid_project_file');
       };
-      const resource = vscode.Uri.file(path.join(project, language === 'typescript' ? 'tsconfig.json' : 'Cargo.toml'));
+      const resource = vscode.Uri.file(
+        path.join(
+          project,
+          language === 'typescript' ? 'tsconfig.json' : 'Cargo.toml',
+        ),
+      );
       await file(language === 'typescript' ? 'tsconfig.json' : 'Cargo.toml');
       if (language === 'typescript') {
         await file('node_modules/typescript/lib/tsserver.js');
         await file('node_modules/typescript/lib/tsc.js');
-        const sdk = vscode.workspace.getConfiguration('typescript', resource).get<string>('tsdk');
-        if (sdk !== 'node_modules/typescript/lib') throw new Error('unexpected_tsdk');
+        const sdk = vscode.workspace
+          .getConfiguration('typescript', resource)
+          .get<string>('tsdk');
+        if (sdk !== 'node_modules/typescript/lib')
+          throw new Error('unexpected_tsdk');
       } else {
-        const linked = vscode.workspace.getConfiguration('rust-analyzer', resource).get<string[]>('linkedProjects');
-        if (!Array.isArray(linked) || !linked.includes('./Cargo.toml')) throw new Error('unexpected_cargo_project');
+        const linked = vscode.workspace
+          .getConfiguration('rust-analyzer', resource)
+          .get<string[]>('linkedProjects');
+        if (!Array.isArray(linked) || !linked.includes('./Cargo.toml'))
+          throw new Error('unexpected_cargo_project');
       }
       if (!current()) return;
-      const extension = vscode.extensions.getExtension(language === 'typescript' ? 'vscode.typescript-language-features' : 'rust-lang.rust-analyzer');
+      const extension = vscode.extensions.getExtension(
+        language === 'typescript'
+          ? 'vscode.typescript-language-features'
+          : 'rust-lang.rust-analyzer',
+      );
       if (extension) await extension.activate();
       if (!current()) return;
-      await openLocalAgentEntry(project, current);
       if (!current()) return;
       await context.workspaceState.update(COMPILED_IDE_PENDING, undefined);
-      if (!extension) await vscode.window.showWarningMessage(
-        language === 'rust' ? 'Projet Rust préparé et ajouté au workspace. rust-analyzer manque : installez l’extension recommandée pour l’analyse IDE.' : 'Projet TypeScript préparé et ajouté au workspace. L’extension TypeScript de VS Code est indisponible.',
-      );
+      if (!extension)
+        await vscode.window.showWarningMessage(
+          language === 'rust'
+            ? 'Projet Rust préparé et ajouté au workspace. rust-analyzer manque : installez l’extension recommandée pour l’analyse IDE.'
+            : 'Projet TypeScript préparé et ajouté au workspace. L’extension TypeScript de VS Code est indisponible.',
+        );
     } catch {
-      if (current()) await vscode.window.showWarningMessage('Projet créé, mais la préparation IDE ' + language + ' n’a pas pu être confirmée. Vérifiez la configuration locale et les extensions du langage. Les fichiers sont conservés.');
-    } finally { busy = false; }
+      if (current())
+        await vscode.window.showWarningMessage(
+          'Projet créé, mais la préparation IDE ' +
+            language +
+            ' n’a pas pu être confirmée. Vérifiez la configuration locale et les extensions du langage. Les fichiers sont conservés.',
+        );
+    } finally {
+      busy = false;
+    }
   };
-  const safelyResume = () => { void resume().catch(() => {}); };
+  const safelyResume = () => {
+    void resume().catch(() => {});
+  };
   compiledIdeResumers.set(context, safelyResume);
-  context.subscriptions.push({ dispose: () => compiledIdeResumers.delete(context) });
-  context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(safelyResume));
-  context.subscriptions.push(vscode.workspace.onDidGrantWorkspaceTrust(safelyResume));
+  context.subscriptions.push({
+    dispose: () => compiledIdeResumers.delete(context),
+  });
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeWorkspaceFolders(safelyResume),
+  );
+  context.subscriptions.push(
+    vscode.workspace.onDidGrantWorkspaceTrust(safelyResume),
+  );
   context.subscriptions.push(vscode.extensions.onDidChange(safelyResume));
   safelyResume();
 }
 export async function configureCreatedCompiledIde(
-  project: string, language: 'typescript' | 'rust', context: vscode.ExtensionContext, current: () => boolean,
+  project: string,
+  language: 'typescript' | 'rust',
+  context: vscode.ExtensionContext,
+  current: () => boolean,
+  entryAlreadyOpened = false,
 ): Promise<boolean> {
-  if (!current() || !vscode.workspace.isTrusted || !path.isAbsolute(project)) return false;
+  if (!current() || !vscode.workspace.isTrusted || !path.isAbsolute(project))
+    return false;
   project = path.resolve(project);
+  if (entryAlreadyOpened) rememberCreatedEntry(context, project);
   initializeCompiledIde(context);
-  await context.workspaceState.update(COMPILED_IDE_PENDING, { project, language });
+  await context.workspaceState.update(COMPILED_IDE_PENDING, {
+    project,
+    language,
+  });
   if (!current() || !vscode.workspace.isTrusted) {
-    await context.workspaceState.update(COMPILED_IDE_PENDING, undefined); return false;
+    await context.workspaceState.update(COMPILED_IDE_PENDING, undefined);
+    return false;
   }
   const folders = vscode.workspace.workspaceFolders ?? [];
-  if (!folders.some(f => f.uri.scheme === 'file' && path.resolve(f.uri.fsPath) === project)) {
-    if (!vscode.workspace.updateWorkspaceFolders(folders.length, 0, { uri: vscode.Uri.file(project), name: path.basename(project) })) {
+  if (
+    !folders.some(
+      (f) => f.uri.scheme === 'file' && path.resolve(f.uri.fsPath) === project,
+    )
+  ) {
+    if (
+      !vscode.workspace.updateWorkspaceFolders(folders.length, 0, {
+        uri: vscode.Uri.file(project),
+        name: path.basename(project),
+      })
+    ) {
       await context.workspaceState.update(COMPILED_IDE_PENDING, undefined);
-      await vscode.window.showWarningMessage('Projet préparé, mais VS Code a refusé son ajout au workspace. Ouvrez ce dossier pour activer sa configuration locale.');
+      await vscode.window.showWarningMessage(
+        'Projet préparé, mais VS Code a refusé son ajout au workspace. Ouvrez ce dossier pour activer sa configuration locale.',
+      );
       return false;
     }
   } else initializeCompiledIde(context);

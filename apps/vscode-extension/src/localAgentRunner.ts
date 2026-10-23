@@ -38,8 +38,12 @@ export function parseLocalLaunch(value: unknown, requireReady = true): Launch {
   const v = value as Record<string, unknown>;
   if (
     (v.version === 2
-      ? Object.keys(v).sort().join(',') !== 'args,consoleScript,entry,ready,runtime,version' || v.consoleScript !== 'agent' || v.runtime !== 'python'
-      : Object.keys(v).sort().join(',') !== 'args,entry,ready,runtime,version' || v.version !== 1) ||
+      ? Object.keys(v).sort().join(',') !==
+          'args,consoleScript,entry,ready,runtime,version' ||
+        v.consoleScript !== 'agent' ||
+        v.runtime !== 'python'
+      : Object.keys(v).sort().join(',') !==
+          'args,entry,ready,runtime,version' || v.version !== 1) ||
     typeof v.ready !== 'boolean' ||
     (requireReady && v.ready !== true) ||
     !['python', 'node'].includes(v.runtime as string) ||
@@ -175,8 +179,13 @@ async function prepare(directory: string): Promise<Prepared> {
       const manifest = await read(directory, 'pyproject.toml', 65536);
       if (launch.consoleScript) {
         hash.update(manifest);
-        const parsed = TOML.parse(manifest.toString('utf8')) as { project?: { scripts?: { agent?: string } } };
-        if (parsed.project?.scripts?.agent !== 'agent_app.agent:main' || launch.entry !== 'src/agent_app/agent.py')
+        const parsed = TOML.parse(manifest.toString('utf8')) as {
+          project?: { scripts?: { agent?: string } };
+        };
+        if (
+          parsed.project?.scripts?.agent !== 'agent_app.agent:main' ||
+          launch.entry !== 'src/agent_app/agent.py'
+        )
           throw new Error('invalid_console_entry');
       }
       project = true;
@@ -558,8 +567,8 @@ export async function openLocalAgentEntry(
   directory: string,
   current: () => boolean,
   revalidate: () => Promise<void> = async () => {},
-): Promise<void> {
-  if (!current() || !vscode.workspace.isTrusted) return;
+): Promise<boolean> {
+  if (!current() || !vscode.workspace.isTrusted) return false;
   const resolve = async () => {
     let config: Buffer | undefined;
     try {
@@ -585,6 +594,7 @@ export async function openLocalAgentEntry(
       'agent.py',
       'src/agent.ts',
       'src/agent.js',
+      'src/main.rs',
     ]) {
       try {
         const bytes = await read(directory, entry, LIMIT);
@@ -600,7 +610,7 @@ export async function openLocalAgentEntry(
   };
   try {
     const first = await resolve();
-    if (!current() || !vscode.workspace.isTrusted) return;
+    if (!current() || !vscode.workspace.isTrusted) return false;
     const uri = vscode.Uri.file(path.join(directory, first.entry));
     const document = await vscode.workspace.openTextDocument(uri);
     if (
@@ -609,7 +619,7 @@ export async function openLocalAgentEntry(
       document.isClosed ||
       document.uri?.fsPath !== uri.fsPath
     )
-      return;
+      return false;
     await revalidate();
     const second = await resolve();
     if (
@@ -618,12 +628,14 @@ export async function openLocalAgentEntry(
       !current() ||
       !vscode.workspace.isTrusted
     )
-      return;
-    await vscode.window.showTextDocument(document, { preview: true });
+      return false;
+    await vscode.window.showTextDocument(document, { preview: false });
+    return true;
   } catch {
     if (current() && vscode.workspace.isTrusted)
       await vscode.window.showWarningMessage(
         'Point d’entrée absent, invalide ou modifié. Vérifiez Configuration et les fichiers du projet.',
       );
   }
+  return false;
 }
