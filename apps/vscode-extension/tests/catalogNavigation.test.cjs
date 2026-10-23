@@ -28,6 +28,10 @@ function setup() {
       this.dedicated = [];
       this.dedicatedCatalog = [];
       this.dedicatedState = 'Non chargés';
+      this.apiKeys = [];
+      this.apiKeysState = 'Non chargé';
+      this.ready = Promise.resolve();
+      this.keyActions = [];
     }
     async modelInferenceScope() {
       return this.inferenceScope();
@@ -56,13 +60,19 @@ function setup() {
       refreshCalls.push('dedicated');
       this.refresh();
     }
-    async refreshServerlessAvailability() {
-      refreshCalls.push('serverless');
-      this.serverlessResources = this.serverlessResources.map((row) => ({
-        ...row,
-        serverlessAvailability: 'Disponible',
-      }));
+    async refreshAPIKeys() {
+      refreshCalls.push('keys');
       this.refresh();
+    }
+    async configureAPIKey(id) {
+      this.keyActions.push({ type: 'import', id });
+    }
+    async useAPIKey(id) {
+      this.keyActions.push({ type: 'use', id });
+      return this.keyResult;
+    }
+    async loadPublicCatalog() {
+      refreshCalls.push('catalog');
     }
     async useServerless(id) {
       const row = this.serverless.find((item) => item.id === id);
@@ -237,12 +247,13 @@ test('catalog add never opens a panel; resource click uses existing row and expl
   assert.equal(f.connection.serverlessResources[0].id, 'model');
   assert.equal(f.panels(), 0);
   assert.equal(f.picks.length, 0);
-  assert.match(f.notices[0], /Accès LLM configuré/);
+  assert.match(f.notices[0], /Clé API sélectionnée/);
+  assert.match(f.notices[0], /aucune inférence ni déploiement lancé/);
   const provider = f.views.get('scalewayAI.models');
   const roots = provider.getChildren();
-  const models = roots.find((node) => node.id === 'real-models');
+  const models = roots.find((node) => node.id === 'api-keys');
   assert.equal(models.children, undefined);
-  assert.equal(models.command, 'scalewayAI.openModels');
+  assert.equal(models.command, 'scalewayAI.openAPIKeys');
   const row = { command: 'scalewayAI.openServerlessResource', args: ['model'] };
   await f.commands.get(row.command)(...row.args);
   assert.equal(f.picks.length, 1);
@@ -294,15 +305,15 @@ test('footer reports selected project and follows switch, logout and no-project 
   assert.equal(f.panels(), 0);
 });
 
-test('automatic Models refresh coalesces concurrent opens and stays silent', async () => {
+test('automatic key refresh coalesces concurrent opens and stays silent', async () => {
   const f = setup();
   let release;
   const wait = new Promise((resolve) => {
     release = resolve;
   });
-  f.connection.refreshServerlessAvailability = async (silent) => {
+  f.connection.refreshAPIKeys = async (silent) => {
     assert.equal(silent, true);
-    f.refreshCalls.push('serverless');
+    f.refreshCalls.push('keys');
     await wait;
   };
   const first = f.commands.get('scalewayAI.openModels')();
@@ -311,7 +322,7 @@ test('automatic Models refresh coalesces concurrent opens and stays silent', asy
   await Promise.resolve();
   release();
   await Promise.all([first, second]);
-  assert.deepEqual(f.refreshCalls, ['serverless', 'dedicated']);
+  assert.deepEqual(f.refreshCalls, ['keys']);
   assert.deepEqual(f.notices, []);
   f.panelRecords[0].dispose();
 });
@@ -337,7 +348,8 @@ test('model overview reuses one panel and agent inventory routes without executi
     roots.map((row) => row.id),
     [
       'project',
-      'real-models',
+      'api-keys',
+      'dedicated-deployments',
       'agents',
       'resource-tools',
       'local',
@@ -345,12 +357,16 @@ test('model overview reuses one panel and agent inventory routes without executi
       'recent',
     ],
   );
+  assert.equal(roots[1].label, 'Clés API');
+  assert.equal(roots[1].command, 'scalewayAI.openAPIKeys');
+  assert.equal(roots[2].label, 'Déploiements dédiés');
+  assert.equal(roots[2].command, 'scalewayAI.openDeployments');
   assert.equal(roots[1].children, undefined);
   assert.equal(roots[2].children, undefined);
   await f.commands.get('scalewayAI.openModels')();
   const panel = f.panelRecords[0],
     old = panel.token();
-  assert.match(panel.webview.html, /Aucun modèle affiché/);
+  assert.match(panel.webview.html, /Aucune clé affichée/);
   await f.commands.get('scalewayAI.openAgents')();
   assert.deepEqual(f.resourceCalls, ['agents']);
   await panel.send({ type: 'refresh', token: old });
@@ -363,13 +379,19 @@ test('model overview reuses one panel and agent inventory routes without executi
   f.panelRecords[1].dispose();
 });
 
-test('overview rejects forged/stale/deleted/foreign actions and binds current membership', async () => {
+const inventoryKey = (extra = {}) => ({
+  id: 'b'.repeat(32),
+  description: 'Old key',
+  maskedAccessKey: 'SCW••••1234',
+  bearerType: 'user',
+  expiresAt: Date.now() + 3600000,
+  secretAvailable: true,
+  ...extra,
+});
+
+test('dedicated actions reject forged/stale/foreign/deleted rows and key-mode dispatch', async () => {
   const f = setup(),
-    opened = [],
-    reads = [];
-  f.connection.serverlessResources = [
-    { id: 'model', label: 'Model', kind: 'serverless' },
-  ];
+    opened = [];
   f.connection.dedicated = [
     {
       id: 'dep',
@@ -385,107 +407,168 @@ test('overview rejects forged/stale/deleted/foreign actions and binds current me
     },
     { id: 'deleted', label: 'Deleted', kind: 'dedicated', status: 'deleted' },
   ];
-  f.commands.set('scalewayAI.openServerlessResource', (id) => opened.push(id));
   f.commands.set('scalewayAI.openService', (id) => opened.push(id));
-  f.commands.set('scalewayAI.refreshModels', () => reads.push('refresh'));
-  await f.commands.get('scalewayAI.openModels')();
-  const panel = f.panelRecords[0],
-    token = panel.token();
+  await f.commands.get('scalewayAI.openAPIKeys')();
+  const panel = f.panelRecords[0];
+  await panel.send({
+    type: 'open',
+    kind: 'dedicated',
+    id: 'dep',
+    token: panel.token(),
+  });
+  assert.deepEqual(opened, []);
+  const stale = panel.token();
+  await f.commands.get('scalewayAI.openDeployments')();
+  const token = panel.token();
+  assert.equal(panel.title, 'Déploiements dédiés');
   assert.doesNotMatch(panel.webview.html, /Foreign|Deleted/);
   for (const input of [
-    { type: 'open', kind: 'serverless', id: 'model', token: 'a'.repeat(48) },
-    { type: 'open', kind: 'serverless', id: 'missing', token },
+    { type: 'open', kind: 'dedicated', id: 'dep', token: 'a'.repeat(48) },
+    { type: 'open', kind: 'dedicated', id: 'dep', token: stale },
+    { type: 'open', kind: 'dedicated', id: 'missing', token },
     { type: 'open', kind: 'dedicated', id: 'foreign', token },
     { type: 'open', kind: 'dedicated', id: 'deleted', token },
-    { type: 'open', kind: 'serverless', id: 'model', token, extra: true },
+    { type: 'open', kind: 'serverless', id: 'model', token },
+    { type: 'open', kind: 'dedicated', id: 'dep', token, extra: true },
+    { type: 'add-key', token },
+    { type: 'use-key', id: 'b'.repeat(32), token },
+    { type: 'import-key', id: 'b'.repeat(32), token },
   ])
     await panel.send(input);
   assert.deepEqual(opened, []);
-  await panel.send({ type: 'open', kind: 'serverless', id: 'model', token });
+  assert.deepEqual(f.connection.keyActions, []);
   await panel.send({ type: 'open', kind: 'dedicated', id: 'dep', token });
-  assert.deepEqual(opened, ['model', 'dep']);
-  f.connection.refresh();
-  await panel.send({ type: 'refresh', token });
-  assert.deepEqual(reads, []);
-  await panel.send({ type: 'refresh', token: panel.token() });
-  assert.deepEqual(reads, ['refresh']);
-  f.api.workspace.isTrusted = false;
-  const current = panel.token();
-  await panel.send({
-    type: 'open',
-    kind: 'serverless',
-    id: 'model',
-    token: current,
-  });
-  f.scopes.at(-1).abort();
-  assert.doesNotMatch(panel.webview.html, /data-id="model"/);
-  assert.deepEqual(opened, ['model', 'dep']);
+  assert.deepEqual(opened, ['dep']);
+  f.connection.dedicated = [];
+  await panel.send({ type: 'open', kind: 'dedicated', id: 'dep', token });
+  assert.deepEqual(opened, ['dep']);
   panel.dispose();
 });
 
-test('logout/project switch clear scoped HTML; disposed documents cannot dispatch', async () => {
+test('key actions bind current membership, expiry, local secret and scope', async () => {
+  const f = setup();
+  const key = inventoryKey(),
+    noSecret = inventoryKey({ id: 'c'.repeat(32), secretAvailable: false }),
+    expired = inventoryKey({ id: 'd'.repeat(32), expiresAt: Date.now() - 1 });
+  f.connection.apiKeys = [key, noSecret, expired];
+  await f.commands.get('scalewayAI.openAPIKeys')();
+  const panel = f.panelRecords[0],
+    token = panel.token();
+  for (const input of [
+    { type: 'use-key', id: key.id, token: 'a'.repeat(48) },
+    { type: 'use-key', id: 'e'.repeat(32), token },
+    { type: 'use-key', id: expired.id, token },
+    { type: 'import-key', id: expired.id, token },
+    { type: 'use-key', id: noSecret.id, token },
+    { type: 'use-key', id: key.id, token, extra: 1 },
+  ])
+    await panel.send(input);
+  assert.deepEqual(f.connection.keyActions, []);
+  await panel.send({ type: 'use-key', id: key.id, token });
+  assert.deepEqual(f.connection.keyActions, [{ type: 'use', id: key.id }]);
+  f.connection.apiKeys = [noSecret];
+  await panel.send({ type: 'use-key', id: key.id, token });
+  await panel.send({ type: 'import-key', id: noSecret.id, token });
+  assert.deepEqual(f.connection.keyActions, [
+    { type: 'use', id: key.id },
+    { type: 'import', id: noSecret.id },
+  ]);
+  await panel.send({ type: 'add-key', token }); // consumed old document
+  assert.equal(f.connection.keyActions.length, 2);
+  await panel.send({ type: 'add-key', token: panel.token() });
+  assert.deepEqual(f.connection.keyActions.at(-1), {
+    type: 'import',
+    id: undefined,
+  });
+  f.api.workspace.isTrusted = false;
+  await panel.send({
+    type: 'import-key',
+    id: noSecret.id,
+    token: panel.token(),
+  });
+  f.scopes.at(-1).abort();
+  assert.doesNotMatch(panel.webview.html, /SCW••••1234/);
+  assert.equal(f.connection.keyActions.length, 3);
+  panel.dispose();
+});
+
+test('async key selection cannot open a service after scope changes or disposal', async () => {
+  for (const invalidate of ['project', 'dispose', 'abort']) {
+    const f = setup(),
+      key = inventoryKey();
+    f.connection.apiKeys = [key];
+    let release;
+    f.connection.useAPIKey = () =>
+      new Promise((resolve) => {
+        release = resolve;
+      });
+    await f.commands.get('scalewayAI.openAPIKeys')();
+    const panel = f.panelRecords[0];
+    const pending = panel.send({
+      type: 'use-key',
+      id: key.id,
+      token: panel.token(),
+    });
+    await Promise.resolve();
+    if (invalidate === 'project')
+      f.connection.project = { id: 'other', name: 'Other' };
+    if (invalidate === 'dispose') panel.dispose();
+    if (invalidate === 'abort') f.scopes.at(-1).abort();
+    release({ id: 'model', label: 'Model', kind: 'serverless' });
+    await pending;
+    assert.deepEqual(f.picks, []);
+    if (invalidate !== 'dispose') panel.dispose();
+  }
+});
+
+test('logout/project switch clear scoped keys; disposed documents cannot dispatch', async () => {
   const f = setup(),
-    opened = [];
-  f.connection.serverlessResources = [
-    { id: 'model', label: 'Old Model', kind: 'serverless' },
-  ];
-  f.commands.set('scalewayAI.openServerlessResource', (id) => opened.push(id));
+    key = inventoryKey();
+  f.connection.apiKeys = [key];
   await f.commands.get('scalewayAI.openModels')();
   const panel = f.panelRecords[0],
     token = panel.token();
+  assert.match(panel.webview.html, /Old key/);
   f.connection.connected = false;
   f.connection.refresh();
-  assert.doesNotMatch(panel.webview.html, /Old Model/);
-  await panel.send({ type: 'open', kind: 'serverless', id: 'model', token });
+  assert.doesNotMatch(panel.webview.html, /Old key/);
+  await panel.send({ type: 'use-key', id: key.id, token });
   f.connection.connected = true;
   f.connection.project = { id: 'other', name: 'Other' };
-  f.connection.serverlessResources = [];
+  f.connection.apiKeys = [];
   f.connection.refresh();
   assert.match(panel.webview.html, /Projet : Other/);
-  assert.doesNotMatch(panel.webview.html, /Old Model/);
-  await panel.send({ type: 'open', kind: 'serverless', id: 'model', token });
+  assert.doesNotMatch(panel.webview.html, /Old key/);
+  await panel.send({ type: 'use-key', id: key.id, token });
   panel.dispose();
-  await panel.send({ type: 'open', kind: 'serverless', id: 'model', token });
-  assert.deepEqual(opened, []);
+  await panel.send({ type: 'use-key', id: key.id, token });
+  assert.deepEqual(f.connection.keyActions, []);
 });
 
-test('both resource refresh commands and overview button update Serverless before dedicated discovery', async () => {
+for (const [command, title, read] of [
+  ['scalewayAI.openModels', 'Clés API', 'keys'],
+  ['scalewayAI.openDeployments', 'Déploiements dédiés', 'dedicated'],
+]) {
+  test(`${title} overview refresh reads only its mode`, async () => {
+    const f = setup();
+    await f.commands.get(command)();
+    const panel = f.panelRecords[0];
+    assert.equal(panel.title, title);
+    assert.deepEqual(f.refreshCalls, [read]);
+    f.refreshCalls.length = 0;
+    await panel.send({ type: 'refresh', token: panel.token() });
+    assert.deepEqual(f.refreshCalls, [read]);
+    assert.deepEqual(f.notices, []);
+    panel.dispose();
+  });
+}
+
+test('explicit resource refresh reads keys then deployments, never stored selections', async () => {
   const f = setup();
-  f.connection.serverlessResources = [
-    {
-      id: 'deepseek-v4.1-flash',
-      label: 'DeepSeek',
-      kind: 'serverless',
-      llmAccess: {
-        id: 'a'.repeat(32),
-        projectId: 'p',
-        bearerType: 'user',
-        expiresAt: Date.now() + 3600000,
-        verifiedAt: new Date().toISOString(),
-      },
-    },
-  ];
-  await f.commands.get('scalewayAI.openModels')();
-  const panel = f.panelRecords[0];
-  assert.ok(
-    panel.webview.html.includes('<td>Accès configuré · IAM vérifié</td>'),
-  );
-  assert.deepEqual(f.refreshCalls, ['serverless', 'dedicated']);
-  assert.deepEqual(f.notices, []);
-  f.refreshCalls.length = 0;
-  await panel.send({ type: 'refresh', token: panel.token() });
-  assert.ok(
-    panel.webview.html.includes('<td>Accès configuré · IAM vérifié</td>'),
-  );
-  assert.deepEqual(f.refreshCalls, ['serverless', 'dedicated']);
+  await f.commands.get('scalewayAI.refreshModels')();
   await f.commands.get('scalewayAI.loadModels')();
-  assert.deepEqual(f.refreshCalls, [
-    'serverless',
-    'dedicated',
-    'serverless',
-    'dedicated',
-  ]);
-  panel.dispose();
+  assert.deepEqual(f.refreshCalls, ['keys', 'dedicated', 'keys', 'dedicated']);
+  assert.deepEqual(f.notices, []);
 });
 
 test('local and personal template entries route to creation host, never model/cloud actions', async () => {
@@ -536,7 +619,10 @@ test('model overview renderer dispatches current actions and ignores removed pre
     { dataset: { action: 'templates' } },
     { dataset: { action: 'catalog' } },
     { dataset: { action: 'refresh' } },
-    { dataset: { action: 'open', kind: 'serverless', id: 'model' } },
+    { dataset: { action: 'add-key' } },
+    { dataset: { action: 'import-key', id: 'b'.repeat(32) } },
+    { dataset: { action: 'use-key', id: 'c'.repeat(32) } },
+    { dataset: { action: 'open', kind: 'dedicated', id: 'dep' } },
   ];
   for (const button of buttons)
     button.addEventListener = (_event, handler) => handlers.push(handler);
@@ -555,12 +641,15 @@ test('model overview renderer dispatches current actions and ignores removed pre
     [
       { type: 'catalog', token: 'a'.repeat(48) },
       { type: 'refresh', token: 'a'.repeat(48) },
-      { type: 'open', kind: 'serverless', id: 'model', token: 'a'.repeat(48) },
+      { type: 'add-key', token: 'a'.repeat(48) },
+      { type: 'import-key', id: 'b'.repeat(32), token: 'a'.repeat(48) },
+      { type: 'use-key', id: 'c'.repeat(32), token: 'a'.repeat(48) },
+      { type: 'open', kind: 'dedicated', id: 'dep', token: 'a'.repeat(48) },
     ],
   );
 });
 
-test('agent model source merges only project Serverless resources and dedicated deployments, refreshes both', async () => {
+test('agent model source uses public Serverless catalogue and real dedicated deployments, not stored selections', async () => {
   const f = setup();
   const serverless = {
     id: 'deepseek-v4.1-flash',
@@ -570,10 +659,13 @@ test('agent model source merges only project Serverless resources and dedicated 
   const dedicated = { id: 'service', label: 'Dedicated', kind: 'dedicated' };
   f.connection.serverlessResources = [serverless];
   f.connection.dedicated = [dedicated];
-  assert.deepEqual(f.modelSource.current().rows, [serverless, dedicated]);
-  assert.ok(!f.modelSource.current().rows.some((r) => r.id === 'model'));
+  assert.deepEqual(f.modelSource.current().rows, [
+    f.connection.serverless[0],
+    dedicated,
+  ]);
+  assert.ok(!f.modelSource.current().rows.some((r) => r.id === serverless.id));
   await f.modelSource.refresh();
-  assert.deepEqual(f.refreshCalls, ['serverless', 'dedicated']);
+  assert.deepEqual(f.refreshCalls, ['catalog', 'dedicated']);
   f.connection.connected = false;
   assert.deepEqual(f.modelSource.current().rows, []);
   assert.equal(f.modelSource.current().projectId, undefined);

@@ -697,7 +697,10 @@ test('agent built-in base uses inline name and deployed model with standalone en
   );
   assert.ok(files['src/agent_app/agent.py']);
   assert.match(files['pyproject.toml'], /agent_app.agent:main/);
-  assert.equal(JSON.parse(files['.vscode/scaleway-agent-run.json']).consoleScript, 'agent');
+  assert.equal(
+    JSON.parse(files['.vscode/scaleway-agent-run.json']).consoleScript,
+    'agent',
+  );
   assert.equal(
     JSON.parse(files['.vscode/scaleway-agent-run.json']).ready,
     true,
@@ -1329,7 +1332,7 @@ test('Serverless DeepSeek resource appears and can initialize agent despite no d
   await host.open('agents');
   assert.match(
     state.panels[0].webview.html,
-    /deepseek-v4.1-flash · Serverless · Utilisateur IAM · accès configuré/,
+    /deepseek-v4.1-flash · Serverless · Utilisateur IAM · clé sélectionnée/,
   );
   const backend = option(state.panels[0].webview.html, 'backend', 'FastAPI');
   await state.send('backend', backend);
@@ -1693,7 +1696,7 @@ test('browser toggle uses closed click IPC and model updates retain kind-specifi
   assert.equal(select.value, '');
 });
 
-test('Serverless dropdown excludes missing, expired, foreign-project and unavailable access', async () => {
+test('Serverless dropdown accepts public models but rejects stale configured proofs', async () => {
   const { state, host } = fixture();
   addServerless(state);
   const model = state.modelContext.rows.at(-1);
@@ -1724,11 +1727,11 @@ test('Serverless dropdown excludes missing, expired, foreign-project and unavail
   const html = state.panels[0].webview.html;
   assert.match(
     html,
-    /serverless-test · Serverless · Utilisateur IAM · accès configuré/,
+    /serverless-test · Serverless · Utilisateur IAM · clé sélectionnée/,
   );
   assert.doesNotMatch(
     html,
-    /missing-access|expired-access|foreign-access|unverified-availability|unavailable-access/,
+    /expired-access|foreign-access|unverified-availability|unavailable-access/,
   );
   state.refreshModels = async () => {
     await Promise.resolve();
@@ -1738,7 +1741,10 @@ test('Serverless dropdown excludes missing, expired, foreign-project and unavail
   await state.send('refreshModels');
   assert.deepEqual(
     Array.from(state.modelMessages.at(-1).models, (m) => m.label),
-    ['serverless-test · Serverless · Utilisateur IAM · accès configuré'],
+    [
+      'serverless-test · Serverless · Utilisateur IAM · clé sélectionnée',
+      'missing-access · Serverless · clé API à choisir',
+    ],
   );
 });
 
@@ -1754,7 +1760,7 @@ test('agent awaits selected Application IAM credential scope and copies its dist
   await host.open('agents');
   assert.match(
     state.panels[0].webview.html,
-    /serverless-test · Serverless · Application IAM · accès configuré/,
+    /serverless-test · Serverless · Application IAM · clé sélectionnée/,
   );
   const backend = option(state.panels[0].webview.html, 'backend', 'FastAPI');
   await state.send('backend', backend);
@@ -1947,7 +1953,11 @@ test('Given external destination, When an agent is confirmed, Then real exclusiv
   assert.match(panel.webview.html, /Projet créé, environnement Python préparé/);
   assert.deepEqual(state.preparedPython, [project]);
   assert.deepEqual(state.configuredPython, [project]);
-  assert.equal(state.openedEntries, undefined, 'prepared Python entry is deferred to verified IDE selection');
+  assert.equal(
+    state.openedEntries,
+    undefined,
+    'prepared Python entry is deferred to verified IDE selection',
+  );
   assert.match(panel.webview.html, /Python avec uv préparé automatiquement/);
   assert.doesNotMatch(
     panel.webview.html,

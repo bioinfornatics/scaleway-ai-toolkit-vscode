@@ -5,11 +5,14 @@
   for (const button of main.querySelectorAll('button[data-action]')) {
     button.addEventListener('click', () => {
       const type = button.dataset.action;
-      if (
-        type === 'catalog' ||
-        type === 'refresh'
-      ) {
+      if (type === 'catalog' || type === 'refresh' || type === 'add-key') {
         api.postMessage({ type, token: main.dataset.token });
+      } else if (type === 'import-key' || type === 'use-key') {
+        api.postMessage({
+          type,
+          id: button.dataset.id,
+          token: main.dataset.token,
+        });
       } else if (type === 'open') {
         api.postMessage({
           type,

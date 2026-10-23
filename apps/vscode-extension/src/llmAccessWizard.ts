@@ -7,7 +7,8 @@ export type AccessPlan =
   | { type: 'create'; bearer: Bearer; description: string; lifetimeMs: number };
 
 type AccessContext = {
-  modelId: string;
+  modelId?: string;
+  selectedAccessKey?: string;
   userId: string;
   projectName: string;
   current(): boolean;
@@ -41,6 +42,7 @@ export async function chooseAccessPlan(
   context: AccessContext,
 ): Promise<AccessPlan | undefined> {
   const { modelId, userId, projectName, current, applications } = context;
+  const selectedAccessKey = context.selectedAccessKey;
   if (!current()) return undefined;
   try {
     const sources = [
@@ -48,23 +50,28 @@ export async function chooseAccessPlan(
       { label: 'Importer une clé existante', type: 'import' as const },
       { label: 'Générer une clé API', type: 'create' as const },
     ];
-    const source = await vscode.window.showQuickPick(sources, {
-      title: `Accès LLM · ${display(modelId)}`,
-      placeHolder: 'Choisir une source de clé (validation API par le parent)',
-      ignoreFocusOut: true,
-    });
+    const source = selectedAccessKey
+      ? sources[1]
+      : await vscode.window.showQuickPick(sources, {
+          title: `Clé API · ${display(modelId ?? projectName)}`,
+          placeHolder:
+            'Choisir une source de clé (validation API par le parent)',
+          ignoreFocusOut: true,
+        });
     if (!current() || !source || !sources.includes(source)) return undefined;
     if (source.type === 'reuse') return { type: 'reuse' };
     if (source.type === 'import') {
-      const accessKey = await vscode.window.showInputBox({
-        title: 'Importer · Access key',
-        prompt:
-          'Clé utilisateur ou application IAM : SCW suivi de 17 caractères A–Z / 0–9.',
-        password: true,
-        ignoreFocusOut: true,
-        validateInput: (value) =>
-          accessKeyValid(value) ? undefined : 'Format de clé invalide.',
-      });
+      const accessKey =
+        selectedAccessKey ??
+        (await vscode.window.showInputBox({
+          title: 'Importer · Access key',
+          prompt:
+            'Clé utilisateur ou application IAM : SCW suivi de 17 caractères A–Z / 0–9.',
+          password: true,
+          ignoreFocusOut: true,
+          validateInput: (value) =>
+            accessKeyValid(value) ? undefined : 'Format de clé invalide.',
+        }));
       if (!current() || accessKey === undefined || !accessKeyValid(accessKey))
         return undefined;
       const secretKey = await vscode.window.showInputBox({
@@ -130,7 +137,9 @@ export async function chooseAccessPlan(
       bearer = { type: 'application', id: application.id };
       bearerLabel = `Application IAM : ${application.label} (${application.id})`;
     }
-    const defaultDescription = display(`Accès LLM ${modelId}`);
+    const defaultDescription = display(
+      modelId ? `Accès LLM ${modelId}` : 'Accès LLM',
+    );
     const entered = await vscode.window.showInputBox({
       title: 'Description de la clé API (facultative)',
       value: defaultDescription,
@@ -162,10 +171,10 @@ export async function chooseAccessPlan(
         modal: true,
         detail: [
           `Projet : ${display(projectName)}`,
-          `Modèle : ${display(modelId)}`,
+          ...(modelId ? [`Modèle : ${display(modelId)}`] : []),
           `Titulaire : ${bearerLabel}`,
           `Expiration : ${expiry.label} après création.`,
-          'Les permissions sont héritées des politiques IAM de l’organisation du titulaire ; elles ne sont pas limitées à ce modèle.',
+          'Les permissions sont héritées des politiques IAM de l’organisation du titulaire ; elles ne sont pas limitées à ce modèle ni à un modèle particulier.',
           'Le secret sera conservé dans VS Code SecretStorage par le parent, sans affichage ni journalisation.',
           'Aucune inférence ne sera exécutée. Aucune application ni politique IAM ne sera créée.',
           'La déconnexion locale ne révoque pas cette clé API.',

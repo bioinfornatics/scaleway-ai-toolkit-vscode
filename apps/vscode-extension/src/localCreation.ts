@@ -16,10 +16,10 @@ import { buildCreationView } from './buildCreationView';
 import { withEndpointLaunch } from './endpointAgent';
 import { openLocalAgentEntry } from './localAgentRunner';
 import {
+  configureCreatedCompiledIde,
+  configureCreatedPythonIde,
   offerProjectActions,
   prepareCreatedAgentProject,
-  configureCreatedPythonIde,
-  configureCreatedCompiledIde,
 } from './projectActions';
 import {
   privateEnvContent,
@@ -91,7 +91,10 @@ export function parseCreationInput(value: unknown): CreationInput | undefined {
       Object.keys(v).sort().join(',') !== 'action,path,token' ||
       typeof v.path !== 'string' ||
       v.path.length > 4096 ||
-      /[\x00-\x1f\x7f]/.test(v.path)
+      Array.from(v.path).some(
+        (character) =>
+          character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127,
+      )
     )
       return;
     return { action: 'projectPath', token: v.token, path: v.path };
@@ -648,9 +651,9 @@ export class LocalCreation implements vscode.Disposable {
       })),
       modelStatus: this.modelSource?.current().projectId
         ? this.mode === 'create'
-          ? 'Mes ressources · ' +
+          ? 'Catalogue / déploiements · ' +
             (this.serviceKind === 'serverless' ? 'Serverless.' : 'Dédié.')
-          : 'Modèles de Mes ressources · Serverless et Dédiés.'
+          : 'Modèles de Catalogue / déploiements · Serverless et Dédiés.'
         : 'Choisissez un projet Scaleway, puis actualisez les modèles.',
       kind: this.kind,
       templateMode: this.mode === 'template-create',
@@ -1164,10 +1167,17 @@ export class LocalCreation implements vscode.Disposable {
         );
       }
       if (
-        dependenciesPrepared && template.version === 2 &&
-        (template.project?.language === 'typescript' || template.project?.language === 'rust')
+        dependenciesPrepared &&
+        template.version === 2 &&
+        (template.project?.language === 'typescript' ||
+          template.project?.language === 'rust')
       ) {
-        await configureCreatedCompiledIde(project, template.project.language, this.context, () => this.valid(s));
+        await configureCreatedCompiledIde(
+          project,
+          template.project.language,
+          this.context,
+          () => this.valid(s),
+        );
       }
       if (!this.valid(s)) return;
       this.status =

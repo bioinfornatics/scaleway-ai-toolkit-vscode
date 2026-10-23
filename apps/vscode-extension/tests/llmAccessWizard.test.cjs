@@ -89,6 +89,7 @@ function setup(options = {}) {
   });
   const context = {
     modelId: options.modelId ?? 'test-model',
+    selectedAccessKey: options.selectedAccessKey,
     userId: options.userId ?? userId,
     projectName: 'Test project',
     current: () => live,
@@ -283,4 +284,30 @@ test('cancel/default dismissal or any non-confirming consent never authorizes ge
     assert.equal(await s.run(), undefined);
     assert.equal(s.step(), 5);
   }
+});
+
+test('inventoried key import asks only for its password secret and cannot alter access key', async () => {
+  const s = setup({
+    selectedAccessKey: accessKey,
+    mode: 1,
+    inputs: [secretKey],
+  });
+  assert.deepEqual(plain(await s.run()), {
+    type: 'import',
+    accessKey,
+    secretKey,
+  });
+  assert.equal(s.calls.length, 1);
+  assert.equal(s.calls[0].kind, 'input');
+  assert.equal(s.calls[0].config.password, true);
+  assert.ok(!JSON.stringify(s.calls).includes(accessKey));
+  assert.ok(!JSON.stringify(s.calls).includes(secretKey));
+  assert.equal(
+    await setup({
+      selectedAccessKey: accessKey,
+      mode: 1,
+      inputs: ['bad'],
+    }).run(),
+    undefined,
+  );
 });

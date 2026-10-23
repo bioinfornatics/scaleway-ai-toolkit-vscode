@@ -16,7 +16,7 @@ import {
 import { parseInput } from './ipc';
 import { LocalCreation } from './localCreation';
 import { LocalInventory } from './localInventory';
-import { initializePythonIde, initializeCompiledIde } from './projectActions';
+import { initializeCompiledIde, initializePythonIde } from './projectActions';
 import type { ListedModel } from './provider';
 import { serverlessInvocation } from './provider';
 import { modelsOverviewHtml, parseOverviewInput } from './resourceOverview';
@@ -129,14 +129,14 @@ export function activate(context: vscode.ExtensionContext): void {
       projectId: connection.connected ? connection.project?.id : undefined,
       status: connection.dedicatedState,
       rows: connection.connected
-        ? [...connection.serverlessResources, ...connection.dedicated]
+        ? [...connection.serverless, ...connection.dedicated]
         : [],
     }),
     credentialScope: (projectId, model) =>
       connection.modelCredentialScope(projectId, model),
     refresh: async () => {
       if (!(await connection.ensureProject())) return;
-      await connection.refreshServerlessAvailability();
+      await connection.loadPublicCatalog();
       await connection.loadModels();
     },
   });
@@ -158,10 +158,16 @@ export function activate(context: vscode.ExtensionContext): void {
       command: 'scalewayAI.setProject',
     },
     {
-      id: 'real-models',
-      label: 'Modèles',
-      icon: 'library',
-      command: 'scalewayAI.openModels',
+      id: 'api-keys',
+      label: 'Clés API',
+      icon: 'key',
+      command: 'scalewayAI.openAPIKeys',
+    },
+    {
+      id: 'dedicated-deployments',
+      label: 'Déploiements dédiés',
+      icon: 'server',
+      command: 'scalewayAI.openDeployments',
     },
     {
       id: 'agents',
@@ -374,6 +380,7 @@ export function activate(context: vscode.ExtensionContext): void {
         return callback(...args);
       }),
     );
+  let overviewMode: 'keys' | 'dedicated' = 'keys';
   let overviewScope: ReturnType<Connection['inferenceScope']> | undefined;
   const clearOverviewScope = () => {
     const previous = overviewScope;
@@ -400,7 +407,7 @@ export function activate(context: vscode.ExtensionContext): void {
       modelsPanel.webview,
       context.extensionUri,
       scope?.project.name,
-      scope ? connection.serverlessResources : [],
+      scope ? connection.apiKeys : [],
       scope
         ? connection.dedicated.filter(
             (row) =>
@@ -409,6 +416,8 @@ export function activate(context: vscode.ExtensionContext): void {
           )
         : [],
       connection.dedicatedState,
+      connection.apiKeysState,
+      overviewMode,
     );
     overviewToken = rendered.token;
     modelsPanel.webview.html = rendered.html;
@@ -425,6 +434,8 @@ export function activate(context: vscode.ExtensionContext): void {
           [],
           [],
           'Non chargé',
+          'Non chargé',
+          overviewMode,
         );
         // Invalidated documents cannot dispatch account actions.
         modelsPanel.webview.html = empty.html;
@@ -437,7 +448,7 @@ export function activate(context: vscode.ExtensionContext): void {
     if (!modelsPanel) {
       modelsPanel = vscode.window.createWebviewPanel(
         'scalewayAI.resources',
-        'Modèles',
+        overviewMode === 'keys' ? 'Clés API' : 'Déploiements dédiés',
         vscode.ViewColumn.One,
         {
           enableScripts: true,
@@ -460,28 +471,53 @@ export function activate(context: vscode.ExtensionContext): void {
           if (!scope?.current()) return;
           if (input.type === 'refresh') {
             overviewToken = undefined;
-            await vscode.commands.executeCommand('scalewayAI.refreshModels');
+            if (overviewMode === 'keys') await refreshAPIKeysView();
+            else await connection.loadModels();
             if (modelsPanel === origin) renderModelsOverview();
             return;
           }
-          if (input.type !== 'open') return;
-          const rows =
-            input.kind === 'serverless'
-              ? connection.serverlessResources
-              : connection.dedicated;
-          const member = rows.some(
+          if (input.type === 'add-key') {
+            if (overviewMode !== 'keys') return;
+            overviewToken = undefined;
+            await connection.configureAPIKey();
+            if (modelsPanel === origin) renderModelsOverview();
+            return;
+          }
+          if (input.type === 'import-key' || input.type === 'use-key') {
+            if (overviewMode !== 'keys') return;
+            const key = connection.apiKeys.find((key) => key.id === input.id);
+            if (!key || key.expiresAt <= Date.now() + 30000 || !scope.current())
+              return;
+            if (input.type === 'import-key') {
+              overviewToken = undefined;
+              await connection.configureAPIKey(input.id);
+              if (modelsPanel === origin) renderModelsOverview();
+            } else {
+              if (!key.secretAvailable) return;
+              const model = await connection.useAPIKey(input.id);
+              if (
+                model &&
+                modelsPanel === origin &&
+                overviewMode === 'keys' &&
+                overviewScope?.current() &&
+                overviewScope.project === scope.project
+              )
+                await showService(model);
+            }
+            return;
+          }
+          if (input.type !== 'open' || overviewMode !== 'dedicated') return;
+          const member = connection.dedicated.some(
             (row) =>
               row.id === input.id &&
-              row.kind === input.kind &&
+              row.kind === 'dedicated' &&
               row.status !== 'deleted' &&
               (!row.deploymentInfo ||
                 row.deploymentInfo.projectId === scope.project.id),
           );
           if (!member || !scope.current()) return;
           await vscode.commands.executeCommand(
-            input.kind === 'serverless'
-              ? 'scalewayAI.openServerlessResource'
-              : 'scalewayAI.openService',
+            'scalewayAI.openService',
             input.id,
           );
         },
@@ -494,20 +530,44 @@ export function activate(context: vscode.ExtensionContext): void {
         }
       });
     } else modelsPanel.reveal(vscode.ViewColumn.One);
-    modelsPanel.title = 'Modèles';
+    modelsPanel.title =
+      overviewMode === 'keys' ? 'Clés API' : 'Déploiements dédiés';
     renderModelsOverview();
   };
-  register('scalewayAI.openModels', async () => {
+  const openResourceView = async (mode: 'keys' | 'dedicated') => {
     await connection.ready;
+    overviewMode = mode;
     openOverview();
-    // No browser login, project picker or notifications during automatic reads.
     if (
       connection.connected &&
       connection.project &&
       vscode.workspace.isTrusted
-    )
-      await refreshResources(true);
+    ) {
+      if (mode === 'keys') await refreshAPIKeysView(true);
+      else await connection.loadModels(true);
+    }
+  };
+  let apiKeysRefresh: Promise<void> | undefined;
+  const refreshAPIKeysView = (silent = false): Promise<void> => {
+    if (apiKeysRefresh) return apiKeysRefresh;
+    apiKeysRefresh = connection.refreshAPIKeys(silent).finally(() => {
+      apiKeysRefresh = undefined;
+    });
+    return apiKeysRefresh;
+  };
+  register('scalewayAI.openModels', () => openResourceView('keys'));
+  register('scalewayAI.openAPIKeys', () => openResourceView('keys'));
+  register('scalewayAI.openDeployments', () => openResourceView('dedicated'));
+  register('scalewayAI.configureAPIKey', async () => {
+    await connection.configureAPIKey();
   });
+  if (context.secrets?.onDidChange)
+    context.subscriptions.push(
+      context.secrets.onDidChange(({ key }) => {
+        if (key.startsWith('scalewayAI.llmAccess.'))
+          connection.invalidateAPIKeys();
+      }),
+    );
   register('scalewayAI.openAgents', () => deployedResources.open('agents'));
   register('scalewayAI.openTools', () => deployedResources.open('tools'));
   register('scalewayAI.openLocalAgents', () => localInventory.open('agents'));
@@ -648,8 +708,8 @@ export function activate(context: vscode.ExtensionContext): void {
   const refreshResources = (silent = false): Promise<void> => {
     if (resourceRefresh) return resourceRefresh;
     resourceRefresh = (async () => {
-      // Check Serverless independently: dedicated discovery may be denied by IAM.
-      await connection.refreshServerlessAvailability(silent);
+      // Key inventory and deployments are independent; neither proves inference rights.
+      await connection.refreshAPIKeys(silent);
       await connection.loadModels(silent);
     })().finally(() => {
       resourceRefresh = undefined;
@@ -1012,7 +1072,7 @@ export function activate(context: vscode.ExtensionContext): void {
     if (row) {
       updateCatalog();
       await vscode.window.showInformationMessage(
-        'Accès LLM configuré · clé IAM vérifiée et modèle disponible. Cet accès est proposé aux agents ; aucune inférence lancée, aucun déploiement dédié créé.',
+        'Clé API sélectionnée · IAM vérifié et modèle annoncé par l’API. La clé est réutilisable avec d’autres modèles selon ses droits ; aucune inférence ni déploiement lancé.',
       );
     }
   });

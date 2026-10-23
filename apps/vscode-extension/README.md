@@ -21,7 +21,8 @@ Prérequis : VS Code 1.96 ou supérieur. La création de fichiers et les bibliot
 | Construire | Création locale d’un agent ou d’un outil ; playground modèle |
 | Ressources locales → Agents / Tools | Projets détectés dans les dossiers du workspace |
 | Mes templates → Agents / Tools | Bases personnelles réutilisables |
-| Mes ressources → Modèles | Sélections Serverless et services dédiés du projet |
+| Mes ressources → Clés API | Inventaire IAM et présence du secret local |
+| Mes ressources → Déploiements dédiés | Services dédiés du projet |
 | Mes ressources → Agents / Tools | Emplacement des ressources cloud ; inventaire encore indisponible |
 
 Un modèle sélectionné n’est pas un déploiement. Un projet local n’est pas une ressource cloud. Un template n’est pas un projet exécutable.
@@ -31,7 +32,7 @@ Un modèle sélectionné n’est pas un déploiement. Un projet local n’est pa
 1. Ouvrez **Construire → Créer un agent** ou **Créer un tool**.
 2. Sélectionnez **Python**, **TypeScript** ou **Rust**.
 3. Pour un agent, choisissez séparément le **Backend** et le **Framework IA**, puis renseignez le **Nom de l’agent**. Par exemple : Python + FastAPI + Strands.
-4. Choisissez **Serverless** ou **Dédié**, puis un **Modèle Serverless** ou un **Déploiement dédié** dans les ressources du projet Scaleway sélectionné : **Serverless** ou **Dédié**. La liste se charge automatiquement à l’ouverture de la création d’agent ; inutile de visiter Mes modèles auparavant. La liste s’actualise aussi lorsque vous cliquez dessus ou l’ouvrez au clavier. Les accès Serverless configurés avec une clé et vérifiés via IAM et la liste des modèles apparaissent ; les offres du catalogue non ajoutées n’apparaissent pas. Un accès Serverless n’est pas un déploiement dédié. Les anciennes sélections sans clé associée ne sont pas reprises.
+4. Choisissez un modèle du catalogue **Serverless**, ou un **Déploiement dédié** du projet. À la confirmation de création, choisissez une clé API locale réutilisable, ou importez/générez explicitement une clé. Le modèle et la clé sont des choix distincts ; les anciens secrets restent conservés.
 5. Pour un outil, choisissez un framework compatible. Vous pouvez aussi partir d’un template prédéfini ou personnel.
 6. Consultez les fichiers proposés.
 7. Pour un agent, choisissez le **Dossier parent du projet** dans le formulaire (le workspace unique est présélectionné), puis cliquez sur **Créer** et confirmez les fichiers. Le nom de l’agent devient le sous-dossier créé à cet emplacement. Aucun second sélecteur de destination n’apparaît après Créer. Pour un outil, le choix du workspace et du nom reste dans le parcours de création.
@@ -54,12 +55,12 @@ Une base sans framework est également disponible pour chaque langage. Les outil
 
 ## Configuration privée de l’agent
 
-À la confirmation de création, la clé API de la connexion active est copiée dans un **.env local privé**, avec le modèle et son endpoint :
+À la confirmation de création, la clé API choisie et revalidée est copiée dans un **.env local privé**, avec le modèle et son endpoint :
 
 ```dotenv
 SCW_INFERENCE_BASE_URL='https://api.scaleway.ai/<projet>/v1'
 SCW_INFERENCE_MODEL_ID='deepseek-v4.1-flash'
-SCW_API_KEY='<clé de la connexion active>'
+SCW_API_KEY='<clé API choisie>'
 ```
 
 Le fichier est créé sans remplacement, avec des permissions 0600 sur Linux. La règle /.env est ajoutée à .gitignore. Un template qui contient déjà un .env est refusé pour éviter une collision.
@@ -230,7 +231,7 @@ Vous pouvez aussi utiliser **Scaleway AI: Utiliser une clé API existante** depu
 
 ### Playground Serverless
 
-Pour un modèle de chat Serverless, sélectionnez le projet, saisissez un prompt texte, vérifiez la limite de sortie et cliquez sur **Exécuter**. Cette action envoie un appel réel et peut être facturée. **Utiliser** ouvre le choix d’accès : réutiliser la clé de connexion, importer une clé existante, ou générer une clé pour vous-même ou une application IAM existante. Choisissez la description et l’expiration de la nouvelle clé, puis confirmez sa création. L’extension vérifie les métadonnées IAM de la clé et la présence du modèle dans la liste API, sans envoyer de prompt. Les endpoints sont préconfigurés par Scaleway : aucun déploiement dédié n’est créé. La clé de l’agent est distincte de l’identité de connexion à l’extension. Pour générer une clé d’application, vos droits IAM doivent le permettre ; aucune application ni politique de permission n’est créée automatiquement. La clé reste dans SecretStorage et peut être copiée dans le `.env` privé lors de la création d’agent. Cette configuration ne prouve pas une inférence réussie. **Configurer à nouveau** permet de changer la clé associée ; une nouvelle création nécessite une nouvelle confirmation. La création du projet agent ne lance ni inférence ni déploiement.
+Pour un modèle de chat Serverless, sélectionnez le projet, saisissez un prompt texte, vérifiez la limite de sortie et cliquez sur **Exécuter**. Cette action envoie un appel réel et peut être facturée. **Utiliser** ouvre le choix d’accès : réutiliser la clé de connexion, importer une clé existante, ou générer une clé pour vous-même ou une application IAM existante. Choisissez la description et l’expiration de la nouvelle clé, puis confirmez sa création. L’extension vérifie les métadonnées IAM de la clé et la présence du modèle dans la liste API, sans envoyer de prompt. Les endpoints sont préconfigurés par Scaleway : aucun déploiement dédié n’est créé. La clé de l’agent est distincte de l’identité de connexion à l’extension. Pour générer une clé d’application, vos droits IAM doivent le permettre ; aucune application ni politique de permission n’est créée automatiquement. La clé reste dans SecretStorage et peut être copiée dans le `.env` privé lors de la création d’agent. Cette configuration ne prouve pas une inférence réussie. **Choisir une clé API** permet de changer le credential sélectionné ; une nouvelle création nécessite une nouvelle confirmation. La création du projet agent ne lance ni inférence ni déploiement.
 
 
 **Arrêter** interrompt la lecture locale et conserve la réponse partielle ; il ne garantit pas l’arrêt de la facturation distante. Les modèles non adaptés au chat et les services dédiés peuvent afficher un blocage explicite. Le playground réel ne propose pas encore la sauvegarde/export des expériences hors ligne.
@@ -264,11 +265,15 @@ Lancez **Scaleway AI: Open Offline Preview** depuis la palette de commandes. Tes
 
 ## Accès LLM et identifiants
 
-**Mes ressources → Modèles** affiche les accès Serverless disposant d’un secret enregistré, de métadonnées IAM vérifiées et d’un modèle annoncé par l’API, ainsi que les déploiements dédiés réels. Ce n’est ni une liste de favoris ni un historique d’utilisation facturée. Actualisez pour relire les accès ; une clé absente, expirée, révoquée ou impossible à vérifier n’est pas proposée aux agents.
+**Mes ressources → Clés API** liste les clés visibles dans IAM pour l’organisation sélectionnée : description, identifiant masqué, titulaire, expiration et présence du secret dans le registre local utilisateur/projet. Une clé expirée reste visible mais ne peut pas être utilisée. Lecture bornée à cinq pages de cent clés, sans inférence. Un inventaire refusé ou non chargé ne signifie pas qu’aucune clé existe.
 
-Les clés créées dans la console doivent être importées avec leur **Access key et Secret key** : l’API ne peut pas restituer leur secret après création. Une clé IAM n’est pas liée à un seul modèle ; elle hérite des droits de son utilisateur ou application. L’association modèle/projet/clé reste une configuration de l’extension, adossée à ces vérifications cloud, pas une ressource Serverless créée par modèle.
+**Ajouter une clé API** propose réutilisation de la clé de connexion, import de la paire Access key / Secret key ou génération après confirmation. **Importer le secret** sur une ligne demande uniquement le secret de cette clé. L’API ne le restitue pas après création. **Choisir un modèle** réutilise le credential local sélectionné.
 
-À la création d’agent, l’extension revalide l’accès sélectionné et écrit **sa clé**, le modèle et le endpoint dans le `.env` privé. Le playground utilise également la clé de cet accès. La génération des bases ne câble pas encore automatiquement le chargement dotenv et tous les frameworks : relisez le code avant d’exécuter votre agent.
+Les nouveaux enregistrements sont indépendants du modèle. Les anciens restent conservés et réutilisables ; aucune migration automatique ni suppression de secret. Les politiques IAM déterminent les droits ; le projet par défaut n’est pas une restriction IAM. Le secret reste dans SecretStorage, aucune clé complète ni identifiant du titulaire ne sont envoyés à la webview.
+
+Présence locale ne veut pas dire autorisation d’inférence. L’utilisation revalide les métadonnées IAM et la présence du modèle dans la liste Serverless ; cela ne prouve pas les droits d’appel du projet. Une erreur ne déclenche aucun fallback vers une autre clé.
+
+**Mes ressources → Déploiements dédiés** conserve les services cloud du projet, séparément du catalogue de modèles. À la création d’agent, la clé choisie/revalidée est copiée dans le `.env` privé avec le modèle et son endpoint. Elle est en clair, exclue de Git ; déconnexion et révocation ne suppriment pas cette copie.
 
 Si une création de clé a un résultat inconnu, l’extension ne la renvoie pas automatiquement. Vérifiez et révoquez les clés concernées dans Scaleway. Si le secret a été reçu et conservé, **Reprendre la configuration** réutilise cette même clé, sans nouvelle création. Un verrou restant après arrêt brutal exige de fermer toutes les fenêtres VS Code avant suppression manuelle du dossier de verrou indiqué ; les secrets en attente restent protégés dans SecretStorage.
 
@@ -279,9 +284,7 @@ Une vérification IAM et une présence au catalogue ne certifient pas les permis
 
 Les accès IAM ont des handles de binding stables : un renouvellement réussi
 ne détruit pas les autres consommateurs du même accès. Changement/suppression
-SecretStorage et remplacement de binding invalident les preuves ; les anciens
-slots validés du même modèle sont retirés après publication, sans révoquer de clé
-Scaleway ni supprimer une copie `.env`. La réception réelle inter-fenêtres reste
+SecretStorage et remplacement de binding invalident les preuves ; les secrets déjà enregistrés sont conservés. Les nouvelles clés ne sont pas liées à un modèle ; seule une paire strictement identique est dédupliquée, sans révocation distante ni suppression de copie `.env`. La réception réelle inter-fenêtres reste
 à vérifier. Le refresh mutualise les lectures pour une clé identique pendant
 cette seule opération ; il ne conserve pas un cache durable d'autorisation.
 Le contrôle actuel exige `getAPIKey`, la liste IAM filtrée de cette clé dans

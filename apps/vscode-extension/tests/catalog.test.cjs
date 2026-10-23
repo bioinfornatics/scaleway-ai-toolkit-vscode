@@ -268,7 +268,8 @@ test('navigation separates real resources from catalogue and removes explanatory
   assert.ok(begin >= 0, 'resource section exists');
   assert.ok(end > begin, 'following tools section exists');
   const resources = source.slice(begin, end);
-  assert.ok(resources.includes("command: 'scalewayAI.openModels'"));
+  assert.ok(resources.includes("command: 'scalewayAI.openAPIKeys'"));
+  assert.ok(resources.includes("command: 'scalewayAI.openDeployments'"));
   assert.ok(resources.includes("command: 'scalewayAI.openAgents'"));
   assert.ok(!resources.includes("label: 'Serverless'"));
   assert.ok(!resources.includes("label: 'Dédiés'"));

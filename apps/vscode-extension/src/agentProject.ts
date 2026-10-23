@@ -23,18 +23,21 @@ export interface AgentModelSource {
       }
     | Promise<{ current(): boolean; secretKey(): string; dispose(): void }>;
 }
-/** Selected Serverless resources and dedicated deployments, never public offers.
- * Supplier owns project membership; selection is not execution authority. */
+/** Public Serverless model choices and real dedicated deployments.
+ * Selection never grants execution authority: credentials are chosen/revalidated separately. */
 export function deployedAgentModels(context: AgentModelContext): ListedModel[] {
   if (!context.projectId || !context.key) return [];
   return context.rows
     .filter((r) => {
       if (r.kind === 'serverless')
         return (
-          !!r.llmAccess &&
-          r.llmAccess.projectId === context.projectId &&
-          r.llmAccess.expiresAt > Date.now() + 30000 &&
-          r.serverlessAvailability === 'Disponible'
+          !!r.id &&
+          !!r.label &&
+          !/deleted|retired|end.of.life/i.test(r.status ?? '') &&
+          (!r.llmAccess ||
+            (r.llmAccess.projectId === context.projectId &&
+              r.llmAccess.expiresAt > Date.now() + 30000 &&
+              r.serverlessAvailability === 'Disponible'))
         );
       return (
         !/Erreur|Chargement|Non charg/i.test(context.status) &&
@@ -64,7 +67,9 @@ export function agentModelLabel(model: ListedModel): string {
     ' · ' +
     (model.kind === 'serverless' ? 'Serverless' : 'Dédié') +
     (model.kind === 'serverless'
-      ? ` · ${model.llmAccess?.bearerType === 'application' ? 'Application IAM' : 'Utilisateur IAM'} · accès configuré`
+      ? model.llmAccess
+        ? ` · ${model.llmAccess.bearerType === 'application' ? 'Application IAM' : 'Utilisateur IAM'} · clé sélectionnée`
+        : ' · clé API à choisir'
       : model.status
         ? ` · ${model.status}`
         : '')

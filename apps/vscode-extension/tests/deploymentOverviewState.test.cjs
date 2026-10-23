@@ -62,29 +62,42 @@ test('ready/error map to Success/Failure; intermediate states are not reported a
       [],
       [row],
       'Loaded',
+      'Non chargé',
+      'dedicated',
     );
-    assert.ok(html.includes('<td>' + expected + '</td>'));
+    assert.ok(html.includes(`<td>${expected}</td>`));
     assert.ok(html.includes('20/10/2026 à 14:00'));
   }
 });
-test('serverless selection is not converted into deployment success or cloud creation date', () => {
-  const { html } = overview.modelsOverviewHtml(
-    webview,
-    'root',
-    project.name,
-    [
-      {
-        id: 'deepseek-v4.1-flash',
-        label: 'DeepSeek',
-        kind: 'serverless',
-        status: 'ready',
-      },
-    ],
-    [],
-    'Loaded',
-  );
-  assert.ok(html.includes('<td>Non configuré</td><td>—</td>'));
-  assert.ok(!html.includes('Accès configuré'));
-  assert.ok(!html.includes('<td>Success</td>'));
-  assert.ok(!html.includes('non testé'));
+test('Serverless selection is never a key row or deployment success/creation date', () => {
+  const selection = {
+    id: 'deepseek-v4.1-flash',
+    label: 'DeepSeek',
+    kind: 'serverless',
+    status: 'ready',
+  };
+  for (const mode of ['keys', 'dedicated']) {
+    const { html } = overview.modelsOverviewHtml(
+      webview,
+      'root',
+      project.name,
+      [],
+      [selection],
+      'Loaded',
+      'Non chargé',
+      mode,
+    );
+    for (const forbidden of [
+      'DeepSeek',
+      'deepseek-v4.1-flash',
+      '<td>Success</td>',
+      'Accès configuré',
+    ])
+      assert.ok(!html.includes(forbidden));
+    assert.ok(
+      html.includes(
+        mode === 'keys' ? 'Aucune clé affichée' : 'Aucun déploiement affiché',
+      ),
+    );
+  }
 });

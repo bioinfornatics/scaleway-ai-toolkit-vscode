@@ -3,10 +3,12 @@ import { mkdir, rmdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import * as vscode from 'vscode';
 import {
+  type AccessKeyInventory,
   type AccessKeyMetadata,
   createAccessAPIKey,
   IAMAccessError,
   inspectAccessAPIKey,
+  listAccessAPIKeys,
   listAccessApplications,
 } from './llmAccessIam';
 import { chooseAccessPlan } from './llmAccessWizard';
@@ -27,12 +29,12 @@ export interface LlmAccessScope {
   reuseCredential(): { accessKey: string; secretKey: string };
 }
 interface StoredAccess {
-  version: 1;
+  version: 1 | 2;
   id: string;
   ownerId: string;
   projectId: string;
   organizationId: string;
-  modelId: string;
+  modelId?: string;
   accessKey: string;
   secretKey: string;
   metadata?: AccessKeyMetadata;
@@ -53,12 +55,13 @@ function parse(
   try {
     const r = JSON.parse(raw) as StoredAccess;
     if (
-      r.version !== 1 ||
+      ![1, 2].includes(r.version) ||
       !opaque(r.id) ||
       r.ownerId !== s.userId ||
       r.projectId !== s.project.id ||
       r.organizationId !== s.project.organizationId ||
-      !text(r.modelId) ||
+      (r.version === 1 && !text(r.modelId)) ||
+      (r.version === 2 && r.modelId !== undefined) ||
       !/^SCW[A-Z0-9]{17}$/.test(r.accessKey) ||
       !uuid(r.secretKey)
     )
@@ -68,18 +71,34 @@ function parse(
     return;
   }
 }
+export interface ApiKeyResource {
+  id: string;
+  description: string;
+  maskedAccessKey: string;
+  bearerType: 'user' | 'application';
+  expiresAt: number;
+  createdAt?: string;
+  secretAvailable: boolean;
+}
+const inventoryId = (organizationId: string, accessKey: string) =>
+  createHash('sha256')
+    .update(JSON.stringify([organizationId, accessKey]))
+    .digest('hex')
+    .slice(0, 32);
 type VerifiedAccess = { record: StoredAccess; row: ListedModel };
 type RefreshProof = {
   metadata: AccessKeyMetadata;
   models?: Promise<Awaited<ReturnType<typeof listServerlessAvailability>>>;
 };
-/** Access metadata is not a deployed resource. Only fresh IAM+model discovery reaches rows.
+/** Key inventory is organization metadata, not a deployed resource or permission proof.
+ * Only fresh IAM+model discovery reaches ephemeral model rows.
  * Secrets, access keys and bearer IDs never enter public model/browser metadata. */
 export class LlmAccessRegistry {
   // Entry identity is the binding generation, not the most recent proof.
   private verified = new Map<string, VerifiedAccess>();
   private generation = 0;
   private proofEpoch = 0;
+  private inventoryEpoch = 0;
   // Only active/in-flight slots are watched; refresh bounds these to 32 bindings.
   private secretVersions = new Map<string, object>();
   private watch(id: string): object {
@@ -100,7 +119,7 @@ export class LlmAccessRegistry {
         // SecretStorage is the cross-window invalidation bus. Memento snapshots
         // can lag; replacement must invalidate peer proofs before index writes.
         this.proofEpoch++;
-        if (key === this.scopeKey + '.revision') {
+        if (key === `${this.scopeKey}.revision`) {
           this.verified.clear();
           this.secretVersions.clear();
         }
@@ -111,6 +130,7 @@ export class LlmAccessRegistry {
       // Never suppress own writes: a delayed event may also represent rotation.
       // Configure publishes only after its new slot has been stored/read back.
       const id = key.slice(prefix.length);
+      this.inventoryEpoch++;
       this.secretVersions.delete(id);
       this.verified.delete(id);
     });
@@ -140,6 +160,196 @@ export class LlmAccessRegistry {
       ? [...new Set(raw)]
       : [];
   }
+  private async inspect(
+    record: StoredAccess,
+    s: LlmAccessScope,
+    checkBearer = true,
+  ): Promise<AccessKeyMetadata> {
+    const metadata = await inspectAccessAPIKey(
+      s.project.organizationId,
+      record.accessKey,
+      record.secretKey,
+      s.signal,
+    );
+    if (!s.current()) throw new IAMAccessError('cancelled');
+    if (
+      metadata.accessKey !== record.accessKey ||
+      metadata.organizationId !== s.project.organizationId
+    )
+      throw new IAMAccessError('invalid_response');
+    if (metadata.expiresAt <= Date.now() + 30000)
+      throw new IAMAccessError('expired');
+    if (
+      checkBearer &&
+      record.metadata &&
+      (metadata.bearer.id !== record.metadata.bearer.id ||
+        metadata.bearer.type !== record.metadata.bearer.type)
+    )
+      throw new IAMAccessError('invalid_response');
+    return metadata;
+  }
+  private async keyInventory(
+    s: LlmAccessScope,
+  ): Promise<
+    { id: string; metadata: AccessKeyInventory; secretAvailable: boolean }[]
+  > {
+    const generation = this.generation,
+      epoch = this.proofEpoch,
+      inventoryEpoch = this.inventoryEpoch;
+    const current = () =>
+      !this.disposed &&
+      s.current() &&
+      this.generation === generation &&
+      this.proofEpoch === epoch &&
+      this.inventoryEpoch === inventoryEpoch;
+    if (!current()) return [];
+    const keys = await listAccessAPIKeys(
+      s.project.organizationId,
+      s.controlCredential(),
+      s.signal,
+    );
+    if (!current()) return [];
+    if (keys.length > 500) throw new IAMAccessError('pagination_limit');
+    const local = new Map<string, StoredAccess>();
+    for (const id of this.ids(s)) {
+      const revision = this.secretVersions.get(id);
+      const record = parse(await this.context.secrets.get(slot(id)), s);
+      if (!current()) return [];
+      if (record?.id === id && this.secretVersions.get(id) === revision)
+        if (!local.has(record.accessKey)) local.set(record.accessKey, record);
+    }
+    return keys.map((metadata) => ({
+      id:
+        local.get(metadata.accessKey)?.id ??
+        inventoryId(s.project.organizationId, metadata.accessKey),
+      metadata,
+      secretAvailable: local.has(metadata.accessKey),
+    }));
+  }
+  /** Organization metadata only; local secret presence is scoped to this user/project.
+   * Expired keys remain visible. Neither IAM permissions nor inference readiness is claimed. */
+  async inventory(s: LlmAccessScope): Promise<ApiKeyResource[]> {
+    return (await this.keyInventory(s)).map(
+      ({ id, metadata, secretAvailable }) => ({
+        id,
+        description: metadata.description,
+        maskedAccessKey: `SCW••••${metadata.accessKey.slice(-4)}`,
+        bearerType: metadata.bearer.type,
+        expiresAt: metadata.expiresAt,
+        ...(metadata.createdAt ? { createdAt: metadata.createdAt } : {}),
+        secretAvailable,
+      }),
+    );
+  }
+  async configureKey(s: LlmAccessScope, id?: string): Promise<boolean> {
+    if (id !== undefined && !opaque(id)) return false;
+    return !!(await this.register(undefined, s, id));
+  }
+  async configure(
+    model: ListedModel,
+    s: LlmAccessScope,
+    preferredKeyId?: string,
+  ): Promise<ListedModel | undefined> {
+    if (
+      this.disposed ||
+      this.busy ||
+      !s.current() ||
+      model.kind !== 'serverless'
+    )
+      return;
+    const generation = this.generation,
+      epoch = this.proofEpoch;
+    const scope = s;
+    s = {
+      ...scope,
+      current: () =>
+        !this.disposed &&
+        scope.current() &&
+        this.generation === generation &&
+        this.proofEpoch === epoch,
+    };
+    const entries: {
+      label: string;
+      description?: string;
+      record?: StoredAccess;
+    }[] = [];
+    for (const id of this.ids(s)) {
+      const record = parse(await this.context.secrets.get(slot(id)), s);
+      if (!s.current()) return;
+      if (record?.id === id)
+        entries.push({
+          label: record.metadata?.description || 'Clé API enregistrée',
+          description: `SCW••••${record.accessKey.slice(-4)}`,
+          record,
+        });
+    }
+    const add = { label: 'Configurer / ajouter une clé API' };
+    const choices = [
+      ...entries.map(({ label, description }) => ({ label, description })),
+      add,
+    ];
+    const preferredIndex = preferredKeyId
+      ? entries.findIndex((e) => e.record?.id === preferredKeyId)
+      : -1;
+    if (preferredKeyId && preferredIndex < 0) return;
+    const choice = preferredKeyId
+      ? choices[preferredIndex]
+      : await vscode.window.showQuickPick(choices, {
+          title: `Clé API pour ${model.label}`,
+          ignoreFocusOut: true,
+          placeHolder:
+            'Sélectionner une clé locale ; validation IAM et catalogue, sans inférence',
+        });
+    if (!s.current() || !choice || !choices.includes(choice)) return;
+    if (choice === add) {
+      // Registration publishes its own revision; do not retain this read epoch.
+      const record = await this.register(model, scope);
+      return record
+        ? structuredClone(this.verified.get(record.id)?.row)
+        : undefined;
+    }
+    const record = entries[choices.indexOf(choice)]?.record;
+    if (!record) return;
+    const expected = this.verified.get(record.id);
+    const revision = this.watch(record.id);
+    const raw = await this.context.secrets.get(slot(record.id));
+    const persistedRecord = parse(raw, s);
+    if (
+      !s.current() ||
+      persistedRecord?.id !== record.id ||
+      persistedRecord.accessKey !== record.accessKey ||
+      persistedRecord.secretKey !== record.secretKey
+    )
+      return;
+    try {
+      const verified = await this.verify(persistedRecord, model, s);
+      if (!verified) throw new IAMAccessError('access_denied');
+      if (
+        this.verified.get(record.id) !== expected ||
+        !s.current() ||
+        revision !== this.secretVersions.get(record.id) ||
+        raw !== (await this.context.secrets.get(slot(record.id))) ||
+        !s.current() ||
+        (verified.record.metadata?.expiresAt ?? 0) <= Date.now() + 30000
+      )
+        return;
+      if (this.scopeKey !== namespace(s)) this.clear();
+      this.scopeKey = namespace(s);
+      // Preserve unchanged key identity so consumers for other models survive.
+      const existing = this.verified.get(record.id);
+      if (existing) {
+        existing.record = verified.record;
+        existing.row = verified.row;
+      } else this.verified.set(record.id, verified);
+      return structuredClone(verified.row);
+    } catch {
+      if (expected && this.verified.get(record.id) === expected) {
+        this.verified.delete(record.id);
+        this.secretVersions.delete(record.id);
+      }
+      return;
+    }
+  }
   private async verify(
     record: StoredAccess,
     model: ListedModel,
@@ -156,15 +366,7 @@ export class LlmAccessRegistry {
     let proof = cache?.get(proofKey);
     if (!proof) {
       proof = (async () => {
-        const metadata = await inspectAccessAPIKey(
-          s.project.organizationId,
-          record.accessKey,
-          record.secretKey,
-          s.signal,
-        );
-        if (!s.current()) throw new IAMAccessError('cancelled');
-        if (metadata.expiresAt <= Date.now() + 30000)
-          throw new IAMAccessError('expired');
+        const metadata = await this.inspect(record, s, false);
         return { metadata };
       })();
       cache?.set(proofKey, proof);
@@ -183,15 +385,15 @@ export class LlmAccessRegistry {
     // Even with shared reads, each binding must pass its own bearer check first.
     shared.models ??= listServerlessAvailability(record.secretKey, s.signal);
     const models = await shared.models;
-    if (!s.current() || !models.some((m) => m.id === record.modelId)) return;
+    if (!s.current() || !models.some((m) => m.id === model.id)) return;
     if (metadata.expiresAt <= Date.now() + 30000)
       throw new IAMAccessError('expired');
-    const created = models.find((m) => m.id === record.modelId)?.createdAt;
+    const created = models.find((m) => m.id === model.id)?.createdAt;
     return {
       record: { ...record, metadata },
       row: {
         ...model,
-        id: record.modelId,
+        id: model.id,
         kind: 'serverless',
         serverlessAvailability: 'Disponible',
         serverlessCreatedAt: created,
@@ -213,6 +415,9 @@ export class LlmAccessRegistry {
     if (this.disposed || this.busy || !s.current()) return this.rows(s);
     this.busy = true;
     const key = namespace(s);
+    const selectedViews = new Map(
+      [...this.verified].map(([id, v]) => [id, v.row]),
+    );
     // Invalidate old proofs before any network operation; failure cannot keep an active row.
     this.clear();
     this.scopeKey = key;
@@ -238,11 +443,16 @@ export class LlmAccessRegistry {
           continue;
         }
         try {
+          const selected =
+            selectedViews.get(id)?.id ??
+            record.modelId ??
+            catalogue.find((m) => m.kind === 'serverless')?.id;
+          if (!selected) continue;
           const model = catalogue.find(
-            (m) => m.kind === 'serverless' && m.id === record.modelId,
+            (m) => m.kind === 'serverless' && m.id === selected,
           ) ?? {
-            id: record.modelId,
-            label: record.modelId,
+            id: selected,
+            label: selected,
             kind: 'serverless' as const,
           };
           const verified = await this.verify(record, model, s, cache);
@@ -264,23 +474,28 @@ export class LlmAccessRegistry {
       this.busy = false;
     }
   }
-  async configure(
-    model: ListedModel,
+  private async register(
+    model: ListedModel | undefined,
     s: LlmAccessScope,
-  ): Promise<ListedModel | undefined> {
+    selectedId?: string,
+  ): Promise<StoredAccess | undefined> {
     if (
       this.disposed ||
       this.busy ||
-      model.kind !== 'serverless' ||
+      (model && model.kind !== 'serverless') ||
       !s.current()
     )
       return;
     const generation = this.generation;
+    let registrationEpoch = this.proofEpoch;
     const scope = s;
     s = {
       ...scope,
       current: () =>
-        !this.disposed && this.generation === generation && scope.current(),
+        !this.disposed &&
+        this.generation === generation &&
+        this.proofEpoch === registrationEpoch &&
+        scope.current(),
     };
     this.busy = true;
     let lock: string | undefined;
@@ -315,16 +530,10 @@ export class LlmAccessRegistry {
           typeof candidate.accessKey === 'string' &&
           /^SCW[A-Z0-9]{17}$/.test(candidate.accessKey) &&
           uuid(candidate.secretKey) &&
-          text(parsed.modelId)
+          (parsed.modelId === undefined || text(parsed.modelId))
         ) {
-          if (parsed.modelId !== model.id) {
-            await vscode.window.showWarningMessage(
-              `Une clé récupérable attend sa configuration pour ${parsed.modelId}. Utilisez ce modèle pour reprendre ; aucun nouveau secret ne sera généré.`,
-            );
-            return;
-          }
           const action = await vscode.window.showWarningMessage(
-            'Une clé créée a été conservée dans SecretStorage. Reprendre vérifie cette même clé et le modèle via API, sans créer une autre clé et sans inférence.',
+            'Une clé créée a été conservée dans SecretStorage. Reprendre vérifie cette même clé via IAM, sans créer une autre clé et sans inférence.',
             { modal: true },
             'Reprendre la configuration',
           );
@@ -354,10 +563,17 @@ export class LlmAccessRegistry {
           return;
         }
       }
+      let selected: AccessKeyInventory | undefined;
+      if (selectedId) {
+        const inventory = await this.keyInventory(s);
+        selected = inventory.find((k) => k.id === selectedId)?.metadata;
+        if (!selected || !s.current()) return;
+      }
       const plan = recovered
         ? { type: 'import' as const, ...recovered }
         : await chooseAccessPlan({
-            modelId: model.id,
+            modelId: model?.id,
+            selectedAccessKey: selected?.accessKey,
             userId: s.userId,
             projectName: s.project.name,
             current: s.current,
@@ -369,9 +585,14 @@ export class LlmAccessRegistry {
               ),
           });
       if (!plan || !s.current()) return;
+      if (
+        selected &&
+        (plan.type !== 'import' || plan.accessKey !== selected.accessKey)
+      )
+        throw new IAMAccessError('invalid_request');
       let credentials: { accessKey: string; secretKey: string };
       let expectedBearer: import('./llmAccessIam').Bearer | undefined =
-        recoveredBearer;
+        recoveredBearer ?? selected?.bearer;
       if (plan.type === 'reuse') credentials = s.reuseCredential();
       else if (plan.type === 'import') credentials = plan;
       else {
@@ -394,7 +615,7 @@ export class LlmAccessRegistry {
         await this.context.secrets.store(
           pendingSlot,
           JSON.stringify({
-            modelId: model.id,
+            modelId: model?.id,
             bearer: plan.bearer,
             description: plan.description,
             pending: true,
@@ -416,7 +637,7 @@ export class LlmAccessRegistry {
         await this.context.secrets.store(
           pendingSlot,
           JSON.stringify({
-            modelId: model.id,
+            modelId: model?.id,
             bearer: plan.bearer,
             description: plan.description,
             credentials,
@@ -426,16 +647,20 @@ export class LlmAccessRegistry {
         if (!s.current()) return;
       }
       const record: StoredAccess = {
-        version: 1,
+        version: 2,
         id: randomBytes(16).toString('hex'),
         ownerId: s.userId,
         projectId: s.project.id,
         organizationId: s.project.organizationId,
-        modelId: model.id,
         ...credentials,
       };
       const revision = this.watch(record.id);
-      const verified = await this.verify(record, model, s);
+      const verified = model
+        ? await this.verify(record, model, s)
+        : {
+            record: { ...record, metadata: await this.inspect(record, s) },
+            row: { id: '', label: '', kind: 'serverless' as const },
+          };
       if (
         !verified ||
         !s.current() ||
@@ -449,40 +674,83 @@ export class LlmAccessRegistry {
       )
         throw new IAMAccessError('invalid_response');
       const ids = this.ids(s);
-      // At most one credential binding per model in this workspace/project view.
+      // Preserve other keys and legacy records. Deduplicate only exact credentials.
       const previous: string[] = [];
-      const superseded: { id: string; raw: string }[] = [];
+      let duplicate: StoredAccess | undefined;
       for (const id of ids) {
-        const raw = await this.context.secrets.get(slot(id));
-        const old = parse(raw, s);
-        if (old?.modelId !== model.id) previous.push(id);
-        else if (old.id === id && raw) superseded.push({ id, raw });
+        const old = parse(await this.context.secrets.get(slot(id)), s);
+        previous.push(id);
+        if (
+          old?.id === id &&
+          old.accessKey === credentials.accessKey &&
+          old.secretKey === credentials.secretKey
+        )
+          duplicate ??= old;
       }
       if (!s.current()) return;
+      if (duplicate) {
+        const duplicateRevision = this.watch(duplicate.id);
+        if (
+          duplicate.metadata &&
+          (duplicate.metadata.bearer.id !==
+            verified.record.metadata?.bearer.id ||
+            duplicate.metadata.bearer.type !==
+              verified.record.metadata?.bearer.type)
+        )
+          throw new IAMAccessError('invalid_response');
+        const storedDuplicate = parse(
+          await this.context.secrets.get(slot(duplicate.id)),
+          s,
+        );
+        if (
+          !s.current() ||
+          duplicateRevision !== this.secretVersions.get(duplicate.id) ||
+          !storedDuplicate ||
+          storedDuplicate.accessKey !== credentials.accessKey ||
+          storedDuplicate.secretKey !== credentials.secretKey ||
+          (verified.record.metadata?.expiresAt ?? 0) <= Date.now() + 30000
+        )
+          return;
+        if (plan.type === 'create' || recovered)
+          await this.context.secrets.delete(pendingSlot);
+        if (
+          !s.current() ||
+          duplicateRevision !== this.secretVersions.get(duplicate.id) ||
+          (verified.record.metadata?.expiresAt ?? 0) <= Date.now() + 30000
+        )
+          return;
+        if (model) {
+          verified.record = {
+            ...duplicate,
+            metadata: verified.record.metadata,
+          };
+          if (!verified.row.llmAccess) return;
+          verified.row.llmAccess.id = duplicate.id;
+          if (this.scopeKey !== key) this.clear();
+          this.scopeKey = key;
+          const existing = this.verified.get(duplicate.id);
+          if (existing) {
+            existing.record = verified.record;
+            existing.row = verified.row;
+          } else this.verified.set(duplicate.id, verified);
+        }
+        return duplicate;
+      }
       if (previous.length >= 32) throw new IAMAccessError('pagination_limit');
       const stored = JSON.stringify(verified.record);
       // Notify peers even when their globalState index has not propagated.
       // This is non-credential data in SecretStorage, not execution authority.
       await this.context.secrets.store(
-        key + '.revision',
+        `${key}.revision`,
         randomBytes(16).toString('hex'),
       );
       const publicationEpoch = this.proofEpoch;
+      registrationEpoch = publicationEpoch;
       if (!s.current()) return;
       await this.context.secrets.store(slot(record.id), stored);
       if (!s.current()) return;
       const storedRevision = this.watch(record.id);
       await this.context.globalState.update(key, [...previous, record.id]);
-      if (!s.current()) return;
-      // Retire only validated superseded binding records after the new index
-      // is committed under the shared configuration lock. Never revoke remote
-      // keys or touch generated .env copies; other model bindings stay intact.
-      for (const old of superseded) {
-        if (!s.current() || this.proofEpoch !== publicationEpoch) return;
-        if ((await this.context.secrets.get(slot(old.id))) !== old.raw) return;
-        if (!s.current() || this.proofEpoch !== publicationEpoch) return;
-        await this.context.secrets.delete(slot(old.id));
-      }
       if (!s.current()) return;
       if (plan.type === 'create' || recovered)
         await this.context.secrets.delete(pendingSlot);
@@ -498,13 +766,8 @@ export class LlmAccessRegistry {
         return;
       if (this.scopeKey !== key) this.clear();
       this.scopeKey = key;
-      for (const [id, v] of this.verified)
-        if (v.record.modelId === model.id) {
-          this.verified.delete(id);
-          this.secretVersions.delete(id);
-        }
-      this.verified.set(record.id, verified);
-      return structuredClone(verified.row);
+      if (model) this.verified.set(record.id, verified);
+      return verified.record;
     } catch (error) {
       if (
         s.current() &&
@@ -542,7 +805,6 @@ export class LlmAccessRegistry {
     if (
       !record ||
       record.id !== id ||
-      record.modelId !== model.id ||
       !this.ids(s).includes(id) ||
       record.secretKey !== expected.record.secretKey ||
       record.accessKey !== expected.record.accessKey ||

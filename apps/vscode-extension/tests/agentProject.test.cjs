@@ -202,7 +202,7 @@ test('model label uses model identity, not deployment name or endpoint', () => {
       serverlessAvailability: 'Disponible',
       llmAccess: configuredAccess('p'),
     }),
-    'deepseek-v4.1-flash · Serverless · Utilisateur IAM · accès configuré',
+    'deepseek-v4.1-flash · Serverless · Utilisateur IAM · clé sélectionnée',
   );
   assert.equal(
     agentModelLabel({
@@ -224,7 +224,7 @@ test('model label uses model identity, not deployment name or endpoint', () => {
   );
 });
 
-test('Serverless membership requires configured unexpired access in the selected project and Disponible', () => {
+test('selected key proof requires unexpired access in the selected project and Disponible', () => {
   const model = {
     id: 'configured-model',
     label: 'Model',
@@ -245,7 +245,6 @@ test('Serverless membership requires configured unexpired access in the selected
   };
   assert.deepEqual(deployedAgentModels(context), [model, application]);
   for (const invalid of [
-    { ...model, llmAccess: undefined },
     { ...model, llmAccess: { ...model.llmAccess, expiresAt: Date.now() - 1 } },
     {
       ...model,
@@ -264,8 +263,54 @@ test('Serverless membership requires configured unexpired access in the selected
   const { agentModelLabel } = load('agentProject');
   assert.equal(
     agentModelLabel(application),
-    'application-model · Serverless · Application IAM · accès configuré',
+    'application-model · Serverless · Application IAM · clé sélectionnée',
   );
+});
+
+test('public Serverless authoring needs no selected key and grants no execution authority', () => {
+  const model = {
+    id: 'public-model',
+    label: 'Public model',
+    kind: 'serverless',
+  };
+  const context = {
+    key: 'scope',
+    projectId: 'p',
+    status: 'Non chargés',
+    rows: [model],
+  };
+  assert.deepEqual(deployedAgentModels(context), [model]);
+  const { agentModelLabel } = load('agentProject');
+  assert.equal(
+    agentModelLabel(model),
+    'public-model · Serverless · clé API à choisir',
+  );
+  for (const status of ['deleted', 'retired', 'end-of-life'])
+    assert.deepEqual(
+      deployedAgentModels({ ...context, rows: [{ ...model, status }] }),
+      [],
+    );
+  const base = choices.find((c) => c.framework === 'fastapi');
+  const files = composeAgentProject(
+    base,
+    undefined,
+    'public-agent',
+    model,
+    undefined,
+    'p',
+  ).files;
+  const note = JSON.parse(files['agent.authoring.json']);
+  assert.equal(note.selected_model.model_id, 'public-model');
+  assert.equal(note.selected_model.availability, 'Non vérifiée');
+  assert.equal(note.incomplete, true);
+  assert.equal(note.selected_deployment, undefined);
+  assert.equal(note.llmAccess, undefined);
+  assert.equal(files['agent.json'], undefined);
+  if (files['.vscode/scaleway-agent-run.json'])
+    assert.equal(
+      JSON.parse(files['.vscode/scaleway-agent-run.json']).ready,
+      false,
+    );
 });
 
 test('host-owned composition emits an unready launch file while personal launch declaration stays unchanged', () => {

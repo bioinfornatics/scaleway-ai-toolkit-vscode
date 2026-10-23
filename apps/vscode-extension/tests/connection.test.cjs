@@ -2570,7 +2570,8 @@ test('Use preserves prices and capabilities with opaque secret-reference persist
       s.secrets.get(`scalewayAI.llmAccess.secret.v1.${saved[0]}`),
     );
     assert.equal(record.id, saved[0]);
-    assert.equal(record.modelId, offered.id);
+    assert.equal(record.version, 2);
+    assert.equal(record.modelId, undefined);
     assert.equal(record.ownerId, org);
     assert.equal(record.organizationId, org);
     assert.equal(record.projectId, id);
@@ -2637,6 +2638,149 @@ test('Use preserves prices and capabilities with opaque secret-reference persist
     restarted?.dispose();
     s.connection.dispose();
     provider.listServerless = list;
+    s.restore();
+  }
+});
+test('API key inventory reads IAM only, hides secrets and preserves expired organization keys', async () => {
+  const s = setup();
+  const iam = require('../dist/llmAccessIam');
+  const old = iam.listAccessAPIKeys;
+  const sends = [];
+  try {
+    await s.connection.ensureProject();
+    iam.listAccessAPIKeys = async (organization, credential, signal) => {
+      sends.push({ organization, credential });
+      assert.equal(signal.aborted, false);
+      return [
+        {
+          accessKey,
+          organizationId: org,
+          bearer: { type: 'user', id: org },
+          description: 'Inventory fixture',
+          expiresAt: Date.now() - 1000,
+        },
+      ];
+    };
+    await s.connection.refreshAPIKeys(true);
+    assert.equal(sends.length, 1);
+    assert.equal(sends[0].organization, org);
+    assert.equal(s.connection.apiKeys.length, 1);
+    assert.equal(s.connection.apiKeys[0].secretAvailable, false);
+    assert.match(s.connection.apiKeys[0].id, /^[a-f0-9]{32}$/);
+    assert.doesNotMatch(
+      JSON.stringify(s.connection.apiKeys),
+      new RegExp(secretKey + '|' + accessKey + '|' + org),
+    );
+    assert.equal(s.availabilityCalls.length, 0);
+    assert.equal(s.planCalls.length, 0);
+    assert.equal(
+      await s.connection.useAPIKey(s.connection.apiKeys[0].id),
+      undefined,
+    );
+    s.connection.invalidateAPIKeys();
+    assert.deepEqual(s.connection.apiKeys, []);
+  } finally {
+    iam.listAccessAPIKeys = old;
+    s.connection.dispose();
+    s.restore();
+  }
+});
+test('late inventory cannot publish after logout, storage invalidation or a newer refresh', async () => {
+  const s = setup();
+  const iam = require('../dist/llmAccessIam');
+  const old = iam.listAccessAPIKeys;
+  try {
+    await s.connection.ensureProject();
+    let release;
+    iam.listAccessAPIKeys = () =>
+      new Promise((resolve) => {
+        release = resolve;
+      });
+    const pending = s.connection.refreshAPIKeys(true);
+    while (!release) await new Promise((resolve) => setImmediate(resolve));
+    s.connection.invalidateAPIKeys();
+    release([
+      {
+        accessKey,
+        organizationId: org,
+        bearer: { type: 'user', id: org },
+        description: 'Stale',
+        expiresAt: Date.now() + 3600000,
+      },
+    ]);
+    await pending;
+    assert.deepEqual(s.connection.apiKeys, []);
+    assert.match(s.connection.apiKeysState, /À actualiser/);
+    const second = s.connection.refreshAPIKeys(true);
+    release = undefined;
+    while (!release) await new Promise((resolve) => setImmediate(resolve));
+    await s.connection.disconnect();
+    release([
+      {
+        accessKey,
+        organizationId: org,
+        bearer: { type: 'user', id: org },
+        description: 'Late',
+        expiresAt: Date.now() + 3600000,
+      },
+    ]);
+    await second;
+    assert.deepEqual(s.connection.apiKeys, []);
+  } finally {
+    iam.listAccessAPIKeys = old;
+    s.connection.dispose();
+    s.restore();
+  }
+});
+test('one registered API key supports two catalog models without per-model registration', async () => {
+  const s = setup();
+  const iam = require('../dist/llmAccessIam');
+  const old = iam.listAccessAPIKeys;
+  const list = provider.listServerless;
+  try {
+    await s.connection.ensureProject();
+    iam.listAccessAPIKeys = async () => [
+      {
+        accessKey,
+        organizationId: org,
+        bearer: { type: 'user', id: org },
+        description: 'Shared key',
+        expiresAt: Date.now() + 3600000,
+      },
+    ];
+    provider.listServerless = async () => [
+      { id: 'public-model', label: 'First', kind: 'serverless' },
+      {
+        id: 'fixture-chat-never-live-tested',
+        label: 'Second',
+        kind: 'serverless',
+      },
+    ];
+    await s.connection.loadPublicCatalog();
+    assert.equal(await s.connection.configureAPIKey(), true);
+    const key = s.connection.apiKeys[0];
+    assert.equal(key.secretAvailable, true);
+    assert.equal(s.availabilityCalls.length, 0);
+    const first = await s.connection.useAPIKey(key.id);
+    assert.equal(first.id, 'public-model');
+    const firstHandle = await s.connection.modelInferenceScope(first);
+    s.vscode.window.showQuickPick = async (items) => items.at(-1);
+    const second = await s.connection.useAPIKey(key.id);
+    assert.equal(second.id, 'fixture-chat-never-live-tested');
+    assert.equal(second.llmAccess.id, first.llmAccess.id);
+    assert.equal(firstHandle.current(), true);
+    assert.equal(firstHandle.authorize(), secretKey);
+    firstHandle.dispose();
+    const registered = [...s.secrets].filter(([key]) =>
+      key.startsWith('scalewayAI.llmAccess.secret.v1.'),
+    );
+    assert.equal(registered.length, 1);
+    assert.equal(JSON.parse(registered[0][1]).modelId, undefined);
+    assert.equal(s.planCalls.length, 1);
+  } finally {
+    iam.listAccessAPIKeys = old;
+    provider.listServerless = list;
+    s.connection.dispose();
     s.restore();
   }
 });

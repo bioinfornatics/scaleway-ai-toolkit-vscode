@@ -163,10 +163,23 @@ function setup(t, options = {}) {
   patch(wizard, 'chooseAccessPlan', async (input) => {
     events.push(['wizard', input]);
     assert.equal(input.userId, userId);
-    assert.equal(input.modelId, model.id);
+    assert.equal(input.modelId, options.keyOnly ? undefined : model.id);
     assert.equal(input.projectName, project.name);
     assert.equal(input.current(), true);
     return options.plan ?? { type: 'reuse' };
+  });
+  patch(window, 'showQuickPick', async (items) => {
+    events.push(['pick']);
+    return options.selectLocal ? items[0] : items.at(-1);
+  });
+  patch(iam, 'listAccessAPIKeys', async (org, credential, signal) => {
+    events.push(['inventory', org, credential]);
+    assert.equal(org, project.organizationId);
+    assert.equal(credential, control);
+    checkSignal(signal);
+    return (
+      options.inventory ?? [metadata(), metadata(applicationKey.accessKey)]
+    );
   });
   patch(window, 'showErrorMessage', async (message) => {
     events.push(['error', message]);
@@ -563,7 +576,11 @@ test('refresh bounds and validates index/records, deduplicates IDs and rejects f
 
 test('32 distinct model bindings reject a 33rd without overwriting any stored secret/index', async (t) => {
   const h = setup(t);
-  for (let n = 1; n <= 32; n++) h.seed(n, { modelId: `other-${n}` });
+  for (let n = 1; n <= 32; n++)
+    h.seed(n, {
+      modelId: `other-${n}`,
+      secretKey: `77777777-7777-4777-8777-${String(n).padStart(12, '0')}`,
+    });
   const stateBefore = structuredClone([...h.state]);
   const secretsBefore = [...h.secrets];
   assert.equal(await h.registry.configure(model, h.scope), undefined);
@@ -574,7 +591,7 @@ test('32 distinct model bindings reject a 33rd without overwriting any stored se
   assert.equal(h.count('error'), 1);
 });
 
-test('reconfiguring same model retires only validated obsolete binding slots after publication', async (t) => {
+test('adding another key preserves validated legacy slots after publication', async (t) => {
   const h = setup(t, { plan: { type: 'import', ...applicationKey } });
   const old = h.seed();
   const other = h.seed(2, { modelId: 'other-model' });
@@ -585,10 +602,11 @@ test('reconfiguring same model retires only validated obsolete binding slots aft
   assert.ok(row);
   assert.notEqual(row.llmAccess.id, old.id);
   assert.deepEqual(h.state.get(namespace(h.scope)), [
+    old.id,
     other.id,
     row.llmAccess.id,
   ]);
-  assert.equal(h.secrets.has(slot(old.id)), false);
+  assert.equal(h.secrets.has(slot(old.id)), true);
   assert.equal(handle.current(), false);
   assert.throws(() => handle.secretKey(), /expired/);
   assert.equal(
@@ -606,7 +624,6 @@ test('credential rejects forged row, missing secret, wrong model and stale scope
   const row = await h.registry.configure(model, h.scope);
   for (const forged of [
     model,
-    { ...row, id: 'another-model' },
     { ...row, llmAccess: { ...row.llmAccess, id: idAt(999) } },
   ]) {
     await assert.rejects(
@@ -614,6 +631,11 @@ test('credential rejects forged row, missing secret, wrong model and stale scope
       /invalid_request/,
     );
   }
+  await assert.rejects(
+    h.registry.credential(h.scope, { ...row, id: 'another-model' }),
+    /access_denied/,
+  );
+  await h.registry.refresh(h.scope, [model]);
   const handle = await h.registry.credential(h.scope, row);
   h.stale();
   assert.equal(handle.current(), false);
@@ -1072,6 +1094,7 @@ test('Given separate window indexes, When same model is replaced, Then shared Se
   const [peerRow] = await peer.refresh(h.scope, [model]);
   const handle = await peer.credential(h.scope, peerRow);
   assert.equal(handle.current(), true);
+  wizard.chooseAccessPlan = async () => ({ type: 'import', ...applicationKey });
   const replacement = await h.registry.configure(model, h.scope);
   assert.notEqual(replacement.llmAccess.id, row.llmAccess.id);
   assert.ok(
@@ -1081,10 +1104,10 @@ test('Given separate window indexes, When same model is replaced, Then shared Se
   assert.deepEqual(peer.rows(h.scope), []);
   assert.equal(handle.current(), false);
   assert.throws(() => handle.secretKey(), /expired/);
-  assert.deepEqual(
-    await peer.refresh(h.scope, [model]),
-    [],
-    'stale index cannot resurrect retired secret',
+  assert.equal(
+    (await peer.refresh(h.scope, [model])).length,
+    1,
+    'old key remains usable after fresh IAM/catalogue proof',
   );
 });
 
@@ -1100,4 +1123,193 @@ test('Given expiry during persistence, When configure settles, Then it cannot pu
   };
   assert.equal(await h.registry.configure(model, h.scope), undefined);
   assert.deepEqual(h.registry.rows(h.scope), []);
+});
+
+test('organization inventory includes expired keys, opaque stable IDs, scoped secret flags and no model discovery or writes', async (t) => {
+  const h = setup(t);
+  const legacy = h.seed();
+  const before = [...h.secrets];
+  const expiry = Date.now() - 1000;
+  iam.listAccessAPIKeys = async (org, credential, signal) => {
+    assert.equal(org, project.organizationId);
+    assert.equal(credential, control);
+    assert.equal(signal, h.scope.signal);
+    return [
+      { ...h.metadata(), expiresAt: expiry },
+      {
+        ...h.metadata(applicationKey.accessKey),
+        expiresAt: expiry + 7200000,
+        createdAt: '2026-10-01T00:00:00Z',
+      },
+    ];
+  };
+  const rows = await h.registry.inventory(h.scope);
+  assert.equal(rows.length, 2);
+  assert.equal(rows[0].id, legacy.id);
+  assert.equal(rows[0].secretAvailable, true);
+  assert.equal(rows[0].expiresAt, expiry);
+  assert.equal(rows[1].secretAvailable, false);
+  assert.match(rows[1].id, /^[a-f0-9]{32}$/);
+  assertPublic(rows);
+  assert.deepEqual(
+    Object.keys(rows[0]).sort(),
+    [
+      'id',
+      'description',
+      'maskedAccessKey',
+      'bearerType',
+      'expiresAt',
+      'secretAvailable',
+    ].sort(),
+  );
+  assert.deepEqual(await h.registry.inventory(h.scope), rows);
+  const foreign = await h.registry.inventory({ ...h.scope, userId: appId });
+  assert.equal(foreign[0].secretAvailable, false);
+  assert.equal(foreign[1].id, rows[1].id);
+  assert.equal(h.count('models'), 0);
+  assert.equal(h.count('inspect'), 0);
+  assert.equal(h.count('store'), 0);
+  assert.equal(h.count('update'), 0);
+  assert.deepEqual([...h.secrets], before);
+});
+
+test('key registration stores v2 without model, deduplicates exact credentials, and never calls models', async (t) => {
+  const h = setup(t);
+  wizard.chooseAccessPlan = async (input) => {
+    assert.equal(input.modelId, undefined);
+    return { type: 'reuse' };
+  };
+  assert.equal(await h.registry.configureKey(h.scope), true);
+  const ids = h.state.get(namespace(h.scope));
+  assert.equal(ids.length, 1);
+  const raw = h.secrets.get(slot(ids[0]));
+  assert.equal(JSON.parse(raw).version, 2);
+  assert.equal('modelId' in JSON.parse(raw), false);
+  assert.deepEqual(h.registry.rows(h.scope), []);
+  assert.equal(await h.registry.configureKey(h.scope), true);
+  assert.deepEqual(h.state.get(namespace(h.scope)), ids);
+  assert.equal(h.secrets.get(slot(ids[0])), raw);
+  assert.equal(h.count('models'), 0);
+});
+
+test('selected inventoried key import enforces its access key and fresh IAM before storage, without models', async (t) => {
+  const h = setup(t);
+  const resource = (await h.registry.inventory(h.scope))[1];
+  wizard.chooseAccessPlan = async (input) => {
+    assert.equal(input.modelId, undefined);
+    assert.equal(input.selectedAccessKey, applicationKey.accessKey);
+    return { type: 'import', ...login };
+  };
+  assert.equal(await h.registry.configureKey(h.scope, resource.id), false);
+  assert.equal(h.count('store'), 0);
+  wizard.chooseAccessPlan = async () => ({ type: 'import', ...applicationKey });
+  assert.equal(await h.registry.configureKey(h.scope, resource.id), true);
+  assert.equal(h.count('inspect'), 1);
+  assert.equal(h.count('models'), 0);
+  assert.equal((await h.registry.inventory(h.scope))[1].secretAvailable, true);
+});
+
+test('one registered legacy key serves two models without mutation or generation and both consumers stay valid', async (t) => {
+  const h = setup(t, { selectLocal: true });
+  const record = h.seed(1, { modelId: 'legacy-model' });
+  const raw = h.secrets.get(slot(record.id));
+  const second = { ...model, id: 'second-model' };
+  provider.listServerlessAvailability = async () => [
+    { id: model.id },
+    { id: second.id },
+  ];
+  const firstRow = await h.registry.configure(model, h.scope);
+  const first = await h.registry.credential(h.scope, firstRow);
+  const secondRow = await h.registry.configure(second, h.scope);
+  const secondHandle = await h.registry.credential(h.scope, secondRow);
+  assert.equal(firstRow.llmAccess.id, record.id);
+  assert.equal(secondRow.llmAccess.id, record.id);
+  assert.equal(first.current(), true);
+  assert.equal(secondHandle.current(), true);
+  assert.equal(first.secretKey(), secondHandle.secretKey());
+  assert.equal(h.count('wizard'), 0);
+  assert.equal(h.count('create'), 0);
+  assert.equal(h.count('store'), 0);
+  assert.equal(h.count('update'), 0);
+  assert.equal(h.secrets.get(slot(record.id)), raw);
+  assertPublic([firstRow, secondRow]);
+});
+
+test('inventory scope cancellation and slot changes during reads cannot publish stale local availability', async (t) => {
+  const h = setup(t);
+  const record = h.seed();
+  const original = h.context.secrets.get;
+  h.context.secrets.get = async (key) => {
+    const raw = await original(key);
+    if (key === slot(record.id)) await h.context.secrets.delete(key);
+    return raw;
+  };
+  assert.deepEqual(await h.registry.inventory(h.scope), []);
+  h.stale();
+  assert.deepEqual(await h.registry.inventory(h.scope), []);
+});
+
+test('v2 registered key serves two models with one immutable slot and IAM/catalogue revalidation', async (t) => {
+  const h = setup(t, { selectLocal: true, keyOnly: true });
+  assert.equal(await h.registry.configureKey(h.scope), true);
+  const id = h.state.get(namespace(h.scope))[0];
+  const raw = h.secrets.get(slot(id));
+  const second = { ...model, id: 'second-model' };
+  provider.listServerlessAvailability = async () => [
+    { id: model.id },
+    { id: second.id },
+  ];
+  const firstRow = await h.registry.configure(model, h.scope);
+  const first = await h.registry.credential(h.scope, firstRow);
+  const secondRow = await h.registry.configure(second, h.scope);
+  assert.equal(firstRow.llmAccess.id, id);
+  assert.equal(secondRow.llmAccess.id, id);
+  assert.equal(
+    (await h.registry.credential(h.scope, secondRow)).current(),
+    true,
+  );
+  assert.equal(first.current(), true);
+  assert.equal(h.count('inspect'), 5);
+  assert.equal(h.count('store'), 2, 'only initial revision and secret');
+  assert.equal(h.secrets.get(slot(id)), raw);
+  assert.equal(h.state.get(namespace(h.scope)).length, 1);
+});
+
+test('key-first creation retains a recoverable model-free marker on IAM failure and resumes without another creation', async (t) => {
+  const h = setup(t, { plan: createPlan() });
+  wizard.chooseAccessPlan = async () => createPlan();
+  const inspect = iam.inspectAccessAPIKey;
+  iam.inspectAccessAPIKey = async () => {
+    throw new iam.IAMAccessError('access_denied');
+  };
+  assert.equal(await h.registry.configureKey(h.scope), false);
+  const pendingSlot = `${namespace(h.scope)}.pending`;
+  const pending = JSON.parse(h.secrets.get(pendingSlot));
+  assert.equal('modelId' in pending, false);
+  assert.deepEqual(pending.credentials, applicationKey);
+  iam.inspectAccessAPIKey = inspect;
+  window.showWarningMessage = async () => 'Reprendre la configuration';
+  assert.equal(await h.registry.configureKey(h.scope), true);
+  assert.equal(h.count('create'), 1);
+  assert.equal(h.count('models'), 0);
+  assert.equal(h.secrets.has(pendingSlot), false);
+});
+
+test('key registration preserves the 32-slot bound but can reuse an exact credential at capacity', async (t) => {
+  const h = setup(t, { keyOnly: true });
+  for (let n = 1; n <= 32; n++)
+    h.seed(n, {
+      secretKey:
+        n === 1
+          ? login.secretKey
+          : `77777777-7777-4777-8777-${String(n).padStart(12, '0')}`,
+    });
+  const before = [...h.secrets];
+  assert.equal(await h.registry.configureKey(h.scope), true);
+  assert.deepEqual([...h.secrets], before);
+  wizard.chooseAccessPlan = async () => ({ type: 'import', ...applicationKey });
+  assert.equal(await h.registry.configureKey(h.scope), false);
+  assert.deepEqual([...h.secrets], before);
+  assert.equal(h.state.get(namespace(h.scope)).length, 32);
+  assert.equal(h.count('models'), 0);
 });

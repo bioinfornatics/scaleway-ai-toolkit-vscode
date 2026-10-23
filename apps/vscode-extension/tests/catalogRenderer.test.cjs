@@ -123,7 +123,7 @@ test('serverless configure sends use intent and selected model can be configured
   button(card, 'Utiliser').events.click();
   assert.deepEqual(ui.sent.at(-1), { type: 'use', id: row.id });
   ui.state({ serverless: [row], selectedServerless: [row.id] });
-  const added = button(ui.cards('public')[0], 'Configurer à nouveau');
+  const added = button(ui.cards('public')[0], 'Choisir une clé API');
   assert.equal(added.disabled, false);
   const count = ui.sent.length;
   added.events.click();

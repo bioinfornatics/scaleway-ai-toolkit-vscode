@@ -15,7 +15,7 @@ const source = readFileSync(filename, 'utf8');
 const esbuild = require(path.join(extension, 'node_modules/esbuild'));
 const compiled = esbuild.buildSync({
   stdin: {
-    contents: `${source}\nexport const __test = { boundedHTTP, sdkRaw, scrub };`,
+    contents: `${source.replace('    return raw;', '    __rawResponses.push(raw); return raw;')}\nconst __rawResponses = [];\nexport const __test = { boundedHTTP, sdkRaw, scrub, rawResponses: __rawResponses };`,
     sourcefile: filename,
     resolveDir: path.dirname(filename),
     loader: 'ts',
@@ -129,6 +129,249 @@ async function rejectsSafe(promise, code) {
     return true;
   });
 }
+
+const inventoryKey = (n, overrides = {}) =>
+  apiKey({ access_key: `SCW${String(n).padStart(17, '0')}`, ...overrides });
+
+test('inventory uses installed SDK org-only GET with JWT and key; expired/null and safe fields', async (t) => {
+  for (const credential of [jwt, secret]) {
+    const createdAt = '2020-01-01T00:00:00Z';
+    const expiredAt = '2000-01-01T00:00:00Z';
+    const futureAt = '2099-01-01T00:00:00.123Z';
+    iam.__test.rawResponses.length = 0;
+    const fixture = mockHTTP(
+      t,
+      () => ({
+        json: {
+          api_keys: [
+            inventoryKey(1, {
+              expires_at: expiredAt,
+              created_at: createdAt,
+              secret_key: secret,
+              creation_ip: 'private-ip',
+              nested: { secret_key: secret },
+            }),
+            inventoryKey(2, { user_id: null, application_id: app }),
+            inventoryKey(3, { expires_at: futureAt, description: '' }),
+          ],
+          total_count: 3,
+        },
+      }),
+      (options, body) => {
+        checkAuth(options, credential);
+        assert.equal(options.method, 'GET');
+        assert.equal(body, undefined);
+        checkQuery(options, 'api-keys', {
+          organization_id: org,
+          page: '1',
+          page_size: '100',
+        });
+      },
+    );
+    const result = await iam.listAccessAPIKeys(org, credential, signal());
+    assert.deepEqual(result, [
+      {
+        accessKey: inventoryKey(1).access_key,
+        bearer: { type: 'user', id: user },
+        expiresAt: Date.parse(expiredAt),
+        organizationId: org,
+        description: 'VS Code access',
+        createdAt,
+      },
+      {
+        accessKey: inventoryKey(2).access_key,
+        bearer: { type: 'application', id: app },
+        expiresAt: Number.MAX_SAFE_INTEGER,
+        organizationId: org,
+        description: 'VS Code access',
+      },
+      {
+        accessKey: inventoryKey(3).access_key,
+        bearer: { type: 'user', id: user },
+        expiresAt: Date.parse(futureAt),
+        organizationId: org,
+        description: '',
+      },
+    ]);
+    assert.ok(!JSON.stringify(result).includes(secret));
+    assert.ok(!JSON.stringify(result).includes('private-ip'));
+    assert.equal(iam.__test.rawResponses[0].api_keys[0].secret_key, undefined);
+    assert.equal(
+      iam.__test.rawResponses[0].api_keys[0].nested.secret_key,
+      undefined,
+    );
+    assert.equal(fixture.sent.length, 1);
+  }
+});
+
+test('inventory completes at most five sequential pages of 100 including empty and partial last page', async (t) => {
+  for (const total of [0, 101, 500]) {
+    let previous;
+    const fixture = mockHTTP(
+      t,
+      (_o, _b, page) => ({
+        json: {
+          api_keys: Array.from(
+            { length: Math.min(100, total - (page - 1) * 100) },
+            (_, i) => inventoryKey((page - 1) * 100 + i + 1),
+          ),
+          total_count: total,
+        },
+      }),
+      (options, body, page) => {
+        if (previous) assert.ok(previous.destroyed);
+        previous = fixture.requests[page - 1];
+        assert.equal(body, undefined);
+        checkQuery(options, 'api-keys', {
+          organization_id: org,
+          page: String(page),
+          page_size: '100',
+        });
+      },
+    );
+    assert.equal(
+      (await iam.listAccessAPIKeys(org, jwt, signal())).length,
+      total,
+    );
+    assert.equal(fixture.sent.length, Math.max(1, Math.ceil(total / 100)));
+  }
+});
+
+test('inventory rejects duplicates, stale totals, incomplete and excessive pagination without partial results', async (t) => {
+  for (const mode of [
+    'changing',
+    'missing',
+    'duplicate',
+    'excessive',
+    'same-page',
+  ]) {
+    iam.__test.rawResponses.length = 0;
+    const fixture = mockHTTP(t, (_o, _b, page) => ({
+      json: {
+        api_keys:
+          mode === 'excessive'
+            ? []
+            : mode === 'same-page'
+              ? [inventoryKey(1), inventoryKey(1)]
+              : page === 1
+                ? Array.from({ length: 100 }, (_, i) => inventoryKey(i + 1))
+                : mode === 'missing'
+                  ? []
+                  : [inventoryKey(mode === 'duplicate' ? 1 : 101)],
+        total_count:
+          mode === 'excessive'
+            ? 501
+            : mode === 'same-page'
+              ? 2
+              : mode === 'changing' && page === 2
+                ? 100
+                : 101,
+        secret_key: secret,
+      },
+    }));
+    await rejectsSafe(
+      iam.listAccessAPIKeys(org, jwt, signal()),
+      mode === 'excessive' ? 'pagination_limit' : 'invalid_response',
+    );
+    assert.equal(
+      fixture.sent.length,
+      ['excessive', 'same-page'].includes(mode) ? 1 : 2,
+    );
+    assert.ok(iam.__test.rawResponses.every((r) => r.secret_key === undefined));
+  }
+});
+
+test('inventory validates raw shapes, strict bearer, description, timestamps and scope; scrubs failed rows', async (t) => {
+  const cases = [
+    {},
+    { api_keys: [], total_count: '0' },
+    { api_keys: [], total_count: -1 },
+    { api_keys: [], total_count: 1.1 },
+    { api_keys: [], total_count: 1 },
+    { api_keys: [inventoryKey(1)], total_count: 0 },
+    { api_keys: [null], total_count: 1 },
+    {
+      api_keys: Array.from({ length: 101 }, (_, i) => inventoryKey(i)),
+      total_count: 101,
+    },
+    ...[
+      { access_key: undefined },
+      { access_key: 'bad' },
+      { user_id: undefined },
+      { application_id: app },
+      { application_id: 'bad' },
+      { user_id: 'bad' },
+      { description: undefined },
+      { description: 1 },
+      { description: 'bad\n' },
+      { description: 'x'.repeat(201) },
+      { organization_id: otherOrg },
+      { expires_at: undefined },
+      { expires_at: 123 },
+      { expires_at: 'tomorrow' },
+      { expires_at: '2099-02-30T00:00:00Z' },
+      { expires_at: '2099-01-01T00:00:00+00:00' },
+      { created_at: null },
+      { created_at: 123 },
+      { created_at: 'bad' },
+      { created_at: '2020-02-30T00:00:00Z' },
+    ].map((change) => ({
+      api_keys: [inventoryKey(1, change)],
+      total_count: 1,
+    })),
+  ];
+  for (const json of cases) {
+    iam.__test.rawResponses.length = 0;
+    mockHTTP(t, () => ({
+      json: { ...json, secret_key: secret, nested: { secret_key: secret } },
+    }));
+    await rejectsSafe(
+      iam.listAccessAPIKeys(org, jwt, signal()),
+      'invalid_response',
+    );
+    assert.equal(iam.__test.rawResponses[0].secret_key, undefined);
+    assert.equal(iam.__test.rawResponses[0].nested.secret_key, undefined);
+  }
+});
+
+test('inventory auth failures and cancellation are safe for both credential types; invalid inputs send nothing', async (t) => {
+  for (const credential of [jwt, secret]) {
+    for (const status of [401, 403]) {
+      const fixture = mockHTTP(
+        t,
+        () => ({ status, wire: secret }),
+        (options) => checkAuth(options, credential),
+      );
+      await rejectsSafe(
+        iam.listAccessAPIKeys(org, credential, signal()),
+        'access_denied',
+      );
+      assert.equal(fixture.sent.length, 1);
+    }
+    const c = new AbortController();
+    const fixture = mockHTTP(t, () => ({ hang: true }));
+    const promise = iam.listAccessAPIKeys(org, credential, c.signal);
+    await new Promise((resolve) => setImmediate(resolve));
+    c.abort();
+    await rejectsSafe(promise, 'cancelled');
+    assert.ok(fixture.requests[0].destroyed);
+  }
+  const fixture = mockHTTP(t, () => assert.fail('must not send'));
+  for (const credential of ['', 'bad', `${jwt}\r\nX-Evil: x`])
+    await rejectsSafe(
+      iam.listAccessAPIKeys(org, credential, signal()),
+      'invalid_api_key',
+    );
+  await rejectsSafe(
+    iam.listAccessAPIKeys('bad', jwt, signal()),
+    'invalid_request',
+  );
+  await rejectsSafe(iam.listAccessAPIKeys(org, jwt, null), 'invalid_request');
+  const c = new AbortController();
+  c.abort();
+  await rejectsSafe(iam.listAccessAPIKeys(org, jwt, c.signal), 'cancelled');
+  assert.equal(fixture.sent.length, 0);
+});
 
 test('installed SDK lists only organization-scoped applications with both credential types', async (t) => {
   for (const credential of [jwt, secret]) {

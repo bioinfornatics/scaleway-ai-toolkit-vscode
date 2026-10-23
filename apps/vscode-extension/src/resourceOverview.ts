@@ -1,12 +1,14 @@
 import { randomBytes } from 'node:crypto';
 import * as vscode from 'vscode';
+import type { ApiKeyResource } from './llmAccessRegistry';
 import type { ListedModel } from './provider';
 
 export type OverviewInput =
-  | { type: 'catalog' | 'refresh'; token: string }
+  | { type: 'catalog' | 'refresh' | 'add-key'; token: string }
+  | { type: 'import-key' | 'use-key'; id: string; token: string }
   | {
       type: 'open';
-      kind: 'serverless' | 'dedicated';
+      kind: 'dedicated';
       id: string;
       token: string;
     };
@@ -18,14 +20,21 @@ export function parseOverviewInput(value: unknown): OverviewInput | undefined {
     return;
   if (
     Object.keys(row).length === 2 &&
-    (row.type === 'catalog' || row.type === 'refresh')
+    (row.type === 'catalog' || row.type === 'refresh' || row.type === 'add-key')
   ) {
     return { type: row.type, token: row.token };
   }
   if (
+    Object.keys(row).length === 3 &&
+    (row.type === 'import-key' || row.type === 'use-key') &&
+    typeof row.id === 'string' &&
+    /^[a-f0-9]{32}$/.test(row.id)
+  )
+    return { type: row.type, id: row.id, token: row.token };
+  if (
     Object.keys(row).length === 4 &&
     row.type === 'open' &&
-    (row.kind === 'serverless' || row.kind === 'dedicated') &&
+    row.kind === 'dedicated' &&
     typeof row.id === 'string' &&
     row.id.length > 0 &&
     row.id.length <= 512 &&
@@ -137,56 +146,98 @@ export function modelsOverviewHtml(
   webview: vscode.Webview,
   root: vscode.Uri,
   project: string | undefined,
-  serverless: ListedModel[],
+  keys: ApiKeyResource[],
   dedicated: ListedModel[],
   dedicatedState: string,
+  keyState = 'Non chargé',
+  mode: 'keys' | 'dedicated' = 'keys',
 ): { html: string; token: string } {
   const token = randomBytes(24).toString('hex');
   const rows =
     project === undefined
       ? []
-      : [
-          ...serverless.filter(
-            (row) => row.kind === 'serverless' && row.status !== 'deleted',
-          ),
-          ...dedicated.filter(
-            (row) => row.kind === 'dedicated' && row.status !== 'deleted',
-          ),
-        ];
-  const body =
+      : dedicated.filter(
+          (row) => row.kind === 'dedicated' && row.status !== 'deleted',
+        );
+  const inventory = project === undefined ? [] : keys;
+  const scope =
     '<p class="subtitle">' +
     (project !== undefined
-      ? 'Projet : ' + escapeHtml(project)
-      : 'Choisissez un projet connecté et un espace de travail approuvé pour voir vos modèles.') +
-    '</p>' +
-    '<div class="actions"><button data-action="catalog">Ajouter un modèle</button><button data-action="refresh">Actualiser les ressources</button></div>' +
-    '<p class="note">Serverless : Actualiser les ressources vérifie la présence du modèle dans la liste de l’API. Les accès affichés disposent d’une clé enregistrée, de métadonnées IAM vérifiées et d’un modèle annoncé par l’API. Ils ne prouvent pas une génération réussie. — signifie aucune vérification pour ce contexte ; une erreur ne signifie pas que le modèle est absent. Pour les déploiements dédiés, Success et Failure correspondent aux états ready et error retournés par l’API ; les états intermédiaires sont conservés. Date Serverless : création du modèle (created), pas de votre accès. Date dédiée : création du déploiement (created_at). Dates affichées dans le fuseau horaire local de VS Code. Une valeur absente, nulle ou invalide est affichée —. Ces états ne certifient pas l’accès à l’inférence.</p>' +
-    (project !== undefined
-      ? '<p role="status">Déploiements dédiés : ' +
-        escapeHtml(dedicatedState) +
-        '</p>'
+      ? 'Projet : ' +
+        escapeHtml(project) +
+        ' · clés de l’organisation, secrets locaux de ce contexte'
+      : 'Choisissez un projet connecté et un workspace approuvé pour consulter les ressources.') +
+    '</p>';
+  const actions =
+    '<div class="actions">' +
+    (mode === 'keys'
+      ? '<button data-action="add-key">+ Ajouter une clé API</button>'
       : '') +
-    '<div class="table-scroll"><table><caption>Mes modèles</caption><thead><tr><th scope="col">Nom</th><th scope="col">Type d’inférence</th><th scope="col">status</th><th scope="col">Date de création</th><th scope="col">Action</th></tr></thead><tbody>' +
+    '<button data-action="catalog">Catalogue de modèles</button><button data-action="refresh">Actualiser</button></div>';
+  const keyBody =
+    '<p class="note">Une clé IAM appartient à un utilisateur ou une application, pas à un modèle. Elle est réutilisable selon les politiques IAM, les quotas et la disponibilité. Le secret n’est retourné qu’à la création : l’inventaire ne permet pas de le récupérer. « Présent localement » indique seulement un secret conservé dans SecretStorage pour ce contexte ; ni ses droits sur le projet ni une inférence réussie ne sont certifiés.</p>' +
+    '<p role="status">Clés API : ' +
+    escapeHtml(keyState) +
+    '</p>' +
+    '<div class="table-scroll"><table><caption>Clés API de l’organisation</caption><thead><tr><th scope="col">Description</th><th scope="col">Clé masquée</th><th scope="col">Titulaire</th><th scope="col">Expiration</th><th scope="col">Secret local</th><th scope="col">Action</th></tr></thead><tbody>' +
+    inventory
+      .map((key) => {
+        const expired = key.expiresAt <= Date.now() + 30000;
+        const expiry =
+          key.expiresAt === Number.MAX_SAFE_INTEGER
+            ? 'Sans expiration (IAM)'
+            : creationDate(new Date(key.expiresAt).toISOString()) +
+              (expired ? ' · expirée / imminente' : '');
+        const action = expired
+          ? 'Indisponible'
+          : '<button data-action="' +
+            (key.secretAvailable ? 'use-key' : 'import-key') +
+            '" data-id="' +
+            escapeHtml(key.id) +
+            '">' +
+            (key.secretAvailable ? 'Choisir un modèle' : 'Importer le secret') +
+            '</button>';
+        return (
+          '<tr><td>' +
+          escapeHtml(key.description || 'Sans description') +
+          '</td><td>' +
+          escapeHtml(key.maskedAccessKey) +
+          '</td><td>' +
+          (key.bearerType === 'application'
+            ? 'Application IAM'
+            : 'Utilisateur IAM') +
+          '</td><td>' +
+          escapeHtml(expiry) +
+          '</td><td>' +
+          (key.secretAvailable ? 'Présent localement' : 'Non enregistré') +
+          '</td><td>' +
+          action +
+          '</td></tr>'
+        );
+      })
+      .join('') +
+    (inventory.length
+      ? ''
+      : '<tr><td colspan="6">Aucune clé affichée. Un inventaire non chargé ou refusé ne signifie pas qu’aucune clé existe.</td></tr>') +
+    '</tbody></table></div>';
+  const deploymentBody =
+    '<p class="note">Ressources cloud dédiées, distinctes des modèles du catalogue et des clés API. Success / Failure correspondent à ready / error ; ces états ne certifient pas une inférence. Dates dans le fuseau horaire local.</p><p role="status">Déploiements dédiés : ' +
+    escapeHtml(dedicatedState) +
+    '</p><div class="table-scroll"><table><caption>Déploiements dédiés</caption><thead><tr><th scope="col">Nom</th><th scope="col">Modèle</th><th scope="col">status</th><th scope="col">Date de création</th><th scope="col">Action</th></tr></thead><tbody>' +
     rows
       .map(
         (row) =>
           '<tr><td>' +
           escapeHtml(row.label) +
           '</td><td>' +
-          (row.kind === 'serverless' ? 'Serverless' : 'Dédié') +
+          escapeHtml(
+            row.deploymentInfo?.modelName ?? row.deploymentInfo?.modelId ?? '—',
+          ) +
           '</td><td>' +
           escapeHtml(deploymentState(row)) +
           '</td><td>' +
-          escapeHtml(
-            creationDate(
-              row.kind === 'dedicated'
-                ? row.deploymentInfo?.createdAt
-                : row.serverlessCreatedAt,
-            ),
-          ) +
-          '</td><td><button data-action="open" data-kind="' +
-          row.kind +
-          '" data-id="' +
+          escapeHtml(creationDate(row.deploymentInfo?.createdAt)) +
+          '</td><td><button data-action="open" data-kind="dedicated" data-id="' +
           escapeHtml(row.id) +
           '" aria-label="Ouvrir ' +
           escapeHtml(row.label) +
@@ -195,7 +246,17 @@ export function modelsOverviewHtml(
       .join('') +
     (rows.length
       ? ''
-      : '<tr><td colspan="5">Aucun modèle affiché. Ajoutez une référence depuis le catalogue ou actualisez les déploiements du projet.</td></tr>') +
+      : '<tr><td colspan="5">Aucun déploiement affiché. Actualisez pour vérifier l’inventaire du projet.</td></tr>') +
     '</tbody></table></div>';
-  return { html: page(webview, root, 'Modèles', body, token), token };
+  const title = mode === 'keys' ? 'Clés API' : 'Déploiements dédiés';
+  return {
+    html: page(
+      webview,
+      root,
+      title,
+      scope + actions + (mode === 'keys' ? keyBody : deploymentBody),
+      token,
+    ),
+    token,
+  };
 }

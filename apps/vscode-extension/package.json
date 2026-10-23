@@ -37,7 +37,7 @@
       },
       {
         "command": "scalewayAI.openModels",
-        "title": "Scaleway AI: Ouvrir mes modèles"
+        "title": "Scaleway AI: Ouvrir les clés API (compatibilité)"
       },
       {
         "command": "scalewayAI.openAgents",
@@ -195,6 +195,18 @@
       {
         "command": "scalewayAI.openService",
         "title": "Scaleway AI: Ouvrir un service"
+      },
+      {
+        "command": "scalewayAI.openAPIKeys",
+        "title": "Scaleway AI: Ouvrir les clés API"
+      },
+      {
+        "command": "scalewayAI.openDeployments",
+        "title": "Scaleway AI: Ouvrir les déploiements dédiés"
+      },
+      {
+        "command": "scalewayAI.configureAPIKey",
+        "title": "Scaleway AI: Ajouter une clé API"
       }
     ],
     "viewsContainers": {

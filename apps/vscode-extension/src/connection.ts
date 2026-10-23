@@ -15,7 +15,11 @@ import {
 } from './deploymentLifecycle';
 import { deploymentWizard } from './deploymentWizard';
 import { createService, reviewService } from './deployService';
-import { LlmAccessRegistry, type LlmAccessScope } from './llmAccessRegistry';
+import {
+  type ApiKeyResource,
+  LlmAccessRegistry,
+  type LlmAccessScope,
+} from './llmAccessRegistry';
 import { getModelEula, type ModelEula } from './modelEula';
 import { createProject } from './projectCreation';
 import {
@@ -81,6 +85,10 @@ export class Connection implements vscode.Disposable {
   project: Project | undefined;
   serverless: ListedModel[] = [];
   serverlessResources: ListedModel[] = [];
+  apiKeys: ApiKeyResource[] = [];
+  apiKeysState = 'Non chargé';
+  private apiKeysScope = '';
+  private apiKeysEpoch = 0;
   dedicated: ListedModel[] = [];
   dedicatedCatalog: ListedModel[] = [];
   serverlessState = 'Non chargé · catalogue public';
@@ -94,6 +102,10 @@ export class Connection implements vscode.Disposable {
   private generation = 0;
   private inferenceScopes = new Set<AbortController>();
   invalidateInference() {
+    this.apiKeysEpoch++;
+    this.apiKeys = [];
+    this.apiKeysState = 'Non chargé';
+    this.apiKeysScope = '';
     this.serverlessResources = this.serverlessResources.map(
       ({
         serverlessAvailability: _availability,
@@ -1377,6 +1389,102 @@ export class Connection implements vscode.Disposable {
       },
     };
   }
+  /** Organization IAM inventory. No Serverless model reads or inferred rights. */
+  async refreshAPIKeys(silent = false): Promise<void> {
+    if (!(await this.ensureProject(silent))) return;
+    const scope = this.inferenceScope();
+    const epoch = ++this.apiKeysEpoch;
+    const key = JSON.stringify(scope.project);
+    this.apiKeys = [];
+    this.apiKeysScope = key;
+    this.apiKeysState = 'Chargement…';
+    this.changed();
+    try {
+      const rows = await this.llmAccess.inventory(this.accessScope(scope));
+      if (!scope.current() || epoch !== this.apiKeysEpoch) return;
+      this.apiKeys = rows;
+      this.apiKeysState = rows.length
+        ? 'Inventaire IAM · organisation sélectionnée'
+        : 'Aucune clé visible dans IAM';
+    } catch {
+      if (scope.current() && epoch === this.apiKeysEpoch) {
+        this.apiKeys = [];
+        this.apiKeysState = 'Erreur · inventaire IAM non vérifié';
+      }
+    } finally {
+      const current = scope.current() && epoch === this.apiKeysEpoch;
+      scope.dispose();
+      if (current) this.changed();
+    }
+  }
+  invalidateAPIKeys(): void {
+    this.apiKeysEpoch++;
+    this.apiKeys = [];
+    this.apiKeysScope = '';
+    this.apiKeysState = 'À actualiser · stockage sécurisé modifié';
+    this.changed();
+  }
+  async configureAPIKey(id?: string): Promise<boolean> {
+    if (id !== undefined && !/^[a-f0-9]{32}$/.test(id)) return false;
+    if (!(await this.ensureProject())) return false;
+    if (
+      id &&
+      (this.apiKeysScope !== JSON.stringify(this.project) ||
+        !this.apiKeys.some((k) => k.id === id))
+    )
+      return false;
+    const scope = this.inferenceScope();
+    let configured = false;
+    try {
+      configured = await this.llmAccess.configureKey(
+        this.accessScope(scope),
+        id,
+      );
+      if (!scope.current()) return false;
+    } finally {
+      scope.dispose();
+    }
+    if (configured) await this.refreshAPIKeys();
+    return configured;
+  }
+  async useAPIKey(id: string): Promise<ListedModel | undefined> {
+    if (!/^[a-f0-9]{32}$/.test(id) || !(await this.ensureProject())) return;
+    const key = this.apiKeys.find((k) => k.id === id);
+    if (
+      !key?.secretAvailable ||
+      key.expiresAt <= Date.now() + 30000 ||
+      this.apiKeysScope !== JSON.stringify(this.project)
+    )
+      return;
+    const scope = this.inferenceScope();
+    try {
+      if (!this.serverless.length) await this.loadPublicCatalog();
+      if (!scope.current()) return;
+      const choices = this.serverless.map((model) => ({
+        label: model.label,
+        description: model.id,
+        model,
+      }));
+      const selected = await vscode.window.showQuickPick(choices, {
+        title: 'Choisir un modèle Serverless',
+        placeHolder:
+          'La clé est réutilisable ; aucun appel modèle à cette étape',
+        ignoreFocusOut: true,
+      });
+      if (!selected || !choices.includes(selected) || !scope.current()) return;
+      const configured = await this.llmAccess.configure(
+        selected.model,
+        this.accessScope(scope),
+        id,
+      );
+      if (!configured || !scope.current()) return;
+      this.serverlessResources = this.llmAccess.rows(this.accessScope(scope));
+      this.changed();
+      return configured;
+    } finally {
+      scope.dispose();
+    }
+  }
   async refreshServerlessAvailability(silent = false): Promise<void> {
     if (!(await this.ensureProject(silent))) return;
     const scope = this.inferenceScope();
@@ -1432,10 +1540,12 @@ export class Connection implements vscode.Disposable {
           secretKey: scope.authorize,
           dispose: scope.dispose,
         };
-      const credential = await this.llmAccess.credential(
-        this.accessScope(scope),
-        model,
-      );
+      const accessScope = this.accessScope(scope);
+      const selected = model.llmAccess
+        ? model
+        : await this.llmAccess.configure(model, accessScope);
+      if (!selected || !scope.current()) throw new ReadError('invalid_scope');
+      const credential = await this.llmAccess.credential(accessScope, selected);
       return { ...credential, dispose: scope.dispose };
     } catch (error) {
       scope.dispose();

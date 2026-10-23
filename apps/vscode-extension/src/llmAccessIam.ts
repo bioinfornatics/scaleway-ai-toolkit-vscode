@@ -11,6 +11,9 @@ export type AccessKeyMetadata = {
   organizationId: string;
   description: string;
 };
+export interface AccessKeyInventory extends AccessKeyMetadata {
+  createdAt?: string;
+}
 export type IAMAccessErrorCode =
   | 'invalid_request'
   | 'invalid_api_key'
@@ -89,10 +92,7 @@ function bearerOf(data: Row): Bearer {
   if (uuid(app) && absent(user)) return { type: 'application', id: app };
   return fail('invalid_response');
 }
-function expiry(data: Row): number {
-  // Missing expiry is not proof of an unlimited key. Only explicit null is.
-  if (data.expires_at === null) return Number.MAX_SAFE_INTEGER;
-  const v = data.expires_at;
+function timestamp(v: unknown): number {
   if (
     typeof v !== 'string' ||
     !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.test(v)
@@ -104,13 +104,20 @@ function expiry(data: Row): number {
     new Date(n).toISOString().slice(0, 19) !== v.slice(0, 19)
   )
     fail('invalid_response');
-  if (n <= Date.now()) fail('expired');
+  return n;
+}
+function expiry(data: Row, allowExpired = false): number {
+  // Missing expiry is not proof of an unlimited key. Only explicit null is.
+  if (data.expires_at === null) return Number.MAX_SAFE_INTEGER;
+  const n = timestamp(data.expires_at);
+  if (!allowExpired && n <= Date.now()) fail('expired');
   return n;
 }
 function metadata(
   data: unknown,
   access: string,
   orgId: string,
+  allowExpired = false,
 ): AccessKeyMetadata {
   const r = row(data);
   if (
@@ -126,7 +133,7 @@ function metadata(
   return {
     accessKey: access,
     bearer: bearerOf(r),
-    expiresAt: expiry(r),
+    expiresAt: expiry(r, allowExpired),
     organizationId: orgId,
     description: r.description,
   };
@@ -191,7 +198,12 @@ async function boundedHTTP(
   const fields = appList
     ? ['organization_id', 'page', 'page_size']
     : keyList
-      ? ['access_keys', 'organization_id', 'page', 'page_size']
+      ? [
+          ...(url.searchParams.has('access_keys') ? ['access_keys'] : []),
+          'organization_id',
+          'page',
+          'page_size',
+        ]
       : [];
   if (
     url.searchParams.size !== fields.length ||
@@ -203,7 +215,10 @@ async function boundedHTTP(
     (!uuid(url.searchParams.get('organization_id')) ||
       !/^[1-5]$/.test(url.searchParams.get('page') ?? '') ||
       url.searchParams.get('page_size') !== '100' ||
-      (keyList && !key(url.searchParams.get('access_keys'))))
+      (keyList &&
+        ((secretRead && !url.searchParams.has('access_keys')) ||
+          (url.searchParams.has('access_keys') &&
+            !key(url.searchParams.get('access_keys'))))))
   )
     fail('invalid_request');
   if (body !== undefined) {
@@ -494,6 +509,56 @@ export async function listAccessApplications(
           fail('invalid_response');
         seen.add(r.id);
         result.push({ id: r.id, name: r.name });
+      }
+      if (result.length === total) return result;
+    } finally {
+      scrub(raw);
+    }
+  }
+  return fail('pagination_limit');
+}
+
+/** Organization-scoped inventory only; expired keys remain visible. This does
+ * not authenticate listed keys, prove usability, bind a model or run inference.
+ */
+export async function listAccessAPIKeys(
+  orgId: string,
+  controlCredential: string,
+  signal: AbortSignal,
+): Promise<AccessKeyInventory[]> {
+  scope(orgId, controlCredential, signal);
+  const result: AccessKeyInventory[] = [];
+  const seen = new Set<string>();
+  let total: number | undefined;
+  for (let page = 1; page <= 5; page++) {
+    const raw = await sdkRaw(
+      { method: 'GET', path: listPath('api-keys', orgId, page) },
+      controlCredential,
+      false,
+      signal,
+      (api) =>
+        api.listAPIKeys(
+          { organizationId: orgId, page, pageSize: 100 },
+          { signal },
+        ),
+    );
+    try {
+      const p = pageData(raw, 'api_keys', 500);
+      if (total !== undefined && total !== p.total) fail('invalid_response');
+      total = p.total;
+      if (p.rows.length !== Math.min(100, total - result.length))
+        fail('invalid_response');
+      for (const value of p.rows) {
+        const r = row(value);
+        if (!key(r.access_key) || seen.has(r.access_key))
+          fail('invalid_response');
+        const m: AccessKeyInventory = metadata(r, r.access_key, orgId, true);
+        if ('created_at' in r) {
+          timestamp(r.created_at);
+          m.createdAt = r.created_at as string;
+        }
+        seen.add(m.accessKey);
+        result.push(m);
       }
       if (result.length === total) return result;
     } finally {

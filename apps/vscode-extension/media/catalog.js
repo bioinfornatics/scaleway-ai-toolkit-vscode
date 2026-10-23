@@ -89,7 +89,7 @@
       action.textContent =
         kind === 'public'
           ? (state.selectedServerless || []).includes(row.id)
-            ? 'Configurer à nouveau'
+            ? 'Choisir une clé API'
             : 'Utiliser'
           : deployment
             ? 'Ouvrir le déploiement'
