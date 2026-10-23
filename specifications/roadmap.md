@@ -1,16 +1,119 @@
+## État courant — améliorations apps après revue 2026-10-22
+
+Le registre historique LocalResources a été retiré : la découverte workspace
+LocalInventory possède la liste locale. Les destinations de création externes
+restent permises ; l'ouverture explicite du projet ne dépend d'aucun enregistrement.
+Les handles IAM stables, invalidation SecretStorage, statuts de scan complets/incomplets,
+annulation bornée des écritures et purge playground sont vérifiés localement.
+Le build récursif et le gate VSIX final isolé préparent des refactors ultérieurs,
+pas une migration massive déjà livrée. Les suites arrêtées restent opt-in ; les
+12 wheels Python prouvent installation/configuration, pas intégration SDK/DeepEval.
+Le plan et la matrice exhaustive d'actions sont rattachés aux Beads .3.23.39–.43 ;
+installed/native/live/whole-product restent séparés des preuves locales.
+
 # Scaleway AI Toolkit — delivery roadmap
 
-Updated 2026-10-21 after autonomous implementation through VSIX 0.0.25. Historical incident notes below retain their original scope. **Beads owns tasks, dependencies and current status**; this document owns delivery sequencing and product boundaries, not a parallel task checklist. Experimental VSIX milestones do not close production/value/design gates.
+## Mise à jour — rationalisation 2026-10-22
+
+Les anciens générateur portable, politique MCP non raccordée, moteur futur de
+création dédié et sondes de recherche ont été retirés du produit. Les anciens
+rapports et sections historiques ne décrivent pas ces chemins comme actifs.
+Le parcours courant utilise LocalCreation/composeAgentProject, les accès IAM
+vérifiés et deployService avec journal/reconciliation. Le runtime Python reste
+expérimental et séparé, sans liaison au host. Les checks de sources sont des
+tests documentaires, pas des preuves de disponibilité ou de runtime.
+
+
+Updated2026-10-21 for configurable selected-model playground and session coordination. **Beads owns tasks, dependencies and status**; this document owns delivery sequencing and product boundaries. Historical milestones below are dated records, not current executable instructions. Local/mock, packaged-host, visual, live-account and production acceptance are different levels.
+
+## Local resource inventory correction — stakeholder 2026-10-22 00:22
+
+jgh.3.23.13: Ressources locales → Agents / Tools lists detected local projects from workspace roots in a central table, no longer opens creation/templates immediately. Top-right + Créer un agent / + Créer un outil opens Construire createAgent/createTool (template chooser + generation). Cloud inventory create buttons first route local inventory; its create buttons route Build. Mes templates retains project/global library.
+
+Read-only marker discovery (agent.json/agent.authoring.json/agent.py; tool.py/server.py) includes root and depth3 descendants, max256 dirs/8192 entries; excludes .git/node_modules/.venv/dist/.scaleway-ai and symlinks. Markers are candidates, not validated/runtime/deployed claims. Partial scans/errors distinct from empty. Native editor open rechecks trust, scope and marker identity; same-user path races remain. No code content persistence or execution. Installed visual acceptance remains open; systematic VSIX generation applies.
+
+## Deployed-resource navigation correction — stakeholder 2026-10-22 00:04
+
+Mes ressources → Agents / Tools owns **deployed Scaleway services**, never generated local-project inventory. Slice jgh.3.23.11 replaces the incorrect local-inventory destination with a central deployed-resource page and top-right + Créer un agent / + Créer un outil buttons routing to Ressources locales → Agents / Tools. The create action prepares local code only, never deploys. Local generated projects remain implementation data for future local resource management, not cloud inventory.
+
+Current cloud agent/tool listing adapter and service classification are absent. The page explicitly says inventory unavailable/non-loaded, not verified zero deployed resources. Follow-up jgh.5.3.5 owns source-backed project/region service reads and approved identity mapping; do not count every container, dedicated model or local project as an agent/tool. No native Scaleway agent API is presumed. This UI correction performs no cloud reads; installed visuals/full deployed inventory acceptance remain open.
+
+## Agent/tool/template creation implementation — stakeholder authority 2026-10-21 22:33
+
+Current user approved local implementation plus project/global origin labels and project precedence on same template ID. Parent outcomes remain separate from delivered leaves. New local creation route opens from Resources locales → Agents/Tools or Construire → Créer un agent/tool. Mes templates shows merged project/user libraries plus predefined source separately; workspace roots ordered first, user last, first valid ID wins. User home means the Linux extension-host home (including remote Linux host), not browser home. Unsupported OS fails closed; non-file workspace schemes are not used as local filesystem paths.
+
+Historical checkpoint (superseded by the current sequencing above): strict bounded version-1 template envelopes (distinct from portable agent contract 1.0.0); read-only safe discovery; native JSON drafts, bounded import, confirmed exclusive template creation and native editing; preview and confirmed exclusive project materialization, preserving edits. Identity-only tracked local-resource inventory routes Mes ressources Agents/Tools to native editors. Unknown custom template layouts can be created but may fail registration: files retained, no automatic retry or execution. Trust and stale scopes checked after asynchronous UI steps. No model-local option.
+
+Agent source creation includes evidence-profile-pinned Strands Python mapping, external credentials and editable instructions/model authoring note. A bare model ID does not fabricate capability/endpoint/scope provenance: it creates incomplete agent.authoring.json, not an execution-ready portable spec. Full model-reference generation can produce actual contract schema with content revision; offline general validator rejects unsupported versions, duplicate keys, nonfinite/unsafe integers, depth/byte limits, malformed revisions and screened credential literals. It does not grant endpoint/execution authority. Model/endpoint broker integration remains jgh.4.1/.4.4 acceptance.
+
+Runtime dispatch, authenticated loopback lifecycle and MCP policy modules are offline candidates only: in-memory ledgers/registries and synthetic/injected clients; no durable broker, complete runtime/SSE integration, host launch or real Run/Stop acceptance. Do not expose real agent execution controls from these mocks. jgh.4.2/.3/.4.4.2/.4.7 remain incomplete; no installs, tools, paid inference or cloud actions performed or implicitly approved by generation. No deletion/automatic overwrite; native-editor saves have no atomic save-time protection. Directory fd/identity checks reduce replacement races but do not eliminate same-user mkdir/lstat races or make staged publication atomic. Failed writes may leave partial new files for review.
+
+Current local and mocked checks must be recorded against exact candidate; installed visual/keyboard remains jgh.3.23.1, agent end-to-end remains jgh.4.7. Old descriptive-preview implementation/evidence below is historical, not proof of the current integrated workflow.
+
+## Historical local resources and templates — stakeholder revision 2026-10-21 22:23
+
+Slice jgh.3.23.7: **Mes ressources → Projet / Modèles / Agents / Tools / Ressources locales (Agents, Tools) / Mes templates (Agents, Tools) / Récents**. No local model entry in the MVP; the synthetic demo remains accessible from developer actions, not a local model inventory. This supersedes the local submenu below.
+
+Local Agents/Tools open intermediate pages inspired by the supplied Foundry Create Agent screen: predefined bases and personal-template source. Currently descriptive previews only (Strands Python, Strands with tools, Python function, MCP tool): selection opens a descriptive preview; generation, installation and execution are explicitly pending. Personal-template storage locations are now approved (see below); discovery/merging and CRUD implementation remain deferred. Actual selectable scaffolds/runtime remain jgh.4.1/.2/.4; do not confuse descriptive template selection with a generatable scaffold. Opening these pages has no filesystem or network effects. Installed visual/keyboard acceptance remains jgh.3.23.1.
+
+Storage decision **approved by stakeholder 2026-10-21 22:32, not implemented**: merge project and user-global libraries in Mes templates. Agents: `<workspace>/.scaleway-ai/templates/agents/*` + `~/.scaleway-ai/templates/agents/*`. Tools: `<workspace>/.scaleway-ai/templates/tools/*` + `~/.scaleway-ai/templates/tools/*`. Project templates remain portable and optionally Git-versioned; global templates are reusable across projects. Keep predefined templates as a separate source from this personal-library union.
+
+Proposed, **not yet approved**: display origin (Projet / Utilisateur) and prefer the project version when stable template IDs collide; discovery must never silently overwrite either file. Resolve identity/schema, collision handling, multi-root and local/remote home semantics, imports and workspace trust before implementation. Secrets remain outside templates; discovery/selection does not authorize template execution or paid inference. No directory creation, filesystem discovery or runtime change is delivered by recording this decision.
+
+## Historical navigation and local-first agents — stakeholder revision 2026-10-21
+
+Navigation slice jgh.3.23.6.1/.2: **Projet → Modèles → Agents → Ressources locales → Récents**. Modèles is a leaf opening a central overview, without Serverless/Dédiés submenus. It contains workspace-selected Serverless references (inference access unverified) and existing dedicated deployments, not commercial catalogue offers. Agents follows immediately and currently shows a visibly pending journey, not functional Create/Run/Deploy controls. Opening these overviews does not fetch cloud resources.
+
+Agent target: editable **Strands Python code → explicit model/endpoint configuration → local test → guided image publication and Serverless Containers deployment → playground of the existing hosted service**. Local execution is not offline inference: a remote model call can incur cost and needs its own authority. Container Registry is a hidden implementation detail, not the initial agent inventory. A dedicated model remains a model; the container hosts agent logic, not necessarily model weights. Secrets stay outside code/images; image identity, service ownership, costs and cleanup must be explicit before cloud actions.
+
+Local schema/scaffold/runtime/UI work is split under jgh.4.1/.2/.4; packaging and cloud planning under jgh.5.2/.3/.4. No Docker build, image push, live inference or deployment is authorized by navigation work. Cloud approval jgh.5.3.3 remains blocked; installed visual/keyboard acceptance remains jgh.3.23.1. Earlier target tables below retain historical context and do not override this revision.
+
+## Current execution checkpoint — 2026-10-21, backlog reduction
+
+- Current user authority: continue roadmap development locally; no cloud, key effects, deployment, commit/push/Dolt sync or Entire mutation. Playground testing explicitly stopped by user at14:45; do not resume from broad backlog requests without explicit reauthorization. User plans to test live personally later.
+- 398.6.1 and ahh closed for corrected installed Serverless mock acceptance only (328 tests); 398.6.2 still blocked, 398.6.3 not run. Local acceptance does not close parent requirements.
+- 398.4.1/.2 closed for local dedicated policy/transport/native-consent code mocks (451 tests). 398.4.3 records24 installed mock checks; additional interrupted QA artifacts are not assumed accepted. Parent398.4 remains open, testing halted. Evidence: dedicated-playground-installed-398.json.
+- Current primary398.5: .1 format/standalone exports and .2 source/native-file actions implemented. Independent code review found Unicode/status-cost/bounded-read defects, corrected under .3 with26 isolated data/file/export tests and typecheck passing; independent re-review and UI/installed evidence remain open. No playground tests rerun. Evidence: real-experiments-398-5.json.
+- Next: finish narrow correction review398.5.3 without playground execution; retain398.5 full acceptance until required evidence exists. Review remaining MVP requirements against delivered evidence, not blanket parent closure. Live/production/design/participant/advanced release gates remain distinct.
+- Historical baseline and delivery order below are retained for context; this checkpoint governs current work. Current save/export source is newer than the previous installed VSIX.
+
+## Current baseline — 2026-10-21
+
+- Source package version0.0.37; artifacts/scaleway-ai-toolkit-preview-0.0.37.vsix exists from previous catalogue delivery. Its existence does not prove it includes the current uncommitted playground changes. Rebuild/hash in isolated installed QA before claiming current package validation.
+- Catalogue/actions/resources separation and reviewed dedicated creation code already exist; no new paid deployment authorized here.
+- 398.1/.2/.3 complete for source-backed/local mocked acceptance: real Serverless text transport, prompt/output cap, Run/Stop, streaming/partial/errors/scope isolation and conditional usage/cost. 320tests/typecheck/Biome/diff-check recorded in artifacts/validation/service-playground-configurable-398.json.
+- Model identity is configurable, no Mistral whitelist or per-model live-test prerequisite. Declared non-chat-only operations/entirely retired offerings blocked; missing/conflicting capability data permits explicit basic chat trial with warning. No model fallback.
+- Use/resources preserve capabilities/prices in memory; persistence is identity-only. Model playground does not require/start Strands Python.
+- Current implementation installed visual QA and new cloud inference are not_run. Existing catalogue evidence and historical representative smoke do not verify the new installed transport.
+- Workspace mixes pre-existing uncommitted deliveries. No commit/push or remote sync authorized by this coordination update.
 
 ## Immediate delivery order
 
-| Order | Outcome | Beads authority | Acceptance boundary |
+| Order | Outcome | Execution / acceptance authority | Boundary |
 |---|---|---|---|
-| 1 | Make the real model catalog visible in the installed extension | `scaleway_ai_vscode-jgh.3.22` | Diagnose installed version/command/gate/load/render first; actual packaged host opens catalog with public model entries. Independent dedicated error/empty status; user verifies journey. Adapter-only HTTP success insufficient. |
-| 2 | Align implemented navigation with Foundry resources/discovery/build | `scaleway_ai_vscode-jgh.3.23`, depends on `.3.22` | Resources separate from commercial catalog; move synthetic demo to Local Resources; no dead advanced actions. Keyboard/theme/visible host verification. |
-| 3 | Default-project selector and reviewed project-creation design | `scaleway_ai_vscode-jgh.3.24`, depends on `.3.23` | Switch project via organization name and persistent default; Create project requires separately scoped write implementation/confirmation. Planning grants no cloud writes. |
-| 4 | Complete capability-aware model catalog and read-only explorer | existing `.3.3`, `.3.6`, connection `.3.2` | Reuse recorded routes, shapes and contradictions; provenance/lifecycle/unknowns, cache invalidation, IAM and returned endpoints. Existing production dependencies remain. |
-| 5 | Real streaming Model Playground, saved experiments and runnable exports | existing `.3.4`, `.3.5`, acceptance `.3.7` | Verified user-token inference transport, selected model and explicit bounded spend; cancellation, usage/cost uncertainty, secrets absent from exports. Current playground remains synthetic. |
+| 1 | Verify actual installed selected-model playground locally | 398.6.1; aggregate398.6, R03 owner jgh.3.4 | Isolated VS Code, synthetic scope and mocked inference, actual host/webview + visible/keyboard/theme evidence. Coordinate jgh.3.23.1; no account traffic. |
+| 2 | Validate representative Serverless inference from installed extension | 398.6.3 blocked by localQA398.6.1 and approval398.6.2 | Exact project/model/executor/physical-call cap/output cap/monetary budget/secure delivery/stop rules required. Common contract, not all models. msz key effects need separate approval. |
+| 3 | Complete selected dedicated endpoint invocation | 398.4; acceptance jgh.3.4 / dedicated jgh.5.1 | Endpoint binding, network/TLS/auth and parameter policy, mocked transport/UI first. No arbitrary endpoint/fallback/inferred reachability; live authority separate. |
+| 4 | Save and export real experiments | 398.5; acceptance jgh.3.5 | Separate real/partial/error format from offline, safe persistence and independently runnable Python/TS mock-verified examples without secrets. Split leaf tasks when starting. |
+| 5 | Close whole MVP acceptance, not incremental-code checkboxes | jgh.3.2/.3/.4/.5/.6/.7, navigation jgh.3.23.1, key verification msz | Existing requirement/security/accessibility/IAM/participant/production gates retained. Experimental slices do not close whole stories/phases. |
+
+Orders recommend sessions, not blanket dependency rewrites. Dedicated/export local work can proceed when its own technical prerequisites are met; unrelated cloud approval must not block offline implementation.
+
+## Coordination and acceptance ownership
+
+398 is a delivery epic under jgh.3, not an executable task. Historical phase IDs remain stable. jgh.3.4 owns streaming/recovery acceptance;398.2/.3/.4 implement it. jgh.3.5 owns R04;398.5 implements real save/export. jgh.3.7 owns MVP;398.6 contributes installed/live evidence. Related links avoid duplicate work without inventing blockers.
+
+398.6 children: .1 installed localQA, .2 blocked human authorization, .3 live execution depends on both. msz is blocked pending its own key/read/revoke mandate, not implicitly part of .2. bd ready does not grant cloud authority; inspect scope and use local-only filter.
+
+Workflow: [Beads / Entire coordination contract](coordination.md). Durable handoff/session/checkpoint links live in Beads, no parallel markdown task/MEMORY file. Session20261021_9 has pending work; no new checkpoint created for this implementation.
+
+## Historical milestones — dated evidence, not the next-work queue
+
+Below, “playground synthetic”, “latest0.0.25”, “planning only” and historical commit permissions apply to their original record, not the current baseline above. Current user/repository authorization wins.
+
+### Initial catalogue delivery order (historical)
+
+Earlier delivery prioritized visible catalogue jgh.3.22, navigation jgh.3.23 and project selector jgh.3.24. Reuse their evidence and preserve outstanding visual/IAM/full-product acceptance; do not reimplement delivered catalogue or restart discovery.
 
 ## Catalog incident and existing API knowledge
 
@@ -25,7 +128,7 @@ Reuse the detailed observations already in `.3.3`, `.3.6`, `.1.2`, `.1.3`, and s
 | Dedicated GET `/inference/v1/regions/fr-par/models?order_by=created_at_desc&project_id=<project>` plus source-derived paging filters | Model catalog with UUID/variants and node support; zero-project sentinel observed in prior data. | Deployment existence, hardware stock/quota or blanket foreign-project permission; current extension JWT acceptance remains unverified live. |
 | GET regional `/deployments` and returned embedded endpoints | Existing selected-project resources, separate from model catalog. | Endpoint reachability or hosted agent service; do not fabricate URLs or standalone endpoint list. |
 
-Evidence references: `evidence/documentation/scaleway-model-catalog-v1.json`, `evidence/validation/public-model-catalog-adapter-v1.json`, `evidence/validation/vscode-real-catalogs-preview-v13.json`, source snapshots under `evidence/schemas/`. Read prior Beads notes before any new API research. Never reconstruct them as original raw captures. No token/cookie/credential extraction from the installed session.
+Evidence references: `specifications/references/documentation/scaleway-model-catalog-v1.json`, `specifications/references/validation/public-model-catalog-adapter-v1.json`, `specifications/references/validation/vscode-real-catalogs-preview-v13.json`, source snapshots under `specifications/references/schemas/`. Read prior Beads notes before any new API research. Never reconstruct them as original raw captures. No token/cookie/credential extraction from the installed session.
 
 Code inspection identifies **hypotheses, not a proven incident cause**: `openCatalog` is behind the account/project gate, waits for public and dedicated discovery before opening QuickPick, and loading returns early while busy. A standalone public-adapter check does not exercise those paths. Prioritize exact command/host evidence and isolated failure scenarios; make public catalog review resilient to optional dedicated failure. No unrelated hosting spike.
 
@@ -130,7 +233,7 @@ Latest testable artifact: artifacts/scaleway-ai-toolkit-preview-0.0.25.vsix.
 79 tests and strict TypeScript/Biome gates pass; npm audit reports zero findings.
 Isolated installed packaged host1.142.0 confirms actual webview ready/rendered and
 17 active public cards from33 raw offers, no account authentication. Details:
-evidence/validation/vscode-project-creation-v25.json.
+specifications/references/validation/vscode-project-creation-v25.json.
 
 Implemented increments (Beads children closed for these exact slices):
 .5.1.1 deployment preparation, .3.6.1 deployment/endpoint explorer,
@@ -177,3 +280,17 @@ and exact billable confirmation are available. Public SDK source recaptured at
 25895fc5; EULA method mentioned but absent from generated file, no guessed route.
 Explicit follow performs up to5 GETs with15s intervals; no startup polls or probes.
 .5.1 full creation/cleanup/live acceptance remains open; this is not a deployed model.
+
+
+## Clarification UX validée — 2026-10-21 09:28
+
+Le stakeholder valide Mes ressources comme inventaire réel, non catalogue : Serverless
+sélections d’espace de travail si aucune activation provider n’est établie ; Dédiés
+services effectivement retournés, y compris en création. Libellés courts, états
+contextualisés dans la rubrique. Catalogue central → Utiliser / Déployer / Ouvrir
+existant → ressource mise à jour → playground ; actions techniques dans les détails.
+Version0.0.36 implémente la séparation, le chemin de création dédiée confirmé et le
+suivi borné. Le playground réel reste contexte uniquement, transport d’inférence à
+livrer séparément (.3.4), jamais substitution par une démo. Beads6kv owns this slice.
+Prix public et période corroborés, licence acceptée par l’utilisateur, IAM/quotas
+contrôlés par le provider à la création ; aucune prétention de validation live.

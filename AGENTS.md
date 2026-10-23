@@ -23,6 +23,12 @@ bd close <id>         # Complete work
 bd dolt push          # Push beads data to remote
 ```
 
+## Session coordination
+
+Read [specifications/coordination.md](specifications/coordination.md) before selecting a session or handing off mixed work. Beads owns durable task/handoff state; Entire links explain execution. Use one bounded primary leaf, separate local/live authority, preserve dirty files and do not commit/push or mutate active Entire sessions without approval. Current sequencing is at top of specifications/roadmap.md; history is not next-work queue.
+
+At every completed/blocked tranche and before switching primary task or authority, warn the user explicitly: **Session** (keep/change and why), **Commit** (recommended/not ready, validation and approval), **Files** (exact changed/created paths vs pre-existing dirty work), **Next actions** (ordered Beads IDs and blockers). Recommend a focused commit when a coherent slice is validated, but never treat the recommendation as authorization; no automatic commit/push/Entire stop. Details: coordination.md mandatory boundary notice.
+
 ## Non-Interactive Shell Commands
 
 **ALWAYS use non-interactive flags** with file operations to avoid hanging on confirmation prompts.
