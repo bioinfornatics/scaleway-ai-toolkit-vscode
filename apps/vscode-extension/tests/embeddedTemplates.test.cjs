@@ -71,6 +71,27 @@ for (const kind of ['agents', 'tools'])
       const normalized = JSON.parse(JSON.stringify(after));
       for (const entry of normalized) {
         const old = before.find((g) => g.template.id === entry.template.id);
+        if (entry.framework === 'elysia') {
+          const pkg = JSON.parse(entry.template.files['package.json']);
+          assert.equal(pkg.dependencies.elysia, '1.4.30');
+          assert.equal(pkg.devDependencies['@types/bun'], '1.3.3');
+          const config = JSON.parse(entry.template.files['tsconfig.json']);
+          assert.equal(config.compilerOptions.skipLibCheck, true);
+          delete config.compilerOptions.skipLibCheck;
+          assert.deepEqual(
+            config,
+            JSON.parse(old.template.files['tsconfig.json']),
+          );
+          pkg.dependencies.elysia = JSON.parse(
+            old.template.files['package.json'],
+          ).dependencies.elysia;
+          delete pkg.devDependencies['@types/bun'];
+          assert.deepEqual(pkg, JSON.parse(old.template.files['package.json']));
+          entry.template.files['package.json'] =
+            old.template.files['package.json'];
+          entry.template.files['tsconfig.json'] =
+            old.template.files['tsconfig.json'];
+        }
         for (const name of Object.keys(entry.template.files)) {
           if (!Object.hasOwn(old.template.files, name)) {
             assert.match(

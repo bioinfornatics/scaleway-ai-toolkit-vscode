@@ -137,6 +137,7 @@ const litestarApi = `import json
 import asyncio
 from litestar import Litestar, Request, post
 from litestar.response import Response
+from litestar.exceptions.http_exceptions import RequestEntityTooLarge
 from .service_transport import chat
 
 @post("/api/chat", status_code=200)
@@ -151,6 +152,8 @@ async def api_chat(request: Request) -> Response:
         message = payload.get("message") if isinstance(payload, dict) else None
         if not isinstance(message, str) or not message.strip() or len(message) > 8000:
             return Response({"error": "invalid_request"}, status_code=400)
+    except RequestEntityTooLarge:
+        return Response({"error": "invalid_request"}, status_code=413)
     except Exception:
         return Response({"error": "invalid_request"}, status_code=400)
     try:

@@ -122,6 +122,20 @@ export function composeAgentProject(
         files[p] = JSON.stringify(a, null, 2);
         continue;
       }
+      if (p === 'tsconfig.json' && backend.framework === 'elysia') {
+        const a = JSON.parse(files[p]),
+          b = JSON.parse(content);
+        const { skipLibCheck, ...options } = a.compilerOptions ?? {};
+        if (
+          skipLibCheck !== true ||
+          JSON.stringify({ ...a, compilerOptions: options }) !==
+            JSON.stringify(b)
+        )
+          throw new Error('compiler_conflict');
+        // Only the reviewed Elysia dependency declaration workaround differs.
+        // Application strict checking remains enabled and all other conflicts fail.
+        continue;
+      }
       const target =
         p === 'agent.py'
           ? 'agent_sdk.py'

@@ -64,7 +64,12 @@ for (const backend of choices.filter((c) => c.category === 'backend')) {
           ].includes(p)
         )
           continue;
-        assert.equal(files[p], content);
+        if (p === 'tsconfig.json' && backend.framework === 'elysia') {
+          const config = JSON.parse(files[p]);
+          assert.equal(config.compilerOptions.skipLibCheck, true);
+          delete config.compilerOptions.skipLibCheck;
+          assert.deepEqual(config, JSON.parse(content));
+        } else assert.equal(files[p], content);
       }
       if (files['requirements.txt']) {
         for (const line of ai.template.files['requirements.txt'].split('\n'))

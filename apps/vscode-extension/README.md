@@ -506,3 +506,15 @@ Lancement explicite : uv run python -m agent_app.service_cli --serve ;
 --help ne charge pas le framework ; --check vérifie la configuration sans appel.
 Contraintes Litestar >=2.12,<3 : pas un lock ni une certification runtime.
 Aucune inference, installation du VSIX ou commit automatique pour cette tranche.
+
+
+### Correctifs après tests avec les frameworks installés
+
+Litestar : RequestEntityTooLarge est traité explicitement en HTTP 413, sans
+appel modèle. Les autres requêtes invalides restent en HTTP 400.
+Elysia : version du starter fixée à 1.4.30, types Bun 1.3.3 présents.
+Les déclarations tierces de plusieurs versions testées ne compilent pas avec
+TypeScript 5.9.3 ; skipLibCheck est limité à ces bases Elysia. strict reste actif
+pour le code applicatif, vérifié avec un test négatif de compilation.
+Cette concession ne certifie pas les déclarations des dépendances. La composition
+avec un SDK préserve ce seul écart de tsconfig et refuse les autres conflits.
