@@ -241,6 +241,7 @@ function fixture() {
       if (name === 'vscode') return vscode;
       if (name === './projectEnvironment')
         return actualModule('projectEnvironment');
+      if (name === './serviceProject') return actualModule('serviceProject');
       if (name === './endpointAgent') return actualModule('endpointAgent');
       if (name === './localAgentRunner')
         return {
@@ -1974,7 +1975,7 @@ test('Given external destination, When an agent is confirmed, Then real exclusiv
   assert.deepEqual(state.openedEntries, [project]);
   assert.equal(
     state.shows[0].uri.fsPath,
-    path.join(project, 'src/agent_app/agent.py'),
+    path.join(project, 'src/agent_app/service_api.py'),
   );
   assert.deepEqual(state.showOptions, { preview: false });
   assert.deepEqual(state.creationOrder, [
@@ -2883,4 +2884,168 @@ test('Created entry never opens after cancellation, failed write, or stale/trust
     assert.equal(state.openedEntries, undefined, mode);
     assert.equal(state.configuredPython, undefined, mode);
   }
+});
+
+test('adaptive controls absent and mode/common choices remembered', async () => {
+  const { state, host } = fixture();
+  await host.open('agents');
+  addServerless(state);
+  host.modelsChanged();
+  const panel = state.panels[0],
+    backend = option(panel.webview.html, 'backend', 'FastAPI');
+  await state.send('backend', backend);
+  const ai = option(panel.webview.html, 'ai', 'Strands');
+  await state.send('ai', ai);
+  await state.send('name', undefined, { name: 'remember-service' });
+  await state.send('projectPath', undefined, { path: '/custom/remember' });
+  await state.send(
+    'model',
+    option(panel.webview.html, 'model', 'serverless-test'),
+  );
+  const model = host.modelIndex;
+  assert.doesNotMatch(panel.webview.html, /aria-label="Frontend"/);
+  await state.send('cliExposure');
+  assert.doesNotMatch(panel.webview.html, /select data-action="backend"/);
+  await state.send('backend', backend);
+  assert.equal(host.backend, undefined);
+  await state.send('webapp');
+  assert.match(panel.webview.html, /aria-label="Frontend"/);
+  await state.send('integratedBackend');
+  assert.equal(host.language, 'typescript');
+  assert.doesNotMatch(panel.webview.html, /select data-action="language"/);
+  await state.send('viteFrontend');
+  assert.doesNotMatch(panel.webview.html, /data-action="integratedBackend"/);
+  await state.send('nextFrontend');
+  assert.equal(host.serviceOptions.architecture, 'integrated');
+  await state.send('agentService');
+  await state.send('apiExposure');
+  assert.equal(host.backend, backend);
+  assert.equal(host.ai, ai);
+  assert.equal(host.modelIndex, model);
+  assert.equal(host.agentName, 'remember-service');
+  assert.equal(host.projectPath, '/custom/remember');
+  assert.equal(state.creates.length, 0);
+});
+test('CLI ignores hidden API values and keeps parser agent source', async () => {
+  const { state, host } = fixture();
+  await host.open('agents');
+  addServerless(state);
+  host.modelsChanged();
+  const panel = state.panels[0];
+  await state.send('backend', option(panel.webview.html, 'backend', 'FastAPI'));
+  await state.send('cliExposure');
+  await state.send('ai', option(panel.webview.html, 'ai', 'Strands'));
+  await state.send('name', undefined, { name: 'cli-service' });
+  await state.send(
+    'model',
+    option(panel.webview.html, 'model', 'serverless-test'),
+  );
+  state.confirms.push('Créer dans le projet');
+  await state.send('create', host.selected);
+  assert.equal(state.creates.length, 1);
+  const files = state.creates[0][2].files;
+  assert.ok(files['src/agent_app/agent.py']);
+  assert.ok(!files['src/agent_app/service_api.py']);
+  assert.ok(!files['frontend/package.json']);
+  assert.equal(JSON.parse(files['agent.authoring.json']).backend, 'none');
+});
+test('Next integrated and Vite separate generation use real server routes without public credentials', async () => {
+  for (const front of ['next', 'vite']) {
+    const { state, host } = fixture();
+    await host.open('agents');
+    addServerless(state);
+    host.modelsChanged();
+    const panel = state.panels[0];
+    await state.send('webapp');
+    if (front === 'next') await state.send('integratedBackend');
+    else {
+      await state.send('viteFrontend');
+      await state.send(
+        'backend',
+        option(panel.webview.html, 'backend', 'FastAPI'),
+      );
+    }
+    await state.send('name', undefined, { name: 'web-service' });
+    await state.send(
+      'model',
+      option(panel.webview.html, 'model', 'serverless-test'),
+    );
+    state.confirms.push('Créer dans le projet');
+    await state.send('create', host.selected);
+    assert.equal(state.creates.length, 1);
+    const files = state.creates[0][2].files,
+      ui = files[front === 'next' ? 'app/page.tsx' : 'frontend/src/Chat.tsx'];
+    assert.ok(ui.includes('fetch("/api/chat"'));
+    assert.doesNotMatch(ui, /SCW_API_KEY|NEXT_PUBLIC_|VITE_/);
+    assert.ok(
+      files[
+        front === 'next'
+          ? 'app/api/chat/route.ts'
+          : 'src/agent_app/service_api.py'
+      ],
+    );
+  }
+});
+test('exclusive service radios support arrow navigation and closed protocol', () => {
+  const listeners = {},
+    messages = [],
+    radio = {
+      disabled: false,
+      dataset: { action: 'agentService' },
+      getAttribute: () => 'radio',
+    },
+    other = { dataset: { action: 'webapp' } };
+  radio.closest = () => ({ querySelectorAll: () => [other, radio] });
+  const target = {
+    closest: (s) => (s === 'button[role="radio"]' ? radio : null),
+  };
+  vm.runInNewContext(
+    fs.readFileSync(path.join(__dirname, '../media/localCreation.js'), 'utf8'),
+    {
+      acquireVsCodeApi: () => ({ postMessage: (m) => messages.push(m) }),
+      window: { addEventListener() {} },
+      document: {
+        body: { dataset: { token } },
+        addEventListener: (t, fn) => (listeners[t] = fn),
+      },
+    },
+  );
+  let prevented = false;
+  listeners.keydown({
+    target,
+    key: 'ArrowLeft',
+    preventDefault() {
+      prevented = true;
+    },
+  });
+  assert.equal(prevented, true);
+  assert.deepEqual(JSON.parse(JSON.stringify(messages)), [
+    { action: 'webapp', token },
+  ]);
+  const { api } = fixture();
+  for (const action of [
+    'webapp',
+    'agentService',
+    'cliExposure',
+    'apiExposure',
+    'nextFrontend',
+    'viteFrontend',
+    'integratedBackend',
+    'separateBackend',
+  ]) {
+    assert.ok(api.parseCreationInput({ action, token }));
+    assert.equal(api.parseCreationInput({ action, token, index }), undefined);
+  }
+});
+
+test('reopening resets Next architecture memory with other temporary selections', async () => {
+  const { state, host } = fixture();
+  await host.open('agents');
+  await state.send('webapp');
+  await state.send('integratedBackend');
+  await host.open('agents');
+  await state.send('webapp');
+  await state.send('nextFrontend');
+  assert.equal(host.serviceOptions.architecture, 'separate');
+  assert.match(state.panels[0].webview.html, /select data-action="backend"/);
 });

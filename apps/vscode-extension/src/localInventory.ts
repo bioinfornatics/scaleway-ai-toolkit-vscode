@@ -350,7 +350,8 @@ function html(
   runs: LocalRun[],
 ): string {
   const title = kind === 'agents' ? 'Agents locaux' : 'Outils locaux';
-  const create = kind === 'agents' ? '+ Créer un agent' : '+ Créer un outil';
+  const create =
+    kind === 'agents' ? '+ Créer un service IA' : '+ Créer un outil';
   const css = escapeHtml(
     String(
       webview.asWebviewUri(

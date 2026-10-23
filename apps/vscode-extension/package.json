@@ -65,7 +65,7 @@
       },
       {
         "command": "scalewayAI.createAgent",
-        "title": "Scaleway AI: Créer un agent"
+        "title": "Scaleway AI: Créer un service IA"
       },
       {
         "command": "scalewayAI.createTool",

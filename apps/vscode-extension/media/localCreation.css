@@ -244,3 +244,36 @@ input:focus-visible {
     flex-wrap: wrap;
   }
 }
+
+/* Conditional service sections are stacked: no reserved frontend column. */
+.service-section {
+  margin-top: 16px;
+}
+.service-stack {
+  grid-template-columns: 1fr;
+  max-width: 720px;
+}
+.exclusive-choice {
+  border: 0;
+  padding: 0;
+  margin: 16px 0;
+}
+.exclusive-choice legend {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.exclusive-choice [role="radiogroup"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+}
+.exclusive-choice button {
+  margin: 0;
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+}
+.exclusive-choice button[aria-checked="true"] {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  font-weight: 700;
+}

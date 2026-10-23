@@ -51,6 +51,7 @@ export const priorSuites = [
   'templateLibrary',
 ].map((name) => name + '.test.cjs');
 export const addedSuites = [
+  'serviceProject.test.cjs',
   'buildPackaging.test.cjs',
   'endpointAgent.test.cjs',
   'frameworkAgents.test.cjs',

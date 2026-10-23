@@ -12,6 +12,10 @@ interface ViewRow {
   stack?: StackChoice;
 }
 interface BuildView {
+  projectType?: 'agent' | 'webapp';
+  exposure?: 'cli' | 'api';
+  frontend?: 'nextjs' | 'vite';
+  architecture?: 'integrated' | 'separate';
   agentForm?: boolean;
   agentName?: string;
   focus?: string;
@@ -90,7 +94,8 @@ export function buildCreationView(v: BuildView): string {
   const row = v.trusted
     ? v.rows.find((r) => r.index === v.selected)
     : undefined;
-  const noun = v.kind === 'agents' ? 'agent' : 'outil';
+  const noun =
+    v.kind === 'agents' ? (v.templateMode ? 'agent' : 'service IA') : 'outil';
   const paths =
     '<code>.scaleway-ai/templates/' +
     v.kind +
@@ -214,8 +219,149 @@ export function buildCreationView(v: BuildView): string {
           .join('') +
         '</div>'
       : '';
+  const adaptive = v.projectType !== undefined;
+  const integrated =
+    v.projectType === 'webapp' &&
+    v.frontend === 'nextjs' &&
+    v.architecture === 'integrated';
+  const cli = v.projectType === 'agent' && v.exposure === 'cli';
+  const radios = (
+    label: string,
+    choices: { action: string; label: string; checked: boolean }[],
+  ) =>
+    '<fieldset class="exclusive-choice"><legend>' +
+    label +
+    '</legend><div role="radiogroup" aria-label="' +
+    label +
+    '">' +
+    choices
+      .map(
+        (c) =>
+          '<button type="button" role="radio" aria-checked="' +
+          c.checked +
+          '" tabindex="' +
+          (c.checked ? '0' : '-1') +
+          '" data-action="' +
+          c.action +
+          '"' +
+          (!v.trusted ? ' disabled' : '') +
+          '>' +
+          c.label +
+          '</button>',
+      )
+      .join('') +
+    '</div></fieldset>';
+  const selectField = (label: string, action: string, options: string) =>
+    '<label>' +
+    label +
+    '<select data-action="' +
+    action +
+    '"' +
+    (!v.trusted ? ' disabled' : '') +
+    '>' +
+    options +
+    '</select></label>';
+  const stackOptions = (ai: boolean) =>
+    '<option value="">' +
+    (ai ? 'Sélectionner un framework IA' : 'Sélectionner un framework API') +
+    '</option>' +
+    v.rows
+      .filter(
+        (r) =>
+          v.trusted &&
+          r.stack?.language === v.language &&
+          (ai
+            ? ['agent', 'basic'].includes(r.stack.category)
+            : r.stack.category === 'backend' &&
+              ['fastapi', 'elysia'].includes(r.stack.framework)),
+      )
+      .map(
+        (r) =>
+          '<option value="' +
+          r.index +
+          '"' +
+          ((ai ? v.ai : v.backend) === r.index ? ' selected' : '') +
+          '>' +
+          escapeHtml(
+            ai && r.stack?.category === 'basic'
+              ? 'Sans framework IA'
+              : (r.stack?.label ?? ''),
+          ) +
+          '</option>',
+      )
+      .join('');
+  const adaptiveFields =
+    radios('Type de projet', [
+      {
+        action: 'webapp',
+        label: 'Application web',
+        checked: v.projectType === 'webapp',
+      },
+      {
+        action: 'agentService',
+        label: 'Service agent',
+        checked: v.projectType === 'agent',
+      },
+    ]) +
+    (v.projectType === 'webapp'
+      ? '<section class="service-section" aria-label="Frontend"><h2>Frontend</h2><span>TypeScript</span>' +
+        radios('Framework frontend', [
+          {
+            action: 'nextFrontend',
+            label: 'Next.js',
+            checked: v.frontend === 'nextjs',
+          },
+          {
+            action: 'viteFrontend',
+            label: 'React + Vite',
+            checked: v.frontend === 'vite',
+          },
+        ]) +
+        (v.frontend === 'nextjs'
+          ? radios('Backend de l’application', [
+              {
+                action: 'integratedBackend',
+                label: 'Intégré à Next.js',
+                checked: integrated,
+              },
+              {
+                action: 'separateBackend',
+                label: 'API séparée',
+                checked: !integrated,
+              },
+            ])
+          : '') +
+        '</section>'
+      : radios('Exposition', [
+          { action: 'cliExposure', label: 'CLI', checked: cli },
+          { action: 'apiExposure', label: 'API', checked: !cli },
+        ])) +
+    '<section class="service-section"><h2>' +
+    (integrated ? 'Serveur Next.js' : cli ? 'Agent' : 'API') +
+    '</h2><div class="stack-fields service-stack">' +
+    (integrated
+      ? '<span>TypeScript · Next.js</span>'
+      : selectField(
+          cli ? 'Langage' : 'Langage backend',
+          'language',
+          languageOptions,
+        )) +
+    (!cli && !integrated
+      ? selectField('Framework API', 'backend', stackOptions(false))
+      : '') +
+    selectField('Framework IA', 'ai', stackOptions(true)) +
+    '</div>' +
+    (!cli
+      ? '<span class="scope-note">Route IA : client endpoint côté serveur ; SDK IA conservé pour intégration.</span>'
+      : '') +
+    '</section>';
   const ready =
     !!row &&
+    (!adaptive ||
+      activeTab === 'template' ||
+      cli ||
+      integrated ||
+      !!v.backend) &&
     (!v.agentForm ||
       v.templateMode ||
       (!!v.modelIndex &&
@@ -226,7 +372,7 @@ export function buildCreationView(v: BuildView): string {
       row.index +
       '"' +
       (v.agentForm
-        ? ` data-agent-create="true" data-ready="${ready}" data-key-ready="${v.keys === undefined || !!v.keyIndex}" data-destination-ready="${v.templateMode || !!v.destination}"`
+        ? ` data-agent-create="true" data-stack-ready="${!adaptive || activeTab === 'template' || cli || integrated || !!v.backend}" data-ready="${ready}" data-key-ready="${v.keys === undefined || !!v.keyIndex}" data-destination-ready="${v.templateMode || !!v.destination}"`
         : '') +
       (!ready || (v.agentForm && !validAgentName) ? ' disabled' : '') +
       '>' +
@@ -284,65 +430,67 @@ export function buildCreationView(v: BuildView): string {
         (activeTab !== 'stack' ? ' hidden' : '') +
         '>'
       : '<section aria-labelledby="stack-heading"><h2 id="stack-heading">Choisir une pile</h2>') +
-    '<div class="stack-fields"><label>Langage de programmation<select data-action="language"' +
-    (!v.trusted ? ' disabled' : '') +
-    '>' +
-    languageOptions +
-    '</select></label>' +
-    (v.agentForm
-      ? '<label>Backend<select data-action="backend"' +
+    (v.projectType !== undefined
+      ? adaptiveFields
+      : '<div class="stack-fields"><label>Langage de programmation<select data-action="language"' +
         (!v.trusted ? ' disabled' : '') +
-        '><option value="">Sélectionner un backend</option>' +
-        v.rows
-          .filter(
-            (r) =>
-              v.trusted &&
-              r.stack?.language === v.language &&
-              ['backend', 'basic'].includes(r.stack.category),
-          )
-          .map(
-            (r) =>
-              '<option value="' +
-              r.index +
-              '"' +
-              (v.backend === r.index ? ' selected' : '') +
-              '>' +
-              escapeHtml(r.stack?.label ?? '') +
-              '</option>',
-          )
-          .join('') +
-        '</select></label><label>Framework IA<select data-action="ai"' +
-        (!v.trusted ? ' disabled' : '') +
-        '><option value="">Sélectionner un framework IA</option>' +
-        v.rows
-          .filter(
-            (r) =>
-              v.trusted &&
-              r.stack?.language === v.language &&
-              ['agent', 'basic'].includes(r.stack.category),
-          )
-          .map(
-            (r) =>
-              '<option value="' +
-              r.index +
-              '"' +
-              (v.ai === r.index ? ' selected' : '') +
-              '>' +
-              escapeHtml(
-                r.stack?.category === 'basic'
-                  ? 'Sans framework IA'
-                  : (r.stack?.label ?? ''),
-              ) +
-              '</option>',
-          )
-          .join('') +
-        '</select></label>'
-      : '<label>Framework<select data-action="stack"' +
-        (!v.trusted ? ' disabled' : '') +
-        '><option value="">Sélectionner un framework</option>' +
-        frameworks +
-        '</select></label>') +
-    '</div>' +
+        '>' +
+        languageOptions +
+        '</select></label>' +
+        (v.agentForm
+          ? '<label>Backend<select data-action="backend"' +
+            (!v.trusted ? ' disabled' : '') +
+            '><option value="">Sélectionner un backend</option>' +
+            v.rows
+              .filter(
+                (r) =>
+                  v.trusted &&
+                  r.stack?.language === v.language &&
+                  ['backend', 'basic'].includes(r.stack.category),
+              )
+              .map(
+                (r) =>
+                  '<option value="' +
+                  r.index +
+                  '"' +
+                  (v.backend === r.index ? ' selected' : '') +
+                  '>' +
+                  escapeHtml(r.stack?.label ?? '') +
+                  '</option>',
+              )
+              .join('') +
+            '</select></label><label>Framework IA<select data-action="ai"' +
+            (!v.trusted ? ' disabled' : '') +
+            '><option value="">Sélectionner un framework IA</option>' +
+            v.rows
+              .filter(
+                (r) =>
+                  v.trusted &&
+                  r.stack?.language === v.language &&
+                  ['agent', 'basic'].includes(r.stack.category),
+              )
+              .map(
+                (r) =>
+                  '<option value="' +
+                  r.index +
+                  '"' +
+                  (v.ai === r.index ? ' selected' : '') +
+                  '>' +
+                  escapeHtml(
+                    r.stack?.category === 'basic'
+                      ? 'Sans framework IA'
+                      : (r.stack?.label ?? ''),
+                  ) +
+                  '</option>',
+              )
+              .join('') +
+            '</select></label>'
+          : '<label>Framework<select data-action="stack"' +
+            (!v.trusted ? ' disabled' : '') +
+            '><option value="">Sélectionner un framework</option>' +
+            frameworks +
+            '</select></label>') +
+        '</div>') +
     (tabs
       ? (activeTab === 'stack' ? selection : '') +
         '</div><div id="panel-template" role="tabpanel" aria-labelledby="choice-template"' +
@@ -355,7 +503,7 @@ export function buildCreationView(v: BuildView): string {
       : '') +
     serviceToggle +
     (v.agentForm
-      ? '<div class="stack-fields agent-fields"><label>Nom de l’agent<input data-action="name" type="text" maxlength="64" pattern="[A-Za-z0-9][A-Za-z0-9_-]{0,63}" value="' +
+      ? '<div class="stack-fields agent-fields"><label>Nom du service<input data-action="name" type="text" maxlength="64" pattern="[A-Za-z0-9][A-Za-z0-9_-]{0,63}" value="' +
         escapeHtml(v.agentName ?? '') +
         '"' +
         (!v.trusted ? ' disabled' : '') +

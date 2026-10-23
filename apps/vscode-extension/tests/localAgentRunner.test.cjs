@@ -517,3 +517,36 @@ test('Rust without Python/Node launch config opens pinned main.rs fallback witho
   assert.deepEqual(f.state.showOptions, { preview: false });
   assert.equal(f.state.tasks.length, 0);
 });
+
+test('Service source opens pinned, rejects traversal and late content change without launch', async (t) => {
+  const f = await fixture(t);
+  await fsp.mkdir(path.join(f.directory, 'app'), { recursive: true });
+  const file = path.join(f.directory, 'app/page.tsx');
+  await fsp.writeFile(file, 'export default function Page() {}');
+  const note = path.join(f.directory, 'service.authoring.json');
+  await fsp.writeFile(
+    note,
+    JSON.stringify({ version: 1, main_source: 'app/page.tsx' }),
+  );
+  f.api.workspace.openTextDocument = async (uri) => ({ uri, isClosed: false });
+  await f.runner.openEntry(f.directory, () => true);
+  assert.equal(f.state.shows[0].uri.fsPath, file);
+  assert.deepEqual(f.state.showOptions, { preview: false });
+  assert.equal(f.state.tasks.length, 0);
+  await fsp.writeFile(
+    note,
+    JSON.stringify({ version: 1, main_source: '../outside.ts' }),
+  );
+  await f.runner.openEntry(f.directory, () => true);
+  assert.equal(f.state.shows.length, 1);
+  await fsp.writeFile(
+    note,
+    JSON.stringify({ version: 1, main_source: 'app/page.tsx' }),
+  );
+  f.api.workspace.openTextDocument = async (uri) => {
+    await fsp.writeFile(file, '// replaced');
+    return { uri, isClosed: false };
+  };
+  await f.runner.openEntry(f.directory, () => true);
+  assert.equal(f.state.shows.length, 1);
+});

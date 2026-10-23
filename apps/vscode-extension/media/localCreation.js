@@ -2,6 +2,15 @@
   const vscode = acquireVsCodeApi();
   const token = document.body.dataset.token;
   const focusActions = new Set([
+    'webapp',
+    'agentService',
+    'cliExposure',
+    'apiExposure',
+    'nextFrontend',
+    'viteFrontend',
+    'integratedBackend',
+    'separateBackend',
+
     'chooseStack',
     'chooseTemplate',
     'language',
@@ -32,6 +41,15 @@
       target.focus?.({ preventScroll: true });
   }
   const actions = new Set([
+    'webapp',
+    'agentService',
+    'cliExposure',
+    'apiExposure',
+    'nextFrontend',
+    'viteFrontend',
+    'integratedBackend',
+    'separateBackend',
+
     'chooseStack',
     'chooseTemplate',
     'destination',
@@ -146,6 +164,7 @@
     const name = document.querySelector('input[data-action="name"]');
     if (create) {
       const ready =
+        create.dataset.stackReady !== 'false' &&
         (!!select.value || !!document.querySelector('.template-notice')) &&
         create.dataset.destinationReady !== 'false' &&
         (!keySelect || !!keySelect.value);
@@ -156,6 +175,37 @@
     }
   });
   document.addEventListener('keydown', (event) => {
+    const radio = event.target.closest('button[role="radio"]');
+    if (
+      radio?.getAttribute?.('role') === 'radio' &&
+      !radio.disabled &&
+      [
+        'ArrowLeft',
+        'ArrowRight',
+        'ArrowUp',
+        'ArrowDown',
+        'Home',
+        'End',
+      ].includes(event.key)
+    ) {
+      const group = radio.closest('[role="radiogroup"]');
+      const choices = Array.from(
+        group.querySelectorAll('button[role="radio"]'),
+      );
+      const position = choices.indexOf(radio);
+      const next =
+        event.key === 'Home'
+          ? 0
+          : event.key === 'End'
+            ? choices.length - 1
+            : (position +
+                (['ArrowLeft', 'ArrowUp'].includes(event.key) ? -1 : 1) +
+                choices.length) %
+              choices.length;
+      event.preventDefault();
+      vscode.postMessage({ action: choices[next].dataset.action, token });
+      return;
+    }
     const tab = event.target.closest('button[role="tab"]');
     if (
       tab &&
@@ -196,7 +246,8 @@
         const name = document.querySelector?.('input[data-action="name"]');
         const model = document.querySelector?.('select[data-action="model"]');
         create.dataset.ready = String(
-          !!pathField.value &&
+          create.dataset.stackReady !== 'false' &&
+            !!pathField.value &&
             create.dataset.keyReady !== 'false' &&
             (!!model?.value || !!document.querySelector?.('.template-notice')),
         );
@@ -225,7 +276,8 @@
         create.dataset.destinationReady = String(!!projectPath.value);
         const model = document.querySelector?.('select[data-action="model"]');
         create.dataset.ready = String(
-          !!projectPath.value &&
+          create.dataset.stackReady !== 'false' &&
+            !!projectPath.value &&
             create.dataset.keyReady !== 'false' &&
             (!!model?.value || !!document.querySelector?.('.template-notice')),
         );

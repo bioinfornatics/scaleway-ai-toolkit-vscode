@@ -86,7 +86,7 @@ test('deployed central page excludes local inventory, puts matching create actio
   const p = f.panels[0];
   assert.ok(
     p.webview.html.includes(
-      'data-action="create">+ Créer un agent</button></header>',
+      'data-action="create">+ Créer un service IA</button></header>',
     ),
   );
   assert.match(p.webview.html, /Ressources déployées sur Scaleway/);

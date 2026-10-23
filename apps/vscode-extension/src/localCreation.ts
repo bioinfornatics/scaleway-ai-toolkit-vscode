@@ -31,6 +31,7 @@ import {
   renderProjectTemplate,
 } from './projectGenerator';
 import type { ListedModel } from './provider';
+import { composeServiceProject, type ServiceOptions } from './serviceProject';
 import { type Language, type StackChoice, stackChoices } from './stackScaffold';
 import {
   discoverTemplates,
@@ -44,6 +45,14 @@ import {
 
 type Mode = 'create' | 'templates' | 'template-create';
 type Action =
+  | 'webapp'
+  | 'agentService'
+  | 'cliExposure'
+  | 'apiExposure'
+  | 'nextFrontend'
+  | 'viteFrontend'
+  | 'integratedBackend'
+  | 'separateBackend'
   | 'chooseStack'
   | 'chooseTemplate'
   | 'destination'
@@ -125,6 +134,14 @@ export function parseCreationInput(value: unknown): CreationInput | undefined {
   ].includes(v.action as string);
   if (
     ![
+      'webapp',
+      'agentService',
+      'cliExposure',
+      'apiExposure',
+      'nextFrontend',
+      'viteFrontend',
+      'integratedBackend',
+      'separateBackend',
       'chooseStack',
       'chooseTemplate',
       'destination',
@@ -287,6 +304,97 @@ export class LocalCreation implements vscode.Disposable {
   private stackSelected?: string;
   private templateSelected?: string;
   private lastFocus?: string;
+  private serviceOptions: ServiceOptions = {
+    projectType: 'agent',
+    exposure: 'api',
+    frontend: 'nextjs',
+    architecture: 'separate',
+  };
+  private nextArchitecture: 'integrated' | 'separate' = 'separate';
+  private serviceMemory = new Map<
+    string,
+    { language: Language; backend?: string; ai?: string; selected?: string }
+  >();
+  private adaptive(): boolean {
+    return (
+      this.kind === 'agents' &&
+      this.mode === 'create' &&
+      this.creationTab === 'stack'
+    );
+  }
+  private serviceKey(): string {
+    const o = this.serviceOptions;
+    return o.projectType === 'agent'
+      ? 'agent-' + o.exposure
+      : 'web-' + o.frontend + '-' + o.architecture;
+  }
+  private integrated(): boolean {
+    return (
+      this.adaptive() &&
+      this.serviceOptions.projectType === 'webapp' &&
+      this.serviceOptions.frontend === 'nextjs' &&
+      this.serviceOptions.architecture === 'integrated'
+    );
+  }
+  private cliOnly(): boolean {
+    return (
+      this.adaptive() &&
+      this.serviceOptions.projectType === 'agent' &&
+      this.serviceOptions.exposure === 'cli'
+    );
+  }
+  private basic(): Row | undefined {
+    return this.rows.find(
+      (r) =>
+        r.stack?.language === this.language && r.stack.category === 'basic',
+    );
+  }
+  private activeBackend(): StackChoice | undefined {
+    if (this.cliOnly() || this.integrated()) return this.basic()?.stack;
+    return this.rows.find((r) => r.index === this.backend)?.stack;
+  }
+  private compose(
+    row: Row,
+    name: string,
+    model?: ListedModel,
+    projectId?: string,
+  ): TemplateDefinition {
+    if (!this.adaptive() || !row.stack)
+      return composeAgentProject(
+        row.stack
+          ? this.rows.find((r) => r.index === this.backend)?.stack
+          : undefined,
+        row.stack
+          ? this.rows.find((r) => r.index === this.ai)?.stack
+          : undefined,
+        name,
+        model,
+        row.stack ? undefined : row.template,
+        projectId,
+      );
+    const adapt = (stack: StackChoice | undefined) =>
+      stack
+        ? {
+            ...stack,
+            template: renderProjectTemplate(stack.template, {
+              name,
+              modelId:
+                model?.kind === 'serverless'
+                  ? model.id
+                  : model?.deploymentInfo?.modelId,
+            }),
+          }
+        : undefined;
+    return composeServiceProject(
+      adapt(this.activeBackend()),
+      adapt(this.rows.find((r) => r.index === this.ai)?.stack),
+      name,
+      model,
+      undefined,
+      projectId,
+      this.serviceOptions,
+    );
+  }
   private backend?: string;
   private ai?: string;
   private agentName = '';
@@ -371,6 +479,14 @@ export class LocalCreation implements vscode.Disposable {
     this.kind = kind;
     this.mode = mode;
     this.language = 'python';
+    this.serviceOptions = {
+      projectType: 'agent',
+      exposure: 'api',
+      frontend: 'nextjs',
+      architecture: 'separate',
+    };
+    this.serviceMemory.clear();
+    this.nextArchitecture = 'separate';
     this.creationTab = 'stack';
     this.lastFocus = undefined;
     this.agentName = '';
@@ -438,6 +554,7 @@ export class LocalCreation implements vscode.Disposable {
     this.selected = undefined;
     this.stackSelected = this.templateSelected = undefined;
     this.backend = this.ai = undefined;
+    this.serviceMemory.clear();
     this.syncModels(true);
     this.languages = new Map(
       (['rust', 'typescript', 'python'] as const).map((language) => [
@@ -688,11 +805,21 @@ export class LocalCreation implements vscode.Disposable {
     this.panel.title =
       this.mode === 'template-create'
         ? `Créer un template d’${noun}`
-        : `Créer un ${noun}`;
+        : this.kind === 'agents'
+          ? 'Créer un service IA'
+          : `Créer un ${noun}`;
     webview.html = buildCreationView({
       title: this.panel.title,
       agentForm: this.agentForm(),
       agentName: this.agentName,
+      ...(this.kind === 'agents' && this.mode === 'create'
+        ? {
+            projectType: this.serviceOptions.projectType,
+            exposure: this.serviceOptions.exposure,
+            frontend: this.serviceOptions.frontend,
+            architecture: this.serviceOptions.architecture,
+          }
+        : {}),
       focus: this.lastFocus,
       creationTab:
         this.kind === 'agents' && this.mode === 'create'
@@ -739,9 +866,8 @@ export class LocalCreation implements vscode.Disposable {
         try {
           return {
             ...r,
-            template: composeAgentProject(
-              this.rows.find((x) => x.index === this.backend)?.stack,
-              this.rows.find((x) => x.index === this.ai)?.stack,
+            template: this.compose(
+              r,
               safeName(this.agentName) ? this.agentName : 'mon-agent',
               this.modelRows.find((x) => x.index === this.modelIndex)?.model,
             ),
@@ -771,6 +897,80 @@ export class LocalCreation implements vscode.Disposable {
     if (input.token !== this.token) return;
     const s = this.snapshot();
     if (!this.valid(s) || this.busy) return;
+    if (
+      [
+        'webapp',
+        'agentService',
+        'cliExposure',
+        'apiExposure',
+        'nextFrontend',
+        'viteFrontend',
+        'integratedBackend',
+        'separateBackend',
+      ].includes(input.action)
+    ) {
+      if (!this.adaptive()) return;
+      const o = this.serviceOptions;
+      if (
+        ['cliExposure', 'apiExposure'].includes(input.action) &&
+        o.projectType !== 'agent'
+      )
+        return;
+      if (
+        [
+          'nextFrontend',
+          'viteFrontend',
+          'integratedBackend',
+          'separateBackend',
+        ].includes(input.action) &&
+        o.projectType !== 'webapp'
+      )
+        return;
+      if (
+        ['integratedBackend', 'separateBackend'].includes(input.action) &&
+        o.frontend !== 'nextjs'
+      )
+        return;
+      this.serviceMemory.set(this.serviceKey(), {
+        language: this.language,
+        backend: this.backend,
+        ai: this.ai,
+        selected: this.selected,
+      });
+      if (input.action === 'webapp') o.projectType = 'webapp';
+      if (input.action === 'agentService') o.projectType = 'agent';
+      if (input.action === 'cliExposure') o.exposure = 'cli';
+      if (input.action === 'apiExposure') o.exposure = 'api';
+      if (input.action === 'nextFrontend') {
+        o.frontend = 'nextjs';
+        o.architecture = this.nextArchitecture;
+      }
+      if (input.action === 'viteFrontend') {
+        o.frontend = 'vite';
+        o.architecture = 'separate';
+      }
+      if (input.action === 'integratedBackend') {
+        o.architecture = 'integrated';
+        this.nextArchitecture = 'integrated';
+      }
+      if (input.action === 'separateBackend') {
+        o.architecture = 'separate';
+        this.nextArchitecture = 'separate';
+      }
+      const saved = this.serviceMemory.get(this.serviceKey());
+      this.language = this.integrated()
+        ? 'typescript'
+        : (saved?.language ?? 'python');
+      this.backend = saved?.backend;
+      this.ai = saved?.ai;
+      this.selected =
+        saved?.selected ??
+        (this.cliOnly() || this.integrated() ? this.basic()?.index : undefined);
+      this.status = '';
+      this.epoch++;
+      this.render(input.action);
+      return;
+    }
     if (['chooseStack', 'chooseTemplate'].includes(input.action)) {
       if (this.kind !== 'agents' || this.mode !== 'create') return;
       const tab = input.action === 'chooseStack' ? 'stack' : 'template';
@@ -924,7 +1124,10 @@ export class LocalCreation implements vscode.Disposable {
     ) {
       if (input.action === 'clearBackend') this.backend = undefined;
       else this.ai = undefined;
-      this.selected = this.backend ?? this.ai;
+      this.selected =
+        this.cliOnly() || this.integrated()
+          ? (this.ai ?? this.basic()?.index)
+          : (this.backend ?? this.ai);
       this.epoch++;
       this.render(input.action);
       return;
@@ -965,12 +1168,13 @@ export class LocalCreation implements vscode.Disposable {
       const language = input.index
         ? this.languages.get(input.index)
         : undefined;
-      if (!language || this.mode === 'templates') return;
+      if (!language || this.mode === 'templates' || this.integrated()) return;
       this.epoch++;
       this.language = language;
       this.backend = this.ai = undefined;
       this.selected = undefined;
-      this.status = '';
+      this.status = 'Langage modifié : choisissez les frameworks compatibles.';
+      if (this.cliOnly()) this.selected = this.basic()?.index;
       this.render(input.action);
       return;
     }
@@ -993,9 +1197,20 @@ export class LocalCreation implements vscode.Disposable {
         !['agent', 'basic'].includes(row.stack.category)
       )
         return;
+      if (
+        input.action === 'backend' &&
+        this.adaptive() &&
+        (this.cliOnly() ||
+          this.integrated() ||
+          !['fastapi', 'elysia'].includes(row.stack.framework))
+      )
+        return;
       if (input.action === 'backend') this.backend = row.index;
       else this.ai = row.stack.category === 'basic' ? undefined : row.index;
-      this.selected = this.backend ?? this.ai;
+      this.selected =
+        this.cliOnly() || this.integrated()
+          ? (this.ai ?? this.basic()?.index)
+          : (this.backend ?? this.ai);
       this.epoch++;
       this.status = '';
       this.render(input.action);
@@ -1141,16 +1356,10 @@ export class LocalCreation implements vscode.Disposable {
         return;
       }
       const name = this.agentName;
-      const selectedTemplate = composeAgentProject(
-        row.stack
-          ? this.rows.find((r) => r.index === this.backend)?.stack
-          : undefined,
-        row.stack
-          ? this.rows.find((r) => r.index === this.ai)?.stack
-          : undefined,
+      const selectedTemplate = this.compose(
+        row,
         name,
         model,
-        row.stack ? undefined : row.template,
         this.modelSource?.current().projectId,
       );
       const prepared =
@@ -1179,7 +1388,7 @@ export class LocalCreation implements vscode.Disposable {
               : model?.deploymentInfo?.modelId,
         }),
       );
-      if (!row.entry)
+      if (!row.entry && !template.files['service.authoring.json'])
         template = withEndpointLaunch(
           template,
           row.stack?.language ??

@@ -570,6 +570,34 @@ export async function openLocalAgentEntry(
 ): Promise<boolean> {
   if (!current() || !vscode.workspace.isTrusted) return false;
   const resolve = async () => {
+    let service: Buffer | undefined;
+    try {
+      service = await read(directory, 'service.authoring.json', 16384);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+    }
+    if (service) {
+      const note = JSON.parse(
+        new TextDecoder('utf-8', { fatal: true }).decode(service),
+      );
+      if (
+        note?.version !== 1 ||
+        ![
+          'app/page.tsx',
+          'src/agent_app/service_api.py',
+          'src/service-api.ts',
+        ].includes(note.main_source)
+      )
+        throw new Error('invalid_service_entry');
+      const bytes = await read(directory, note.main_source, LIMIT);
+      return {
+        entry: note.main_source,
+        digest: createHash('sha256')
+          .update(service)
+          .update(bytes)
+          .digest('hex'),
+      };
+    }
     let config: Buffer | undefined;
     try {
       config = await read(directory, CONFIG, 16384);

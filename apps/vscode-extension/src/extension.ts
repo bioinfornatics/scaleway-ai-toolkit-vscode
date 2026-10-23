@@ -262,7 +262,7 @@ export function activate(context: vscode.ExtensionContext): void {
       children: [
         {
           id: 'create-agent',
-          label: 'Créer un agent',
+          label: 'Créer un service IA',
           icon: 'add',
           command: 'scalewayAI.createAgent',
         },

@@ -37,7 +37,8 @@ export function deployedResourcesHtml(
 ): { html: string; token: string } {
   const token = randomBytes(24).toString('hex');
   const title = kind === 'agents' ? 'Agents' : 'Tools';
-  const create = kind === 'agents' ? '+ Créer un agent' : '+ Créer un outil';
+  const create =
+    kind === 'agents' ? '+ Créer un service IA' : '+ Créer un outil';
   const css = webview.asWebviewUri(
     vscode.Uri.joinPath(root, 'media', 'deployedResources.css'),
   );

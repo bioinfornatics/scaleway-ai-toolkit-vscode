@@ -456,3 +456,37 @@ bibliothèque, API et configuration restent importables sans lancement automatiq
 les flags inconnus échouent sans réseau, et `--check` ne lance jamais de serveur.
 Rust exige une compilation (et éventuellement les dépendances Cargo) avant de
 pouvoir exécuter le binaire ; l’aide ne constitue pas une preuve de compatibilité native.
+
+
+### Composition de services web (générateur local)
+
+Le générateur composeServiceProject distingue l’agent CLI d’une API/webapp.
+L’agent CLI ignore le backend et conserve une base langage ou SDK IA. Les APIs
+compatibles sont Python/FastAPI et TypeScript/Elysia (Bun). Django, NestJS et les
+APIs Rust échouent explicitement plutôt que prétendre intégrer un chat.
+
+- Next.js intégré, TypeScript uniquement : page de chat React et POST /api/chat serveur.
+- Next.js séparé ou React/Vite : frontend dans frontend/, appel même origine
+  /api/chat, proxy vers 127.0.0.1:3001. Vite : proxy de développement seulement,
+  reverse proxy nécessaire en production. Next : rewrites aussi en production.
+- Le serveur appelle réellement /chat/completions via un client HTTPS indépendant.
+  Les sources du SDK choisi sont préservées, sans prétendre que son orchestration
+  est utilisée par cette route.
+
+Seul le fichier .env à la racine contient SCW_INFERENCE_BASE_URL,
+SCW_INFERENCE_MODEL_ID et SCW_API_KEY. Ne jamais utiliser NEXT_PUBLIC_ ou VITE_
+pour une clé. La route accepte {"message":"..."} et répond {"reply":"..."}, limite
+entrée/sortie/attente, refuse les redirections et renvoie des erreurs fixes sans
+corps distant. Loopback seulement : authentification, protection CSRF, quotas et
+revue de déploiement nécessaires avant exposition externe.
+
+Les commandes install/build/run figurent dans le README généré. La composition
+ne lance aucune installation, aucun serveur ni aucune inférence. Next ^15.5,
+React ^19.1 et Vite ^7.1 sont des plages initiales non verrouillées et non vérifiées
+localement, pas une garantie de compatibilité ou sécurité. Les templates
+personnels ne sont pas réécrits en service sans contrat explicite.
+
+service.authoring.json indique la source principale et les limites de vérification.
+Le lanceur agent reste ready:false avec --help ; ce n’est pas un gestionnaire de
+serveurs. Vérification explicite : node --test tests/serviceProject.test.cjs, avec
+mocks locaux sans serveur, cloud ou inférence réelle.

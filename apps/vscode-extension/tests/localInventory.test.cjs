@@ -292,7 +292,7 @@ test('actual roots/root project, manual projects, marker priority, exclusions, d
   assert.doesNotMatch(p.webview.html, /a\/b\/c\/d|node_modules/);
   assert.match(
     p.webview.html,
-    /data-action="create">\+ Créer un agent<\/button><\/header>/,
+    /data-action="create">\+ Créer un service IA<\/button><\/header>/,
   );
   assert.match(p.webview.html, /connect-src &#39;none&#39;/);
   assert.doesNotMatch(
