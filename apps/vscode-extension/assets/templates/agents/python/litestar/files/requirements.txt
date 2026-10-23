@@ -1,0 +1,3 @@
+# Starter constraints, not a production lock.
+litestar>=2.12,<3
+uvicorn>=0.30,<1

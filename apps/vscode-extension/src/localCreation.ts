@@ -31,6 +31,11 @@ import {
   renderProjectTemplate,
 } from './projectGenerator';
 import type { ListedModel } from './provider';
+import {
+  apiCapability,
+  supportsCli,
+  supportsIntegrated,
+} from './serviceCompatibility';
 import { composeServiceProject, type ServiceOptions } from './serviceProject';
 import { type Language, type StackChoice, stackChoices } from './stackScaffold';
 import {
@@ -332,7 +337,7 @@ export class LocalCreation implements vscode.Disposable {
     return (
       this.adaptive() &&
       this.serviceOptions.projectType === 'webapp' &&
-      this.serviceOptions.frontend === 'nextjs' &&
+      supportsIntegrated(this.serviceOptions.frontend, 'typescript') &&
       this.serviceOptions.architecture === 'integrated'
     );
   }
@@ -1168,7 +1173,13 @@ export class LocalCreation implements vscode.Disposable {
       const language = input.index
         ? this.languages.get(input.index)
         : undefined;
-      if (!language || this.mode === 'templates' || this.integrated()) return;
+      if (
+        !language ||
+        !supportsCli(language) ||
+        this.mode === 'templates' ||
+        this.integrated()
+      )
+        return;
       this.epoch++;
       this.language = language;
       this.backend = this.ai = undefined;
@@ -1202,7 +1213,7 @@ export class LocalCreation implements vscode.Disposable {
         this.adaptive() &&
         (this.cliOnly() ||
           this.integrated() ||
-          !['fastapi', 'elysia'].includes(row.stack.framework))
+          !apiCapability(row.stack.language, row.stack.framework))
       )
         return;
       if (input.action === 'backend') this.backend = row.index;

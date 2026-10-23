@@ -110,7 +110,7 @@ for (const kind of ['agents', 'tools'])
 test('migrated Python agents retain all golden envelope and catalog metadata', () => {
   for (const usage of ['stack', 'builtin']) {
     const entries = loadEmbeddedTemplates('agents', usage).filter(
-      (e) => e.language === 'python',
+      (e) => e.language === 'python' && e.framework !== 'litestar',
     );
     for (const entry of entries) {
       const before = golden.find((g) => g.template.id === entry.template.id);

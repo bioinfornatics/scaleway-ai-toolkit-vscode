@@ -129,7 +129,8 @@ test('Next integrated has server-only route and honest frontend/build metadata',
 test('unsupported API and integrated choices fail explicitly, no fake health integration', () => {
   for (const backend of choices.filter(
     (c) =>
-      c.category === 'backend' && !['elysia', 'fastapi'].includes(c.framework),
+      c.category === 'backend' &&
+      !load('serviceCompatibility').apiCapability(c.language, c.framework),
   )) {
     assert.throws(
       () =>
@@ -442,7 +443,8 @@ test('Python generated transport/API are syntax-valid and mock HTTP client retur
 test('supported backend + every same-language SDK preserves SDK sources and real transport', () => {
   for (const backend of choices.filter(
     (c) =>
-      c.category === 'backend' && ['fastapi', 'elysia'].includes(c.framework),
+      c.category === 'backend' &&
+      !!load('serviceCompatibility').apiCapability(c.language, c.framework),
   )) {
     for (const ai of choices.filter(
       (c) => c.category === 'agent' && c.language === backend.language,

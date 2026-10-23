@@ -1,3 +1,4 @@
+import { apiCapability, supportsIntegrated } from './serviceCompatibility';
 import type { Language, StackChoice } from './stackScaffold';
 import type {
   TemplateDefinition,
@@ -222,7 +223,7 @@ export function buildCreationView(v: BuildView): string {
   const adaptive = v.projectType !== undefined;
   const integrated =
     v.projectType === 'webapp' &&
-    v.frontend === 'nextjs' &&
+    supportsIntegrated(v.frontend, v.language) &&
     v.architecture === 'integrated';
   const cli = v.projectType === 'agent' && v.exposure === 'cli';
   const radios = (
@@ -273,7 +274,7 @@ export function buildCreationView(v: BuildView): string {
           (ai
             ? ['agent', 'basic'].includes(r.stack.category)
             : r.stack.category === 'backend' &&
-              ['fastapi', 'elysia'].includes(r.stack.framework)),
+              !!apiCapability(r.stack.language, r.stack.framework)),
       )
       .map(
         (r) =>

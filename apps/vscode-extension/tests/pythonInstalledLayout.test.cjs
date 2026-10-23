@@ -125,8 +125,8 @@ test('opt-in offline wheel build/install: six bases and six backend+SDK composit
         label: backend.framework + '+' + sdk.framework,
         template: composeAgentProject(backend, sdk, 'wheel-agent'),
       });
-  assert.equal(entries.length, 6);
-  assert.equal(candidates.length, 12);
+  assert.equal(entries.length, 7);
+  assert.equal(candidates.length, 15);
   for (const [index, candidate] of candidates.entries())
     await t.test(candidate.label, async (sub) => {
       const project = path.join(root, 'project-' + index);
@@ -134,10 +134,13 @@ test('opt-in offline wheel build/install: six bases and six backend+SDK composit
       const verify = path.join(root, 'outside-source-' + index);
       await fs.mkdir(project);
       await fs.mkdir(verify);
-      const rendered = withEndpointLaunch(renderProjectTemplate(
-        prepareEmbeddedProject(candidate.template, 'python'),
-        { name: 'Wheel_Agent' },
-      ), 'python');
+      const rendered = withEndpointLaunch(
+        renderProjectTemplate(
+          prepareEmbeddedProject(candidate.template, 'python'),
+          { name: 'Wheel_Agent' },
+        ),
+        'python',
+      );
       for (const [relative, bytes] of Object.entries(rendered.files)) {
         const destination = path.join(project, relative);
         await fs.mkdir(path.dirname(destination), { recursive: true });
@@ -222,7 +225,11 @@ test('opt-in offline wheel build/install: six bases and six backend+SDK composit
       );
       const consoleEntry = path.join(venv, 'bin', 'agent');
       assert.ok((await fs.stat(consoleEntry)).mode & 0o111);
-      const checked = run(consoleEntry, ['--check'], verify, { SCW_API_KEY: 'offline-key', SCW_INFERENCE_BASE_URL: 'https://example.invalid/v1', SCW_INFERENCE_MODEL_ID: 'offline-model' });
+      const checked = run(consoleEntry, ['--check'], verify, {
+        SCW_API_KEY: 'offline-key',
+        SCW_INFERENCE_BASE_URL: 'https://example.invalid/v1',
+        SCW_INFERENCE_MODEL_ID: 'offline-model',
+      });
       requireSuccess(checked);
       // Isolated Python + unrelated cwd; assert site-packages origin, no editable/source path.
       const imported = run(
@@ -234,7 +241,7 @@ test('opt-in offline wheel build/install: six bases and six backend+SDK composit
             'import sys, pathlib, importlib.metadata as m, importlib.abc, os',
             'class RejectRuntime(importlib.abc.MetaPathFinder):',
             '    def find_spec(self, fullname, path=None, target=None):',
-            '        if fullname.split(".")[0] in {"strands", "langchain", "langchain_openai", "openai", "boto3", "fastapi", "django", "deepeval"}: raise AssertionError("runtime import forbidden: " + fullname)',
+            '        if fullname.split(".")[0] in {"strands", "langchain", "langchain_openai", "openai", "boto3", "fastapi", "litestar", "django", "deepeval"}: raise AssertionError("runtime import forbidden: " + fullname)',
             'sys.meta_path.insert(0, RejectRuntime())',
             'import agent_app, agent_app.config',
             'location=pathlib.Path(agent_app.__file__).resolve()',

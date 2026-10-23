@@ -490,3 +490,19 @@ service.authoring.json indique la source principale et les limites de vérificat
 Le lanceur agent reste ready:false avec --help ; ce n’est pas un gestionnaire de
 serveurs. Vérification explicite : node --test tests/serviceProject.test.cjs, avec
 mocks locaux sans serveur, cloud ou inférence réelle.
+
+
+### Litestar et matrice de compatibilité des services
+
+La matrice commune serviceCompatibility.ts pilote les choix API de la vue,
+leur validation par l’hôte et le générateur. Python : FastAPI ou Litestar ;
+TypeScript : Elysia. Next.js intégré reste TypeScript uniquement. Les API Rust,
+Django, NestJS et AgentOS ne sont pas annoncées comme intégrées.
+Litestar fournit une vraie route POST /api/chat, avec validation et transport
+endpoint côté serveur, erreurs fixes, plafond de corps et travail réseau hors
+boucle asynchrone. Les SDK IA restent des sources à intégrer, pas le moteur de
+cette route. Le frontend Next/Vite séparé conserve la même interface HTTP.
+Lancement explicite : uv run python -m agent_app.service_cli --serve ;
+--help ne charge pas le framework ; --check vérifie la configuration sans appel.
+Contraintes Litestar >=2.12,<3 : pas un lock ni une certification runtime.
+Aucune inference, installation du VSIX ou commit automatique pour cette tranche.

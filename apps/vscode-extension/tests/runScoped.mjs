@@ -52,6 +52,7 @@ export const priorSuites = [
 ].map((name) => name + '.test.cjs');
 export const addedSuites = [
   'serviceProject.test.cjs',
+  'serviceCompatibility.test.cjs',
   'buildPackaging.test.cjs',
   'endpointAgent.test.cjs',
   'frameworkAgents.test.cjs',

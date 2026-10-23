@@ -1,0 +1,24 @@
+{
+  "format_version": 1,
+  "id": "agents-python-litestar",
+  "label": "Litestar · python",
+  "kind": "agents",
+  "language": "python",
+  "framework": "litestar",
+  "category": "backend",
+  "usage": "stack",
+  "description": "Base backend · SDK agent à intégrer.",
+  "files": [
+    "README.md",
+    "agent.authoring.json",
+    "evals/README.md",
+    "evals/test_agent_eval.py",
+    "requirements.txt",
+    "src/agent_app/__init__.py",
+    "src/agent_app/api.py",
+    "src/agent_app/config.py",
+    "tests/integration/README.md",
+    "tests/unit/test_config.py",
+    "src/agent_app/backend_cli.py"
+  ]
+}

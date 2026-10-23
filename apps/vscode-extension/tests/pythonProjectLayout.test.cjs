@@ -49,8 +49,8 @@ const shared = [
   'evals/test_agent_eval.py',
 ];
 
-test('six real embedded Python trees share identical config and tests and retain metadata', () => {
-  assert.equal(entries.length, 6);
+test('seven real embedded Python trees share identical config and tests and retain metadata', () => {
+  assert.equal(entries.length, 7);
   for (const entry of entries) {
     for (const file of shared)
       assert.equal(entry.template.files[file], entries[0].template.files[file]);

@@ -374,7 +374,7 @@ const pythonGuard = [
   'socket.socket.bind=forbidden',
   '_import=builtins.__import__',
   'def guarded(name,*a,**k):',
-  ' if name.split(".")[0] in {"strands","langchain","langchain_openai","fastapi","django","uvicorn","mcp"}: raise AssertionError("Expensive SDK import forbidden during help/check")',
+  ' if name.split(".")[0] in {"strands","langchain","langchain_openai","fastapi","litestar","django","uvicorn","mcp"}: raise AssertionError("Expensive SDK import forbidden during help/check")',
   ' return _import(name,*a,**k)',
   'builtins.__import__=guarded',
   'sys.argv=sys.argv[1:]',
@@ -395,8 +395,8 @@ function cliSources(files) {
       (name === 'src/main.rs' && content.includes('Args::parse()')),
   );
 }
-test('ALL 26 built-in inventories have parser-backed real entrypoints; import-only sources remain libraries', () => {
-  assert.equal(cliEntries.length, 26);
+test('ALL 27 built-in inventories have parser-backed real entrypoints; import-only sources remain libraries', () => {
+  assert.equal(cliEntries.length, 27);
   for (const entry of cliEntries) {
     const result = generated(entry);
     const sources = cliSources(result.files);

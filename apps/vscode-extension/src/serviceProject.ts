@@ -5,6 +5,11 @@ import {
   renderProjectTemplate,
 } from './projectGenerator';
 import type { ListedModel } from './provider';
+import {
+  apiCapability,
+  supportsCli,
+  supportsIntegrated,
+} from './serviceCompatibility';
 import type { StackChoice } from './stackScaffold';
 import { parseTemplate, type TemplateDefinition } from './templateLibrary';
 
@@ -126,6 +131,35 @@ async def api_chat(request: Request):
         return {"reply": await run_in_threadpool(chat, message)}
     except Exception:
         return JSONResponse({"error": "chat_unavailable"}, status_code=502)
+`;
+
+const litestarApi = `import json
+import asyncio
+from litestar import Litestar, Request, post
+from litestar.response import Response
+from .service_transport import chat
+
+@post("/api/chat", status_code=200)
+async def api_chat(request: Request) -> Response:
+    try:
+        raw = bytearray()
+        async for chunk in request.stream():
+            raw.extend(chunk)
+            if len(raw) > 32768:
+                return Response({"error": "invalid_request"}, status_code=413)
+        payload = json.loads(raw)
+        message = payload.get("message") if isinstance(payload, dict) else None
+        if not isinstance(message, str) or not message.strip() or len(message) > 8000:
+            return Response({"error": "invalid_request"}, status_code=400)
+    except Exception:
+        return Response({"error": "invalid_request"}, status_code=400)
+    try:
+        reply = await asyncio.to_thread(chat, message)
+        return Response({"reply": reply}, status_code=200)
+    except Exception:
+        return Response({"error": "chat_unavailable"}, status_code=502)
+
+app = Litestar(route_handlers=[api_chat], request_max_body_size=32768, debug=False)
 `;
 
 const elysiaApi = `import { Elysia } from "elysia";
@@ -355,6 +389,10 @@ export function composeServiceProject(
   if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/.test(name))
     throw new Error('invalid_project_name');
   if (opts.projectType === 'agent' && opts.exposure === 'cli') {
+    const cliLanguage =
+      ai?.language ?? backend?.language ?? personal?.project?.language;
+    if (!personal && (!cliLanguage || !supportsCli(cliLanguage)))
+      throw new Error('unsupported_cli_language');
     return composeAgentProject(
       backend?.category === 'basic' ? backend : undefined,
       ai,
@@ -369,16 +407,10 @@ export function composeServiceProject(
   const integrated =
     opts.projectType === 'webapp' && opts.architecture === 'integrated';
   const language = backend?.language ?? ai?.language;
-  if (integrated && (opts.frontend !== 'nextjs' || language !== 'typescript'))
+  if (integrated && !supportsIntegrated(opts.frontend, language))
     throw new Error('unsupported_integrated_service');
-  if (
-    !integrated &&
-    (backend?.category !== 'backend' ||
-      !(
-        (backend.language === 'python' && backend.framework === 'fastapi') ||
-        (backend.language === 'typescript' && backend.framework === 'elysia')
-      ))
-  )
+  const capability = apiCapability(backend?.language, backend?.framework);
+  if (!integrated && (backend?.category !== 'backend' || !capability))
     throw new Error('unsupported_api_backend');
   if (ai && ai.language !== language) throw new Error('incompatible_language');
   let base = composeAgentProject(
@@ -422,7 +454,8 @@ export function composeServiceProject(
     entry = 'service-cli.cjs';
   } else if (language === 'python') {
     files['src/agent_app/service_transport.py'] = pythonTransport;
-    files['src/agent_app/service_api.py'] = pythonApi;
+    files['src/agent_app/service_api.py'] =
+      capability?.adapter === 'litestar' ? litestarApi : pythonApi;
     files['src/agent_app/service_cli.py'] = pythonCli;
     const manifest = TOML.parse(files['pyproject.toml']) as {
       project: Record<string, unknown>;

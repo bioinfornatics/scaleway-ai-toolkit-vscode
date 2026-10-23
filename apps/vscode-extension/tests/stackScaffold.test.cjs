@@ -32,7 +32,7 @@ const { parseTemplate } = load('templateLibrary');
 const { materializeTemplate } = load('agentScaffold');
 const matrix = {
   agents: {
-    python: ['strands', 'langchain', 'fastapi', 'django', 'none'],
+    python: ['strands', 'langchain', 'fastapi', 'litestar', 'django', 'none'],
     typescript: ['langchain', 'strands', 'mastra', 'nestjs', 'elysia', 'none'],
     rust: ['axum', 'actix', 'none'],
   },
