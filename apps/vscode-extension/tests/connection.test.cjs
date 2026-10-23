@@ -2894,11 +2894,10 @@ test('explicit agent key reused for two models and dedicated; no picker fallback
   }
 });
 
-test('native reveal reads only local credentials, expired allowed; consent/trust/foreign/deleted gates and masked errors', async () => {
-  const s = setup();
-  const iam = require('../dist/llmAccessIam');
-  const old = iam.listAccessAPIKeys;
-  const dialogs = [];
+test('per-field local reveal is no HTTP/native UI, expired allowed, guarded and errors secret-free', async () => {
+  const s = setup(),
+    iam = require('../dist/llmAccessIam'),
+    old = iam.listAccessAPIKeys;
   try {
     await s.connection.ensureProject();
     iam.listAccessAPIKeys = async () => [
@@ -2912,49 +2911,110 @@ test('native reveal reads only local credentials, expired allowed; consent/trust
     ];
     assert.equal(await s.connection.configureAPIKey(), true);
     const key = s.connection.apiKeys[0];
-    s.connection.apiKeys[0].expiresAt = 1;
-    const noHttp = async () => assert.fail('no HTTP for native reveal');
+    key.expiresAt = 1;
+    const noHttp = async () => assert.fail('no HTTP during local reveal');
     iam.listAccessAPIKeys = noHttp;
     s.accessIam.inspectAccessAPIKey = noHttp;
-    s.vscode.window.showInformationMessage = async (...args) => {
-      dialogs.push(args);
-    };
-    s.vscode.window.showWarningMessage = async (_message, _options, action) =>
-      action;
-    await s.connection.revealAPIKey(key.id);
-    assert.equal(dialogs.length, 1);
-    assert.equal(dialogs[0][1].modal, true);
-    assert.ok(dialogs[0][1].detail.includes(accessKey));
-    assert.ok(dialogs[0][1].detail.includes(secretKey));
-    s.vscode.window.showWarningMessage = async () => undefined;
-    await s.connection.revealAPIKey(key.id);
-    assert.equal(dialogs.length, 1);
-    await s.connection.revealAPIKey('f'.repeat(32));
+    s.connection.ensureProject = noHttp;
+    s.vscode.window.showInformationMessage =
+      s.vscode.window.showWarningMessage = async () =>
+        assert.fail('no native secret UI');
+    for (const [field, expected] of [
+      ['access', accessKey],
+      ['secret', secretKey],
+    ]) {
+      const handle = await s.connection.revealAPIKey(key.id, field);
+      assert.ok(handle.current());
+      assert.equal(handle.value(), expected);
+      assert.equal(handle.credentials, undefined);
+      handle.dispose();
+      assert.equal(handle.current(), false);
+    }
+    assert.equal(
+      await s.connection.revealAPIKey('f'.repeat(32), 'secret'),
+      undefined,
+    );
+    assert.equal(await s.connection.revealAPIKey(key.id, 'pair'), undefined);
     s.vscode.workspace.isTrusted = false;
-    await s.connection.revealAPIKey(key.id);
-    assert.equal(dialogs.length, 1);
+    assert.equal(await s.connection.revealAPIKey(key.id, 'secret'), undefined);
     s.vscode.workspace.isTrusted = true;
-    s.vscode.window.showWarningMessage = async (_message, _options, action) => {
-      if (action) s.connection.apiKeys = [];
-      return action;
-    };
-    await s.connection.revealAPIKey(key.id);
-    assert.equal(dialogs.length, 1);
+    const handle = await s.connection.revealAPIKey(key.id, 'secret');
+    s.connection.apiKeys = [];
+    assert.equal(handle.current(), false);
+    assert.throws(() => handle.value(), /Local disclosure unavailable/);
+    handle.dispose();
     s.connection.apiKeys = [key];
-    s.vscode.window.showWarningMessage = async (_message, _options, action) =>
-      action;
-    s.vscode.window.showInformationMessage = async () => {
+    const reveal = s.connection.llmAccess.revealLocal;
+    s.connection.llmAccess.revealLocal = async () => {
       throw new Error(secretKey);
     };
-    await s.connection.revealAPIKey(key.id);
-    assert.ok(!s.warnings.some((warning) => warning.includes(secretKey)));
-    assert.ok(!s.errors.some((error) => error.includes(secretKey)));
+    assert.equal(await s.connection.revealAPIKey(key.id, 'secret'), undefined);
+    s.connection.llmAccess.revealLocal = reveal;
+    assert.ok(!s.warnings.some((w) => w.includes(secretKey)));
+    assert.ok(!s.errors.some((e) => e.includes(secretKey)));
+    s.vscode.window.showInformationMessage =
+      s.vscode.window.showWarningMessage = async () => undefined;
     await s.connection.disconnect();
-    await s.connection.revealAPIKey(key.id);
-    assert.equal(dialogs.length, 1);
+    assert.equal(await s.connection.revealAPIKey(key.id, 'secret'), undefined);
   } finally {
     iam.listAccessAPIKeys = old;
     s.connection.dispose();
     s.restore();
+  }
+});
+
+test('local disclosure revalidates actual registry SecretStorage after await and rotation', async () => {
+  for (const change of ['membership', 'scope', 'rotation', 'storage-error']) {
+    const s = setup(),
+      iam = require('../dist/llmAccessIam'),
+      old = iam.listAccessAPIKeys;
+    try {
+      await s.connection.ensureProject();
+      iam.listAccessAPIKeys = async () => [
+        {
+          accessKey,
+          organizationId: org,
+          bearer: { type: 'user', id: org },
+          description: 'Mock',
+          expiresAt: Date.now() + 3600000,
+        },
+      ];
+      await s.connection.configureAPIKey();
+      const key = s.connection.apiKeys[0];
+      const get = s.context.secrets.get;
+      let release,
+        reads = 0;
+      s.context.secrets.get = async (slot) => {
+        if (slot.startsWith('scalewayAI.llmAccess.secret.v1.')) {
+          reads++;
+          if (reads === 1)
+            await new Promise((r) => {
+              release = r;
+            });
+          if (change === 'storage-error') throw new Error(secretKey);
+        }
+        return get(slot);
+      };
+      const pending = s.connection.revealAPIKey(key.id, 'secret');
+      assert.equal(reads, 1);
+      if (change === 'membership') s.connection.apiKeys = [];
+      if (change === 'scope')
+        s.connection.project = { ...s.connection.project, id: org };
+      if (change === 'rotation') {
+        const slot = 'scalewayAI.llmAccess.secret.v1.' + key.id;
+        const raw = JSON.parse(s.secrets.get(slot));
+        raw.secretKey = '44444444-4444-4444-4444-444444444444';
+        s.secrets.set(slot, JSON.stringify(raw));
+      }
+      release();
+      const result = await pending;
+      assert.equal(result, undefined);
+      assert.ok(!s.errors.some((e) => e.includes(secretKey)));
+      assert.ok(!s.warnings.some((e) => e.includes(secretKey)));
+    } finally {
+      iam.listAccessAPIKeys = old;
+      s.connection.dispose();
+      s.restore();
+    }
   }
 });

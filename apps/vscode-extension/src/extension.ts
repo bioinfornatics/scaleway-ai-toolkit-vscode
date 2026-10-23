@@ -470,6 +470,7 @@ export function activate(context: vscode.ExtensionContext): void {
           const input = parseOverviewInput(value);
           if (!input || !overviewToken || input.token !== overviewToken) return;
           if (input.type === 'catalog') {
+            renderModelsOverview();
             await vscode.commands.executeCommand('scalewayAI.openCatalog');
             return;
           }
@@ -490,17 +491,59 @@ export function activate(context: vscode.ExtensionContext): void {
             return;
           }
           if (input.type === 'reveal-key') {
-            if (
-              overviewMode !== 'keys' ||
-              !scope.current() ||
-              !connection.apiKeys.some(
+            const current = () =>
+              modelsPanel === origin &&
+              overviewMode === 'keys' &&
+              overviewScope === scope &&
+              scope.current() &&
+              overviewToken === input.token &&
+              vscode.workspace.isTrusted &&
+              origin.visible !== false &&
+              vscode.window.state?.focused !== false &&
+              connection.apiKeys.some(
                 (key) => key.id === input.id && key.secretAvailable,
-              )
-            )
-              return;
-            overviewToken = undefined;
-            await connection.revealAPIKey(input.id);
-            if (modelsPanel === origin) renderModelsOverview();
+              );
+            if (!current()) return;
+            let local: Awaited<ReturnType<Connection['revealAPIKey']>>;
+            try {
+              local = await connection.revealAPIKey(input.id, input.field);
+              if (!current()) return;
+              if (!local?.current()) {
+                await origin.webview.postMessage({
+                  type: 'reveal-key-error',
+                  token: input.token,
+                  id: input.id,
+                  field: input.field,
+                  request: input.request,
+                });
+                return;
+              }
+              const value = local.value();
+              if (!current() || !local.current()) return;
+              await origin.webview.postMessage({
+                type: 'reveal-key-success',
+                token: input.token,
+                id: input.id,
+                field: input.field,
+                request: input.request,
+                value,
+              });
+            } catch {
+              try {
+                if (current())
+                  await origin.webview.postMessage({
+                    type: 'reveal-key-error',
+                    token: input.token,
+                    id: input.id,
+                    field: input.field,
+                    request: input.request,
+                  });
+              } catch {
+                /* no transport diagnostics */
+              }
+            } finally {
+              local?.dispose();
+            }
             return;
           }
           if (input.type === 'import-key' || input.type === 'use-key') {
@@ -514,8 +557,14 @@ export function activate(context: vscode.ExtensionContext): void {
               if (modelsPanel === origin) renderModelsOverview();
             } else {
               if (!key.secretAvailable) return;
+              overviewToken = undefined;
               const model = await connection.useAPIKey(input.id);
+              const selectionCurrent =
+                overviewScope?.current() &&
+                overviewScope.project === scope.project;
+              if (modelsPanel === origin) renderModelsOverview();
               if (
+                selectionCurrent &&
                 model &&
                 modelsPanel === origin &&
                 overviewMode === 'keys' &&
@@ -542,7 +591,15 @@ export function activate(context: vscode.ExtensionContext): void {
           );
         },
       );
+      const visibility = origin.onDidChangeViewState?.(() =>
+        renderModelsOverview(),
+      );
+      const windowState = vscode.window.onDidChangeWindowState?.((state) => {
+        if (!state.focused && modelsPanel === origin) renderModelsOverview();
+      });
       origin.onDidDispose(() => {
+        visibility?.dispose();
+        windowState?.dispose();
         messages.dispose();
         if (modelsPanel === origin) {
           clearOverviewScope();

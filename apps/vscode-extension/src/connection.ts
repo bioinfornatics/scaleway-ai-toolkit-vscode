@@ -117,7 +117,7 @@ export class Connection implements vscode.Disposable {
     for (const scope of this.inferenceScopes) scope.abort();
     this.inferenceScopes.clear();
   }
-  /** Pin a panel to this session/project. Only Exécuter asks for a secret. */
+  /** Pin a panel to this session/project; no credential is read here. */
   inferenceScope() {
     const project = this.project;
     const session = this.session;
@@ -1450,10 +1450,21 @@ export class Connection implements vscode.Disposable {
     if (configured) await this.refreshAPIKeys();
     return configured;
   }
-  /** Explicit native-only disclosure. Never forward native/storage diagnostics. */
-  async revealAPIKey(id: string): Promise<void> {
+  /** Explicit per-field local disclosure; handle stays guarded until delivery. */
+  async revealAPIKey(
+    id: string,
+    field: 'access' | 'secret',
+  ): Promise<
+    | {
+        current(): boolean;
+        value(): string;
+        dispose(): void;
+      }
+    | undefined
+  > {
     if (
       !/^[a-f0-9]{32}$/.test(id) ||
+      (field !== 'access' && field !== 'secret') ||
       !this.connected ||
       !vscode.workspace.isTrusted ||
       !this.project ||
@@ -1465,57 +1476,44 @@ export class Connection implements vscode.Disposable {
     const epoch = this.apiKeysEpoch;
     try {
       scope = this.inferenceScope();
+      const active = scope;
       const local = await this.llmAccess.revealLocal(
-        this.accessScope(scope),
+        this.accessScope(active),
         id,
       );
-      const confirmed = await vscode.window.showWarningMessage(
-        'Afficher la clé API complète et son secret en clair ?',
-        {
-          modal: true,
-          detail:
-            'Affichage natif uniquement. Évitez le partage d’écran et les captures. Aucun secret récupéré depuis IAM, copié ou enregistré ailleurs.',
-        },
-        'Afficher les credentials',
-      );
-      if (
-        confirmed !== 'Afficher les credentials' ||
-        !scope.current() ||
-        epoch !== this.apiKeysEpoch ||
-        !local.current() ||
-        this.apiKeysScope !== JSON.stringify(this.project) ||
-        !this.apiKeys.some((key) => key.id === id && key.secretAvailable)
-      )
+      const current = () =>
+        active.current() &&
+        local.current() &&
+        epoch === this.apiKeysEpoch &&
+        vscode.workspace.isTrusted &&
+        this.apiKeysScope === JSON.stringify(this.project) &&
+        this.apiKeys.some((key) => key.id === id && key.secretAvailable);
+      if (!current()) {
+        active.dispose();
         return;
-      const latest = await this.llmAccess.revealLocal(
-        this.accessScope(scope),
-        id,
-      );
-      if (!local.current() || !latest.current() || epoch !== this.apiKeysEpoch)
-        return;
-      const pair = latest.credentials();
-      await vscode.window.showInformationMessage(
-        'Credentials de la clé API locale',
-        {
-          modal: true,
-          detail:
-            'Access key : ' +
-            pair.accessKey +
-            String.fromCharCode(10) +
-            'Secret key : ' +
-            pair.secretKey,
-        },
-      );
-    } catch {
-      try {
-        await vscode.window.showWarningMessage(
-          'Affichage refusé ou indisponible. Actualisez les clés API.',
-        );
-      } catch {
-        /* no diagnostics */
       }
-    } finally {
+      return {
+        current,
+        value: () => {
+          if (!current()) throw new Error('Local disclosure unavailable');
+          const pair = local.credentials();
+          const value = field === 'access' ? pair.accessKey : pair.secretKey;
+          if (
+            !(
+              field === 'access'
+                ? /^SCW[A-Z0-9]{17}$/
+                : /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
+            ).test(value)
+          )
+            throw new Error('Local disclosure unavailable');
+          return value;
+        },
+        dispose: () => active.dispose(),
+      };
+    } catch {
       scope?.dispose();
+      // Never forward storage errors, diagnostics or credentials to native UI.
+      return;
     }
   }
   async useAPIKey(id: string): Promise<ListedModel | undefined> {

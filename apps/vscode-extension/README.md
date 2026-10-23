@@ -269,7 +269,7 @@ Lancez **Scaleway AI: Open Offline Preview** depuis la palette de commandes. Tes
 
 **Ajouter une clé API** propose réutilisation de la clé de connexion, import de la paire Access key / Secret key ou génération après confirmation. **Importer le secret** sur une ligne demande uniquement le secret de cette clé. L’API ne le restitue pas après création. **Choisir un modèle** réutilise le credential local sélectionné.
 
-Les nouveaux enregistrements sont indépendants du modèle. Les anciens restent conservés et réutilisables ; aucune migration automatique ni suppression de secret. Les politiques IAM déterminent les droits ; le projet par défaut n’est pas une restriction IAM. Le secret reste dans SecretStorage, aucune clé complète ni identifiant du titulaire ne sont envoyés à la webview.
+Les nouveaux enregistrements sont indépendants du modèle. Les anciens restent conservés et réutilisables ; aucune migration automatique ni suppression de secret. Les politiques IAM déterminent les droits ; le projet par défaut n’est pas une restriction IAM. Les credentials restent dans SecretStorage ; seule une valeur explicitement demandée par un bouton œil est transmise à la webview courante. Aucun identifiant du titulaire ne lui est envoyé.
 
 Présence locale ne veut pas dire autorisation d’inférence. L’utilisation revalide les métadonnées IAM et la présence du modèle dans la liste Serverless ; cela ne prouve pas les droits d’appel du projet. Une erreur ne déclenche aucun fallback vers une autre clé.
 
@@ -405,10 +405,14 @@ Seules les clés dont le secret est enregistré localement et qui ne sont pas ex
 Utilisez **Ajouter / importer une clé API…** si nécessaire. La clé choisie est revalidée avant
 sa copie dans le fichier privé .env ; aucun remplacement silencieux par la clé de connexion.
 
-Dans **Clés API**, **Afficher access + secret…** est disponible seulement pour une copie locale.
-Après confirmation explicite, une boîte de dialogue native affiche les deux valeurs en clair.
+Dans **Clés API**, les colonnes **Clé API** et **Clé secrète** sont masquées par défaut.
+Chaque copie locale a deux boutons œil accessibles : un clic divulgue uniquement le champ choisi
+à la webview courante, en ligne ; un second clic le masque et annule sa demande en attente.
+Aucune demande automatique à l’ouverture. Les valeurs sont effacées à l’actualisation, lors
+d’une autre action, d’une perte de focus, d’un masquage de la vue ou d’un changement de contexte.
 Attention au partage d’écran et aux captures : ne diffusez pas ces credentials.
-Les valeurs ne passent jamais par le webview, le presse-papiers ou les journaux de l’extension.
+Les valeurs divulguées restent transitoires : aucun cache persistant, presse-papiers ni journal
+de l’extension ; elles ne figurent pas dans le HTML initial ni dans les métadonnées.
 Une copie expirée peut être affichée, mais pas utilisée pour créer un agent. Aucune récupération
 ou recréation de secret via IAM ; un secret absent doit être importé par son détenteur.
 L’inventaire et la présence locale ne certifient ni les politiques IAM du projet ni une inférence.

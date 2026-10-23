@@ -63,3 +63,36 @@ td {
   border-bottom: 1px solid var(--vscode-panel-border);
   overflow-wrap: anywhere;
 }
+.credential {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.credential input {
+  width: 13em;
+  font: inherit;
+  color: var(--vscode-input-foreground);
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-input-border, transparent);
+  padding: 6px;
+}
+.eye-toggle {
+  padding: 5px;
+  display: inline-flex;
+}
+.eye-toggle svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+}
+.eye-toggle .eye-open {
+  display: none;
+}
+.eye-toggle[aria-pressed="true"] .eye-open {
+  display: block;
+}
+.eye-toggle[aria-pressed="true"] .eye-closed {
+  display: none;
+}

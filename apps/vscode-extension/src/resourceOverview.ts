@@ -5,7 +5,14 @@ import type { ListedModel } from './provider';
 
 export type OverviewInput =
   | { type: 'catalog' | 'refresh' | 'add-key'; token: string }
-  | { type: 'import-key' | 'use-key' | 'reveal-key'; id: string; token: string }
+  | { type: 'import-key' | 'use-key'; id: string; token: string }
+  | {
+      type: 'reveal-key';
+      id: string;
+      token: string;
+      field: 'access' | 'secret';
+      request: string;
+    }
   | {
       type: 'open';
       kind: 'dedicated';
@@ -26,13 +33,27 @@ export function parseOverviewInput(value: unknown): OverviewInput | undefined {
   }
   if (
     Object.keys(row).length === 3 &&
-    (row.type === 'import-key' ||
-      row.type === 'use-key' ||
-      row.type === 'reveal-key') &&
+    (row.type === 'import-key' || row.type === 'use-key') &&
     typeof row.id === 'string' &&
     /^[a-f0-9]{32}$/.test(row.id)
   )
     return { type: row.type, id: row.id, token: row.token };
+  if (
+    Object.keys(row).length === 5 &&
+    row.type === 'reveal-key' &&
+    typeof row.id === 'string' &&
+    /^[a-f0-9]{32}$/.test(row.id) &&
+    typeof row.request === 'string' &&
+    /^[a-f0-9]{32}$/.test(row.request) &&
+    (row.field === 'access' || row.field === 'secret')
+  )
+    return {
+      type: row.type,
+      id: row.id,
+      token: row.token,
+      field: row.field,
+      request: row.request,
+    };
   if (
     Object.keys(row).length === 4 &&
     row.type === 'open' &&
@@ -121,6 +142,34 @@ function creationDate(value: string | undefined): string {
   return `${part('day')}/${part('month')}/${part('year')} à ${part('hour')}:${part('minute')}`;
 }
 
+function credentialCell(
+  key: ApiKeyResource,
+  field: 'access' | 'secret',
+): string {
+  const mask = field === 'access' ? key.maskedAccessKey : '••••••••';
+  if (!key.secretAvailable)
+    return escapeHtml(field === 'access' ? mask : 'Non enregistré');
+  const label = field === 'access' ? 'la clé API' : 'la clé secrète';
+  return (
+    '<span class="credential"><input readonly type="text" autocomplete="off" spellcheck="false" aria-label="' +
+    label +
+    ' masquée" value="' +
+    escapeHtml(mask) +
+    '">' +
+    '<button class="eye-toggle" data-action="reveal-key" data-id="' +
+    escapeHtml(key.id) +
+    '" data-field="' +
+    field +
+    '" aria-label="Afficher ' +
+    label +
+    '" title="Afficher ' +
+    label +
+    '" aria-pressed="false">' +
+    '<svg class="eye-open" aria-hidden="true" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>' +
+    '<svg class="eye-closed" aria-hidden="true" viewBox="0 0 24 24"><path d="m3 3 18 18M10 5c7-1 12 7 12 7s-1 3-4 5M6 6c-3 2-4 6-4 6s3 7 10 7c2 0 3 0 4-1M10 10a3 3 0 0 0 4 4"/></svg></button></span>'
+  );
+}
+
 function deploymentState(row: ListedModel): string {
   if (row.kind === 'serverless')
     return row.llmAccess ? 'Accès configuré · IAM vérifié' : 'Non configuré';
@@ -180,7 +229,7 @@ export function modelsOverviewHtml(
     '<p role="status">Clés API : ' +
     escapeHtml(keyState) +
     '</p>' +
-    '<div class="table-scroll"><table><caption>Clés API de l’organisation</caption><thead><tr><th scope="col">Description</th><th scope="col">Clé masquée</th><th scope="col">Titulaire</th><th scope="col">Expiration</th><th scope="col">Secret local</th><th scope="col">Action</th></tr></thead><tbody>' +
+    '<div class="table-scroll"><table><caption>Clés API de l’organisation</caption><thead><tr><th scope="col">Description</th><th scope="col">Clé API</th><th scope="col">Clé secrète</th><th scope="col">Titulaire</th><th scope="col">Expiration</th><th scope="col">Secret local</th><th scope="col">Action</th></tr></thead><tbody>' +
     inventory
       .map((key) => {
         const expired = key.expiresAt <= Date.now() + 30000;
@@ -202,7 +251,9 @@ export function modelsOverviewHtml(
           '<tr><td>' +
           escapeHtml(key.description || 'Sans description') +
           '</td><td>' +
-          escapeHtml(key.maskedAccessKey) +
+          credentialCell(key, 'access') +
+          '</td><td>' +
+          credentialCell(key, 'secret') +
           '</td><td>' +
           (key.bearerType === 'application'
             ? 'Application IAM'
@@ -213,18 +264,13 @@ export function modelsOverviewHtml(
           (key.secretAvailable ? 'Présent localement' : 'Non enregistré') +
           '</td><td>' +
           action +
-          (key.secretAvailable
-            ? ' <button data-action="reveal-key" data-id="' +
-              escapeHtml(key.id) +
-              '">Afficher access + secret…</button>'
-            : '') +
           '</td></tr>'
         );
       })
       .join('') +
     (inventory.length
       ? ''
-      : '<tr><td colspan="6">Aucune clé affichée. Un inventaire non chargé ou refusé ne signifie pas qu’aucune clé existe.</td></tr>') +
+      : '<tr><td colspan="7">Aucune clé affichée. Un inventaire non chargé ou refusé ne signifie pas qu’aucune clé existe.</td></tr>') +
     '</tbody></table></div>';
   const deploymentBody =
     '<p class="note">Ressources cloud dédiées, distinctes des modèles du catalogue et des clés API. Success / Failure correspondent à ready / error ; ces états ne certifient pas une inférence. Dates dans le fuseau horaire local.</p><p role="status">Déploiements dédiés : ' +

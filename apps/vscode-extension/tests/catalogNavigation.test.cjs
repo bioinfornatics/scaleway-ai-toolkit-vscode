@@ -64,11 +64,27 @@ function setup() {
       refreshCalls.push('keys');
       this.refresh();
     }
+    invalidateAPIKeys() {
+      this.apiKeys = [];
+      this.refresh();
+    }
     async configureAPIKey(id) {
       this.keyActions.push({ type: 'import', id });
     }
-    async revealAPIKey(id) {
-      this.keyActions.push({ type: 'reveal', id });
+    async revealAPIKey(id, field) {
+      this.keyActions.push({ type: 'reveal', id, field });
+      if (this.revealWait) await this.revealWait;
+      if (this.revealError) throw new Error('synthetic-only');
+      return {
+        current: () => this.revealCurrent !== false,
+        value: () =>
+          field === 'access'
+            ? 'SCW' + 'A'.repeat(17)
+            : '11111111-1111-1111-1111-111111111111',
+        dispose: () => {
+          this.revealDisposed = true;
+        },
+      };
     }
     async useAPIKey(id) {
       this.keyActions.push({ type: 'use', id });
@@ -116,6 +132,14 @@ function setup() {
       executeCommand: async (id, ...args) => commands.get(id)?.(...args),
     },
     window: {
+      state: { focused: true },
+      onDidChangeWindowState: (handler) => {
+        api.window.blur = () => {
+          api.window.state.focused = false;
+          handler(api.window.state);
+        };
+        return { dispose() {} };
+      },
       createTreeView: (id, options) => {
         views.set(id, options.treeDataProvider);
         return {};
@@ -129,12 +153,18 @@ function setup() {
       createWebviewPanel: (id, title, _column, options) => {
         assert.equal(id, 'scalewayAI.resources');
         panels++;
-        let receive, disposed;
+        let receive, disposed, visibility;
         const panel = {
           title,
           options,
           reveals: 0,
+          responses: [],
+          visible: true,
           webview: {
+            postMessage: async (value) => {
+              panel.responses.push(value);
+              return true;
+            },
             html: '',
             cspSource: 'vscode-webview:',
             asWebviewUri: (uri) => uri,
@@ -146,6 +176,18 @@ function setup() {
                 },
               };
             },
+          },
+          onDidChangeViewState: (handler) => {
+            visibility = handler;
+            return {
+              dispose() {
+                visibility = undefined;
+              },
+            };
+          },
+          changeVisibility(value) {
+            this.visible = value;
+            visibility?.();
           },
           onDidDispose: (handler) => {
             disposed = handler;
@@ -219,6 +261,12 @@ function setup() {
       subscriptions,
       extensionUri: 'root',
       workspaceState: { get: () => undefined },
+      secrets: {
+        onDidChange: (handler) => {
+          api.storageChange = (key) => handler({ key });
+          return { dispose() {} };
+        },
+      },
     });
   } finally {
     Module._load = load;
@@ -471,7 +519,11 @@ test('key actions bind current membership, expiry, local secret and scope', asyn
   assert.deepEqual(f.connection.keyActions, [{ type: 'use', id: key.id }]);
   f.connection.apiKeys = [noSecret];
   await panel.send({ type: 'use-key', id: key.id, token });
-  await panel.send({ type: 'import-key', id: noSecret.id, token });
+  await panel.send({
+    type: 'import-key',
+    id: noSecret.id,
+    token: panel.token(),
+  });
   assert.deepEqual(f.connection.keyActions, [
     { type: 'use', id: key.id },
     { type: 'import', id: noSecret.id },
@@ -495,6 +547,20 @@ test('key actions bind current membership, expiry, local secret and scope', asyn
   panel.dispose();
 });
 
+test('key model selection opens after same-project refresh invalidates captured scope', async () => {
+  const f = setup(),
+    key = inventoryKey();
+  f.connection.apiKeys = [key];
+  f.connection.useAPIKey = async () => {
+    f.connection.refresh();
+    return f.connection.serverless[0];
+  };
+  await f.commands.get('scalewayAI.openAPIKeys')();
+  const panel = f.panelRecords[0];
+  await panel.send({ type: 'use-key', id: key.id, token: panel.token() });
+  assert.equal(f.picks.length, 1);
+  panel.dispose();
+});
 test('async key selection cannot open a service after scope changes or disposal', async () => {
   for (const invalidate of ['project', 'dispose', 'abort']) {
     const f = setup(),
@@ -625,14 +691,15 @@ test('model overview renderer dispatches current actions and ignores removed pre
     { dataset: { action: 'add-key' } },
     { dataset: { action: 'import-key', id: 'b'.repeat(32) } },
     { dataset: { action: 'use-key', id: 'c'.repeat(32) } },
-    { dataset: { action: 'reveal-key', id: 'd'.repeat(32) } },
     { dataset: { action: 'open', kind: 'dedicated', id: 'dep' } },
   ];
   for (const button of buttons)
     button.addEventListener = (_event, handler) => handlers.push(handler);
   vm.runInNewContext(fs.readFileSync('media/resourceOverview.js', 'utf8'), {
     acquireVsCodeApi: () => ({ postMessage: (value) => messages.push(value) }),
+    window: { addEventListener() {} },
     document: {
+      addEventListener() {},
       querySelector: () => ({
         dataset: { token: 'a'.repeat(48) },
         querySelectorAll: () => buttons,
@@ -648,7 +715,6 @@ test('model overview renderer dispatches current actions and ignores removed pre
       { type: 'add-key', token: 'a'.repeat(48) },
       { type: 'import-key', id: 'b'.repeat(32), token: 'a'.repeat(48) },
       { type: 'use-key', id: 'c'.repeat(32), token: 'a'.repeat(48) },
-      { type: 'reveal-key', id: 'd'.repeat(32), token: 'a'.repeat(48) },
       { type: 'open', kind: 'dedicated', id: 'dep', token: 'a'.repeat(48) },
     ],
   );
@@ -676,33 +742,142 @@ test('agent model source uses public Serverless catalogue and real dedicated dep
   assert.equal(f.modelSource.current().projectId, undefined);
 });
 
-test('reveal IPC requires current token, connected trusted scope and local inventory membership; expired allowed', async () => {
+test('reveal IPC requires exact current scope and local membership; expired allowed and no pair', async () => {
   const f = setup(),
     key = inventoryKey();
   key.expiresAt = 1;
   f.connection.apiKeys = [key];
   await f.commands.get('scalewayAI.openAPIKeys')();
-  const panel = f.panelRecords[0];
-  const oldToken = panel.token();
-  for (const value of [
-    { type: 'reveal-key', id: key.id, token: oldToken, secretKey: 'forbidden' },
-    { type: 'reveal-key', id: 'f'.repeat(32), token: oldToken },
-    { type: 'reveal-key', id: key.id, token: 'f'.repeat(48) },
+  const panel = f.panelRecords[0],
+    token = panel.token();
+  const input = {
+    type: 'reveal-key',
+    id: key.id,
+    token,
+    field: 'access',
+    request: 'a'.repeat(32),
+  };
+  for (const bad of [
+    { ...input, secretKey: 'forbidden' },
+    { ...input, id: 'f'.repeat(32) },
+    { ...input, token: 'f'.repeat(48) },
+    { ...input, field: 'pair' },
+    { ...input, request: 'x' },
+    { type: 'reveal-key', id: key.id, token },
   ])
-    await panel.send(value);
+    await panel.send(bad);
   assert.deepEqual(f.connection.keyActions, []);
-  await panel.send({ type: 'reveal-key', id: key.id, token: oldToken });
-  assert.deepEqual(f.connection.keyActions, [{ type: 'reveal', id: key.id }]);
-  await panel.send({ type: 'reveal-key', id: key.id, token: oldToken });
-  assert.equal(f.connection.keyActions.length, 1);
+  await panel.send(input);
+  assert.deepEqual(f.connection.keyActions, [
+    { type: 'reveal', id: key.id, field: 'access' },
+  ]);
+  assert.deepEqual(panel.responses, [
+    { ...input, type: 'reveal-key-success', value: 'SCW' + 'A'.repeat(17) },
+  ]);
+  assert.equal(f.connection.revealDisposed, true);
   key.secretAvailable = false;
-  f.connection.refresh();
-  await panel.send({ type: 'reveal-key', id: key.id, token: panel.token() });
-  assert.equal(f.connection.keyActions.length, 1);
+  await panel.send(input);
   key.secretAvailable = true;
-  f.connection.refresh();
   f.api.workspace.isTrusted = false;
-  await panel.send({ type: 'reveal-key', id: key.id, token: panel.token() });
+  await panel.send(input);
   assert.equal(f.connection.keyActions.length, 1);
+  panel.dispose();
+});
+
+test('host never posts stale plaintext after asynchronous local retrieval', async () => {
+  for (const invalidate of [
+    (f) => f.connection.refresh(),
+    (f) => f.api.window.blur(),
+    (f) =>
+      f.api.storageChange('scalewayAI.llmAccess.secret.v1.' + 'b'.repeat(32)),
+    (f) => {
+      f.connection.connected = false;
+      f.connection.refresh();
+    },
+    (f) => f.commands.get('scalewayAI.openDeployments')(),
+    (_f, p) => p.changeVisibility(false),
+    (_f, p) => p.send({ type: 'catalog', token: p.token() }),
+    (f) => {
+      f.connection.project = { id: 'other', name: 'Other' };
+    },
+    (f) => {
+      f.connection.apiKeys = [];
+    },
+    (f) => {
+      f.api.workspace.isTrusted = false;
+    },
+    (_f, p) => p.dispose(),
+    (_f, p) => {
+      p.visible = false;
+    },
+    (f) => {
+      f.connection.revealCurrent = false;
+    },
+  ]) {
+    const f = setup(),
+      key = inventoryKey();
+    f.commands.set('scalewayAI.openCatalog', async () => undefined);
+    f.connection.apiKeys = [key];
+    await f.commands.get('scalewayAI.openAPIKeys')();
+    const panel = f.panelRecords[0];
+    let resolve;
+    f.connection.revealWait = new Promise((r) => {
+      resolve = r;
+    });
+    const pending = panel.send({
+      type: 'reveal-key',
+      id: key.id,
+      token: panel.token(),
+      field: 'secret',
+      request: 'a'.repeat(32),
+    });
+    invalidate(f, panel);
+    resolve();
+    await pending;
+    assert.ok(panel.responses.every((row) => !('value' in row)));
+    assert.equal(f.connection.revealDisposed, true);
+    panel.dispose();
+  }
+});
+
+test('view/window lifecycle rerenders and invalidates document token without automatic reveals', async () => {
+  const f = setup();
+  f.connection.apiKeys = [inventoryKey()];
+  await f.commands.get('scalewayAI.openAPIKeys')();
+  const panel = f.panelRecords[0];
+  const token = panel.token();
+  panel.changeVisibility(false);
+  assert.notEqual(panel.token(), token);
+  const hidden = panel.token();
+  panel.changeVisibility(true);
+  assert.notEqual(panel.token(), hidden);
+  const visible = panel.token();
+  f.api.window.blur();
+  assert.notEqual(panel.token(), visible);
+  assert.deepEqual(f.connection.keyActions, []);
+  assert.deepEqual(panel.responses, []);
+  panel.dispose();
+});
+
+test('local reveal failure is closed secret-free response and transport failures do not escape', async () => {
+  const f = setup(),
+    key = inventoryKey();
+  f.connection.apiKeys = [key];
+  await f.commands.get('scalewayAI.openAPIKeys')();
+  const panel = f.panelRecords[0];
+  const input = {
+    type: 'reveal-key',
+    token: panel.token(),
+    id: key.id,
+    field: 'secret',
+    request: 'a'.repeat(32),
+  };
+  f.connection.revealError = true;
+  await panel.send(input);
+  assert.deepEqual(panel.responses, [{ ...input, type: 'reveal-key-error' }]);
+  panel.webview.postMessage = async () => {
+    throw new Error('synthetic transport error');
+  };
+  await assert.doesNotReject(panel.send(input));
   panel.dispose();
 });
