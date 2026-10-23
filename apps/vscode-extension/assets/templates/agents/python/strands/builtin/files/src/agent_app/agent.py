@@ -1,4 +1,5 @@
 """Minimal agent using the selected Scaleway endpoint. No call on import."""
+import argparse
 import sys
 if __package__:
     from .config import load_project_config
@@ -17,18 +18,26 @@ def build_agent():
     model = OpenAIModel(model_id=config.model_id, client_args=client_args, stream=False)
     return Agent(model=model, tools=[], system_prompt="You are a helpful assistant.", callback_handler=None)
 
-def _run():
-    if sys.argv[1:] == ["--check"]:
+def _run(args):
+    if args.check:
         load_project_config()
         print("Configuration présente ; aucun appel réseau.")
         return
     agent = build_agent()
-    prompt = " ".join(sys.argv[1:]) or "Bonjour"
+    prompt = " ".join(args.prompt) or "Bonjour"
     print(agent(prompt))
 
-def main():
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(add_help=False, description="Scaleway model agent; normal execution may incur inference charges.")
+    parser.add_argument("--help", "-h", action="store_true", help="Show this help and exit")
+    parser.add_argument("--check", action="store_true", help="Validate local configuration without inference")
+    parser.add_argument("prompt", nargs="*", help="Message (default: Bonjour); use -- before literal flags")
+    args = parser.parse_args(argv)
+    if args.help:
+        parser.print_help()
+        return 0
     try:
-        _run()
+        _run(args)
         return 0
     except Exception:
         print("Échec : vérifiez les dépendances, la configuration et l’accès au modèle.", file=sys.stderr)

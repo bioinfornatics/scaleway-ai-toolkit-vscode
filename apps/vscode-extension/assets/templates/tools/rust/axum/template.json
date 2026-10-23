@@ -12,6 +12,7 @@
     "Cargo.toml",
     "README.md",
     "src/lib.rs",
-    "tool.authoring.json"
+    "tool.authoring.json",
+    "src/main.rs"
   ]
 }

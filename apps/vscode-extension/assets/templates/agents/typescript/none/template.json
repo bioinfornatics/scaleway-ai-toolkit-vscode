@@ -13,6 +13,7 @@
     "agent.authoring.json",
     "package.json",
     "src/agent.ts",
-    "tsconfig.json"
+    "tsconfig.json",
+    "src/backend-cli.ts"
   ]
 }

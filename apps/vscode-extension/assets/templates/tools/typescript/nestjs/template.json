@@ -13,6 +13,7 @@
     "package.json",
     "src/tool.ts",
     "tool.authoring.json",
-    "tsconfig.json"
+    "tsconfig.json",
+    "src/cli.ts"
   ]
 }

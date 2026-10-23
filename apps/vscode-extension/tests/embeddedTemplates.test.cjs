@@ -57,7 +57,7 @@ async function fixture(t) {
 }
 for (const kind of ['agents', 'tools'])
   for (const usage of ['stack', 'builtin']) {
-    test(`${kind}/${usage}: unchanged languages preserve golden metadata and exact payload bytes`, () => {
+    test(`${kind}/${usage}: CLI migration preserves golden metadata and untouched library payload bytes`, () => {
       // Python agents intentionally migrate; historical golden covers unchanged bases.
       const preserved = (g) =>
         !(
@@ -68,8 +68,35 @@ for (const kind of ['agents', 'tools'])
         (g) => g.template.kind === kind && g.usage === usage && preserved(g),
       );
       const after = loadEmbeddedTemplates(kind, usage).filter(preserved);
+      const normalized = JSON.parse(JSON.stringify(after));
+      for (const entry of normalized) {
+        const old = before.find((g) => g.template.id === entry.template.id);
+        for (const name of Object.keys(entry.template.files)) {
+          if (!Object.hasOwn(old.template.files, name)) {
+            assert.match(
+              name,
+              /^(src\/(main\.rs|backend-cli\.ts|cli\.ts)|src\/agent_app\/backend_cli\.py|tool_cli\.py|cli\.py)$/,
+            );
+            delete entry.template.files[name];
+          } else if (name === 'README.md') {
+            assert.ok(
+              entry.template.files[name].startsWith(old.template.files[name]),
+            );
+            assert.match(
+              entry.template.files[name].slice(old.template.files[name].length),
+              /^\n\n## CLI shell\n/,
+            );
+            entry.template.files[name] = old.template.files[name];
+          } else if (name === 'Cargo.toml') {
+            entry.template.files[name] = entry.template.files[name].replace(
+              'clap = { version = "4.5", features = ["derive"] }\n',
+              '',
+            );
+          }
+        }
+      }
       assert.deepEqual(
-        JSON.parse(JSON.stringify(after)),
+        normalized,
         before.map((g) => ({
           language: g.language,
           framework: g.framework,

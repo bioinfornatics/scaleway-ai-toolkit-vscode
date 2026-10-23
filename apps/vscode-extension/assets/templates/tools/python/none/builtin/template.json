@@ -11,6 +11,7 @@
   "files": [
     "README.md",
     "test_tool.py",
-    "tool.py"
+    "tool.py",
+    "tool_cli.py"
   ]
 }

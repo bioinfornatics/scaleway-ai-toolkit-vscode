@@ -1,10 +1,10 @@
-import { parseTemplate, type TemplateDefinition } from './templateLibrary';
 import * as TOML from '@iarna/toml';
+import { parseTemplate, type TemplateDefinition } from './templateLibrary';
 
 const python =
-  '"""Minimal Scaleway endpoint client. Run --check without an inference call."""\nimport json\nimport os\nfrom pathlib import Path\nimport sys\nimport urllib.request\nfrom urllib.parse import urlsplit\n\ndef main():\n    for line in (Path(__file__).parent / ".env").read_text().splitlines():\n        if not line.strip() or line.lstrip().startswith("#"):\n            continue\n        key, value = line.split("=", 1)\n        os.environ.setdefault(key.strip(), value.strip().strip(chr(39) + chr(34)))\n    base = os.environ.get("SCW_INFERENCE_BASE_URL", "").rstrip("/")\n    model = os.environ.get("SCW_INFERENCE_MODEL_ID", "")\n    key = os.environ.get("SCW_API_KEY", "")\n    url = urlsplit(base)\n    if url.scheme != "https" or not url.hostname or url.username or url.password or url.query or url.fragment or not model or not key:\n        raise ValueError("Configuration endpoint, modèle ou clé manquante/invalide")\n    if sys.argv[1:] == ["--check"]:\n        print("Configuration locale présente ; aucun appel réseau effectué.")\n        return\n    prompt = " ".join(sys.argv[1:]) or "Bonjour"\n    data = json.dumps({"model": model, "messages": [{"role": "user", "content": prompt}]}).encode()\n    headers = {"Content-Type": "application/json"}\n    headers.update(zip(["Authorization"], [" ".join(["Bearer", key])]))\n    request = urllib.request.Request(base + "/chat/completions", data=data, headers=headers)\n    class NoRedirect(urllib.request.HTTPRedirectHandler):\n        def redirect_request(self, *args, **kwargs):\n            return None\n    with urllib.request.build_opener(NoRedirect).open(request, timeout=60) as response:\n        result = json.load(response)\n    print(result["choices"][0]["message"]["content"])\n\nif __name__ == "__main__":\n    try:\n        main()\n    except Exception:\n        print("Échec de l’appel : vérifiez configuration, accès et endpoint.", file=sys.stderr)\n        sys.exit(1)\n';
+  '"""Minimal Scaleway endpoint client. Run --check without an inference call."""\nimport argparse\nimport json\nimport os\nfrom pathlib import Path\nimport sys\nimport urllib.request\nfrom urllib.parse import urlsplit\n\ndef _run(args):\n    for line in (Path(__file__).parent / ".env").read_text().splitlines():\n        if not line.strip() or line.lstrip().startswith("#"):\n            continue\n        key, value = line.split("=", 1)\n        os.environ.setdefault(key.strip(), value.strip().strip(chr(39) + chr(34)))\n    base = os.environ.get("SCW_INFERENCE_BASE_URL", "").rstrip("/")\n    model = os.environ.get("SCW_INFERENCE_MODEL_ID", "")\n    key = os.environ.get("SCW_API_KEY", "")\n    url = urlsplit(base)\n    if url.scheme != "https" or not url.hostname or url.username or url.password or url.query or url.fragment or not model or not key:\n        raise ValueError("Configuration endpoint, modèle ou clé manquante/invalide")\n    if args.check:\n        print("Configuration locale présente ; aucun appel réseau effectué.")\n        return\n    prompt = " ".join(args.prompt) or "Bonjour"\n    data = json.dumps({"model": model, "messages": [{"role": "user", "content": prompt}]}).encode()\n    headers = {"Content-Type": "application/json"}\n    headers.update(zip(["Authorization"], [" ".join(["Bearer", key])]))\n    request = urllib.request.Request(base + "/chat/completions", data=data, headers=headers)\n    class NoRedirect(urllib.request.HTTPRedirectHandler):\n        def redirect_request(self, *args, **kwargs):\n            return None\n    with urllib.request.build_opener(NoRedirect).open(request, timeout=60) as response:\n        result = json.load(response)\n    print(result["choices"][0]["message"]["content"])\n\ndef main(argv: list[str] | None = None) -> int:\n    parser = argparse.ArgumentParser(add_help=False, description="Scaleway model agent; normal execution may incur inference charges.")\n    parser.add_argument("--help", "-h", action="store_true", help="Show this help and exit")\n    parser.add_argument("--check", action="store_true", help="Validate local configuration without inference")\n    parser.add_argument("prompt", nargs="*", help="Message (default: Bonjour); use -- before literal flags")\n    args = parser.parse_args(argv)\n    if args.help:\n        parser.print_help()\n        return 0\n    try:\n        _run(args)\n        return 0\n    except Exception:\n        print("Échec de l’appel : vérifiez configuration, accès et endpoint.", file=sys.stderr)\n        return 1\n\nif __name__ == "__main__":\n    sys.exit(main())\n';
 const node =
-  '// Minimal Scaleway endpoint client. Node.js 22+, no package installation.\nconst fs = require("node:fs");\nconst path = require("node:path");\n\nasync function main() {\n  for (const line of fs.readFileSync(path.join(__dirname, ".env"), "utf8").split(/\\r?\\n/)) {\n    if (!line.trim() || line.trimStart().startsWith("#")) continue;\n    const split = line.indexOf("=");\n    if (split < 1) throw new Error("invalid env");\n    const key = line.slice(0, split).trim();\n    const value = line.slice(split + 1).trim().replace(/^[\'"]|[\'"]$/g, "");\n    if (process.env[key] === undefined) process.env[key] = value;\n  }\n  const base = (process.env.SCW_INFERENCE_BASE_URL || "").replace(/\\/$/, "");\n  const model = process.env.SCW_INFERENCE_MODEL_ID;\n  const key = process.env.SCW_API_KEY;\n  const url = new URL(base);\n  if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash || !model || !key) throw new Error("invalid config");\n  if (process.argv.slice(2).join(" ") === "--check") {\n    console.log("Configuration locale présente ; aucun appel réseau effectué.");\n    return;\n  }\n  const prompt = process.argv.slice(2).join(" ") || "Bonjour";\n  const response = await fetch(base + "/chat/completions", {\n    method: "POST", redirect: "error", signal: AbortSignal.timeout(60000),\n    headers: Object.fromEntries([["Authorization", ["Bearer", key].join(" ")], ["Content-Type", "application/json"]]),\n    body: JSON.stringify({ model, messages: [{ role: "user", content: prompt }] }),\n  });\n  if (!response.ok) throw new Error("endpoint failure");\n  const result = await response.json();\n  console.log(result.choices[0].message.content);\n}\nmain().catch(() => { console.error("Échec de l’appel : vérifiez configuration, accès et endpoint."); process.exitCode = 1; });\n';
+  '// Minimal Scaleway endpoint client. Node.js 22+, no package installation.\nconst { parseArgs } = require("node:util");\nconst fs = require("node:fs");\nconst path = require("node:path");\n\nasync function main(argv = process.argv.slice(2)) {\n  const { values, positionals } = parseArgs({ args: argv, strict: true, allowPositionals: true,\n    options: { help: { type: "boolean", short: "h" }, check: { type: "boolean" } } });\n  if (values.help) { console.log("Usage: agent [--help|-h] [--check] [--] [prompt ...]\\n--check validates local configuration without inference. Normal execution may incur inference charges; default prompt: Bonjour."); return; }\n\n  for (const line of fs.readFileSync(path.join(__dirname, ".env"), "utf8").split(/\\r?\\n/)) {\n    if (!line.trim() || line.trimStart().startsWith("#")) continue;\n    const split = line.indexOf("=");\n    if (split < 1) throw new Error("invalid env");\n    const key = line.slice(0, split).trim();\n    const value = line.slice(split + 1).trim().replace(/^[\'"]|[\'"]$/g, "");\n    if (process.env[key] === undefined) process.env[key] = value;\n  }\n  const base = (process.env.SCW_INFERENCE_BASE_URL || "").replace(/\\/$/, "");\n  const model = process.env.SCW_INFERENCE_MODEL_ID;\n  const key = process.env.SCW_API_KEY;\n  const url = new URL(base);\n  if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash || !model || !key) throw new Error("invalid config");\n  if (values.check) {\n    console.log("Configuration locale présente ; aucun appel réseau effectué.");\n    return;\n  }\n  const prompt = positionals.join(" ") || "Bonjour";\n  const response = await fetch(base + "/chat/completions", {\n    method: "POST", redirect: "error", signal: AbortSignal.timeout(60000),\n    headers: Object.fromEntries([["Authorization", ["Bearer", key].join(" ")], ["Content-Type", "application/json"]]),\n    body: JSON.stringify({ model, messages: [{ role: "user", content: prompt }] }),\n  });\n  if (!response.ok) throw new Error("endpoint failure");\n  const result = await response.json();\n  console.log(result.choices[0].message.content);\n}\nmain().catch(() => { console.error("Échec de l’appel : vérifiez configuration, accès et endpoint."); process.exitCode = 1; });\n';
 
 /** Only creation of host-owned projects opts in; personal payloads stay untouched. */
 export function withEndpointLaunch(
@@ -37,19 +37,25 @@ export function withEndpointLaunch(
           : undefined;
   const packagedPython = language === 'python' && !!files['pyproject.toml'];
   const entry =
-    (packagedPython ? 'src/agent_app/agent.py' : undefined) ?? frameworkEntry ??
+    (packagedPython ? 'src/agent_app/agent.py' : undefined) ??
+    frameworkEntry ??
     (language === 'python' ? 'scaleway_agent.py' : 'scaleway_agent.cjs');
   if (!frameworkEntry && Object.hasOwn(files, entry))
     throw new Error('endpoint_entry_conflict');
-  if (!frameworkEntry) files[entry] = language === 'python'
-    ? packagedPython ? python
-      .replace('for line in (Path(__file__).parent / ".env").read_text().splitlines():', 'env_file = Path(__file__).resolve().parents[2] / ".env"\n    for line in env_file.read_text().splitlines() if env_file.is_file() else []:')
-      .replace('def main():', 'def _run():')
-      .replace('if __name__ == "__main__":\n    try:\n        main()\n    except Exception:\n        print("Échec de l’appel : vérifiez configuration, accès et endpoint.", file=sys.stderr)\n        sys.exit(1)\n',
-        'def main():\n    try:\n        _run()\n        return 0\n    except Exception:\n        print("Échec de l’appel : vérifiez configuration, accès et endpoint.", file=sys.stderr)\n        return 1\n\nif __name__ == "__main__":\n    sys.exit(main())\n') : python
-    : node;
+  if (!frameworkEntry)
+    files[entry] =
+      language === 'python'
+        ? packagedPython
+          ? python.replace(
+              'for line in (Path(__file__).parent / ".env").read_text().splitlines():',
+              'env_file = Path(__file__).resolve().parents[2] / ".env"\n    for line in env_file.read_text().splitlines() if env_file.is_file() else []:',
+            )
+          : python
+        : node;
   if (packagedPython) {
-    const manifest = TOML.parse(files['pyproject.toml']) as { project?: Record<string, TOML.JsonMap | string> };
+    const manifest = TOML.parse(files['pyproject.toml']) as {
+      project?: Record<string, TOML.JsonMap | string>;
+    };
     if (!manifest.project) throw new Error('missing_python_project');
     manifest.project.scripts = {
       ...((manifest.project.scripts ?? {}) as TOML.JsonMap),
@@ -72,23 +78,42 @@ export function withEndpointLaunch(
   if (language === 'python' && files['pyproject.toml']) {
     files['.vscode/settings.json'] = JSON.stringify(
       {
-        'python.defaultInterpreterPath': '${workspaceFolder}/.venv',
+        'python.defaultInterpreterPath': `\${workspaceFolder}/.venv`,
         'python.terminal.activateEnvironment': true,
         'python.testing.pytestEnabled': true,
         'python.testing.unittestEnabled': false,
         'python.testing.pytestArgs': ['tests'],
-        'python.testing.cwd': '${workspaceFolder}',
+        'python.testing.cwd': `\${workspaceFolder}`,
       },
       null,
       2,
     );
-    files['.vscode/tasks.json'] = JSON.stringify({
-      version: '2.0.0',
-      tasks: [
-        { label: 'Vérifier la configuration agent', type: 'process', command: 'uv', args: ['run', 'agent', '--check'], options: { cwd: '${workspaceFolder}' }, problemMatcher: [] },
-        { label: 'Tester le projet', type: 'process', command: 'uv', args: ['run', 'python', '-m', 'pytest'], options: { cwd: '${workspaceFolder}' }, problemMatcher: [], group: 'test' },
-      ],
-    }, null, 2);
+    files['.vscode/tasks.json'] = JSON.stringify(
+      {
+        version: '2.0.0',
+        tasks: [
+          {
+            label: 'Vérifier la configuration agent',
+            type: 'process',
+            command: 'uv',
+            args: ['run', 'agent', '--check'],
+            options: { cwd: `\${workspaceFolder}` },
+            problemMatcher: [],
+          },
+          {
+            label: 'Tester le projet',
+            type: 'process',
+            command: 'uv',
+            args: ['run', 'python', '-m', 'pytest'],
+            options: { cwd: `\${workspaceFolder}` },
+            problemMatcher: [],
+            group: 'test',
+          },
+        ],
+      },
+      null,
+      2,
+    );
     files['.vscode/extensions.json'] = JSON.stringify(
       {
         recommendations: [
@@ -109,9 +134,9 @@ export function withEndpointLaunch(
             type: 'debugpy',
             request: 'launch',
             module: 'agent_app.agent',
-            python: '${workspaceFolder}/.venv/bin/python',
-            windows: { python: '${workspaceFolder}/.venv/Scripts/python.exe' },
-            cwd: '${workspaceFolder}',
+            python: `\${workspaceFolder}/.venv/bin/python`,
+            windows: { python: `\${workspaceFolder}/.venv/Scripts/python.exe` },
+            cwd: `\${workspaceFolder}`,
             console: 'integratedTerminal',
             justMyCode: true,
           },
@@ -165,7 +190,7 @@ export function withEndpointLaunch(
             type: 'process',
             command: 'bun',
             args: ['run', 'build'],
-            options: { cwd: '${workspaceFolder}' },
+            options: { cwd: `\${workspaceFolder}` },
             problemMatcher: '$tsc',
             group: 'build',
           },
@@ -174,7 +199,7 @@ export function withEndpointLaunch(
             type: 'process',
             command: 'bun',
             args: ['run', 'test'],
-            options: { cwd: '${workspaceFolder}' },
+            options: { cwd: `\${workspaceFolder}` },
             problemMatcher: [],
             group: 'test',
           },
@@ -191,10 +216,10 @@ export function withEndpointLaunch(
             name: 'Déboguer l’agent',
             type: 'node',
             request: 'launch',
-            program: '${workspaceFolder}/' + entry,
-            cwd: '${workspaceFolder}',
+            program: `\${workspaceFolder}/${entry}`,
+            cwd: `\${workspaceFolder}`,
             preLaunchTask: 'Construire le projet',
-            outFiles: ['${workspaceFolder}/dist/**/*.js'],
+            outFiles: [`\${workspaceFolder}/dist/**/*.js`],
             sourceMaps: true,
             console: 'integratedTerminal',
             skipFiles: ['<node_internals>/**'],
@@ -227,10 +252,18 @@ export function withEndpointLaunch(
     files['README.md'] =
       (files['README.md'] ?? '') +
       '\n\n## Lancement simple Scaleway\nLe point d’entrée autonome consomme le modèle/endpoint du `.env` privé, sans backend ni framework obligatoire. Le backend et les bases de framework restent disponibles pour votre équipe.\nPython 3 ou Node.js 22+ doit être présent. Aucune dépendance supplémentaire pour ce client.\nVérification sans réseau : `' +
-      (language === 'python' ? packagedPython ? 'uv run agent' : 'python3 ' : 'node ') +
+      (language === 'python'
+        ? packagedPython
+          ? 'uv run agent'
+          : 'python3 '
+        : 'node ') +
       (packagedPython ? '' : entry) +
       ' --check`.\nLancement : `' +
-      (language === 'python' ? packagedPython ? 'uv run agent' : 'python3 ' : 'node ') +
+      (language === 'python'
+        ? packagedPython
+          ? 'uv run agent'
+          : 'python3 '
+        : 'node ') +
       (packagedPython ? '' : entry) +
       ' "Votre message"`. Sans argument, le message est Bonjour. Chaque lancement normal appelle le modèle et peut être facturé. Aucun appel lors de la création.\nCe client utilise l’API chat/completions ; la réponse réelle, les droits et le comportement métier restent à vérifier par votre équipe.\n';
   if (language === 'python' && files['pyproject.toml']) {
@@ -265,7 +298,7 @@ function withRustWorkspace(template: TemplateDefinition): TemplateDefinition {
           type: 'process',
           command: 'cargo',
           args: ['build', '--all-targets'],
-          options: { cwd: '${workspaceFolder}' },
+          options: { cwd: `\${workspaceFolder}` },
           problemMatcher: '$rustc',
           group: 'build',
         },
@@ -274,7 +307,7 @@ function withRustWorkspace(template: TemplateDefinition): TemplateDefinition {
           type: 'process',
           command: 'cargo',
           args: ['test'],
-          options: { cwd: '${workspaceFolder}' },
+          options: { cwd: `\${workspaceFolder}` },
           problemMatcher: '$rustc',
           group: 'test',
         },
@@ -295,7 +328,7 @@ function withRustWorkspace(template: TemplateDefinition): TemplateDefinition {
             args: ['test', '--no-run', '--test', 'project_layout'],
             filter: { name: 'project_layout', kind: 'test' },
           },
-          cwd: '${workspaceFolder}',
+          cwd: `\${workspaceFolder}`,
         },
       ],
     },

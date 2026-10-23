@@ -1,13 +1,13 @@
 {
   "format_version": 1,
   "id": "agents-python-fastapi",
-  "label": "FastAPI \u00b7 python",
+  "label": "FastAPI · python",
   "kind": "agents",
   "language": "python",
   "framework": "fastapi",
   "category": "backend",
   "usage": "stack",
-  "description": "Base backend \u00b7 SDK agent \u00e0 int\u00e9grer.",
+  "description": "Base backend · SDK agent à intégrer.",
   "files": [
     "README.md",
     "agent.authoring.json",
@@ -18,6 +18,7 @@
     "src/agent_app/api.py",
     "src/agent_app/config.py",
     "tests/integration/README.md",
-    "tests/unit/test_config.py"
+    "tests/unit/test_config.py",
+    "src/agent_app/backend_cli.py"
   ]
 }

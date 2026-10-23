@@ -52,3 +52,7 @@ evals/ is excluded from default pytest discovery. See evals/README.md.
 The skeleton skips by default and deliberately FAILS when opted in until reviewed
 integration exists. Neither result proves DeepEval compatibility, agent quality,
 live integration or rights.
+
+
+## CLI shell
+Parser: Python stdlib argparse. `python -m agent_app.backend_cli --help`, `python -m agent_app.backend_cli --check` (shell only; not dependency/configuration validation). Serving is explicit: `python -m agent_app.backend_cli --serve --host 127.0.0.1 --port 3000`; review transport/authentication first. No inference loop is integrated. Import-only API/config/library modules retain their library form.

@@ -12,6 +12,7 @@
     "Cargo.toml",
     "README.md",
     "agent.authoring.json",
-    "src/lib.rs"
+    "src/lib.rs",
+    "src/main.rs"
   ]
 }

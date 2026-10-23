@@ -426,3 +426,33 @@ de l’extension ; elles ne figurent pas dans le HTML initial ni dans les métad
 Une copie expirée peut être affichée, mais pas utilisée pour créer un agent. Aucune récupération
 ou recréation de secret via IAM ; un secret absent doit être importé par son détenteur.
 L’inventaire et la présence locale ne certifient ni les politiques IAM du projet ni une inférence.
+
+
+### Parseurs CLI des bases intégrées
+Les **26 bases intégrées** fournissent leurs points d’entrée CLI avec des parseurs
+remplaçables par votre équipe : Python `argparse` (stdlib, sans dépendance ajoutée),
+TypeScript/Bun `node:util.parseArgs` (strict, Node.js 22+), Rust `clap` 4 avec `derive`.
+Les templates personnels et projets déjà créés ne sont pas migrés. Les modules
+bibliothèque, API et configuration restent importables sans lancement automatique.
+
+- Agents modèle : `uv run agent --help`, `uv run agent --check`,
+  `uv run agent "Votre message"` ; pour TypeScript compilé :
+  `node dist/agent.js --help` (ou `dist/agent-sdk.js` avec une composition backend).
+  Le client autonome Node utilise `node scaleway_agent.cjs --help`.
+  `--check` conserve la validation locale de configuration, sans SDK/inférence.
+  Un lancement normal conserve le prompt par défaut « Bonjour » et peut être facturé.
+  Utilisez `--` pour un prompt littéral commençant par un tiret.
+- Shells backend/bibliothèque : Python `python -m agent_app.backend_cli --help`
+  (avec le paquet installé) ou `python tool_cli.py --help` (`cli.py` pour MCP) ;
+  TypeScript `node dist/backend-cli.js --help` / `node dist/cli.js --help` ;
+  Rust `cargo run -- --help`. Leur `--check` vérifie **uniquement le shell CLI**,
+  pas les dépendances, la configuration métier ni l’intégration IA.
+  Les serveurs exigent `--serve`, avec `--host 127.0.0.1 --port 3000`
+  pour les backends HTTP ; Elysia s’exécute avec Bun, MCP conserve son transport
+  stdio (`python cli.py --serve`) et exige une revue transport/authentification.
+  Aucun nouveau loop d’agent IA n’est intégré à ces shells.
+
+`--help` fonctionne avant lecture de configuration/.env ou import d’un SDK/backend ;
+les flags inconnus échouent sans réseau, et `--check` ne lance jamais de serveur.
+Rust exige une compilation (et éventuellement les dépendances Cargo) avant de
+pouvoir exécuter le binaire ; l’aide ne constitue pas une preuve de compatibilité native.

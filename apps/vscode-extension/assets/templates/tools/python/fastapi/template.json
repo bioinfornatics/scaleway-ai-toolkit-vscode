@@ -12,6 +12,7 @@
     "README.md",
     "requirements.txt",
     "tool.authoring.json",
-    "tool.py"
+    "tool.py",
+    "tool_cli.py"
   ]
 }
