@@ -1,55 +1,63 @@
-# Scaleway AI Toolkit for VS Code
+# Scaleway AI Toolkit pour VS Code
 
-A community extension concept for discovering, testing, building, evaluating and deploying AI applications on Scaleway without leaving VS Code.
+Découvrez les modèles Scaleway et créez des bases de projets Agents ou Outils sans quitter VS Code. Réutilisez vos templates dans plusieurs projets.
 
-**Status:** experimental installable VS Code extension with automatic user browser login (JWT, no API key), project switch and bounded read-only model catalogs and dedicated resource discovery, plus separate offline streaming/cancel and experiment JSON. Real inference, full live-extension verification, production/design acceptance and cloud deployment remain separate gates. Name and branding are provisional; no official Scaleway affiliation is claimed.
+Extension communautaire en preview, sans affiliation officielle à Scaleway.
 
-## Try the first VSIX
+## Installer
 
-Artifact: `artifacts/scaleway-ai-toolkit-preview-0.0.34.vsix` (generated locally).
+Prérequis : VS Code 1.96 ou supérieur. Utilisez un workspace local Linux approuvé pour créer des projets et gérer des templates.
 
-```sh
-code --install-extension artifacts/scaleway-ai-toolkit-preview-0.0.34.vsix
-```
+1. Récupérez le fichier VSIX fourni avec la livraison.
+2. Dans VS Code, ouvrez **Extensions → … → Installer à partir d’un VSIX**.
+3. Sélectionnez le fichier, puis lancez **Developer: Reload Window** depuis la palette de commandes.
+4. Ouvrez la vue **Scaleway AI** dans la barre d’activité.
 
-Run **Scaleway AI: Open Offline Preview**, select a synthetic model, then
-**Scaleway AI: Ouvrir le playground modèle**. Run/stop and inspect the last experiment in the central editor
-from the Command Palette. [Extension instructions and build](apps/vscode-extension/README.md).
-The offline demo requires no credentials or Python. Real discovery is opt-in:
-Mes ressources -> Projet -> Se connecter à Scaleway in the browser, then scoped project selection and dedicated deployments.
-JWT persists via VS Code SecretStorage; organization/project preferences are user-bound; Serverless public offering catalog is available; inference JWT access remains unverified and disabled. No inference or resource writes.
+Pour une installation en terminal, consultez les [instructions VSIX](artifacts/README.md).
 
-## Delivery roadmap
+## Commencer
 
-[Current Foundry-aligned roadmap](specifications/roadmap.md): first diagnose and fix the user-reported invisible installed catalog (.3.22), then align resources/discover/build navigation (.3.23) and project selection (.3.24). Existing API findings in .3.3/.3.6 are retained; successful public-adapter discovery does not prove the installed catalog journey. Beads owns live task status.
+| Objectif | Parcours | Résultat |
+| --- | --- | --- |
+| Découvrir les modèles | Découvrir → Catalogue de modèles | Modèles, détails et tarifs disponibles |
+| Créer un projet agent | Construire → Créer un agent | Fichiers d’une base Python, TypeScript ou Rust |
+| Créer un projet outil | Construire → Créer un tool | Fichiers d’une base compatible avec le langage |
+| Retrouver ses projets | Ressources locales → Agents / Tools | Projets détectés dans le workspace |
+| Réutiliser une base personnelle | Mes templates → Agents / Tools | Templates du projet et de l’utilisateur |
 
-## Product authority
+**Premier essai sans compte :** ouvrez un dossier, choisissez **Construire → Créer un agent**, sélectionnez un langage et une base, puis confirmez le nouveau dossier. La création copie les fichiers ; elle ne lance pas le code.
 
-- [Product vision](PRODUCT.md#vision): users, value, scope, evidence and decision ownership.
-- [Product specification](specifications/product.md#requirements): numbered requirements and acceptance criteria.
-- [Experience rationale and service blueprint](specifications/experience.md#service-blueprint): journeys, backstage lanes, recovery and proposed tests.
-- [Design contract](specifications/design-contract.json) and [experience blueprint](specifications/experience-blueprint.json): structurally checkable Product/UX/UI declarations.
-- [Architecture and capability boundaries](specifications/architecture.md#architecture).
-- [Threat model](specifications/security/threat-model.md), [authorization policy](specifications/security/authorization-policy.md) and [security case specifications](specifications/security/security-test-cases.md).
-- [Serverless research](specifications/providers/scaleway/serverless.md), [dedicated API research](specifications/providers/scaleway/dedicated.md) and [proposed comparative protocol](specifications/validation/developer-scenario.md).
-- [Offline verification results](evidence/validation/offline-discovery.json) and [acceptance review](evidence/reviews/discovery-review.md).
-- [Runtime hosting limits: public documentation and local HTTP tests](specifications/providers/scaleway/hosting.md); cloud streaming/auth/durable sessions remain unverified.
-- [Executable Node-to-Python hosting transport spike](tooling/hosting-spike/README.md): extension-host transport checks and bounded cloud proposal; no deployment executed.
-- [Selected agent SDK: Strands Python](specifications/decisions/0001-strands-agent-sdk.md): accepted SDK choice, not tested integration or build approval.
-- [G1 discovery decision](.gates/01-brief-to-ideation.md): experiment, not validated value or build approval.
+## Utiliser Scaleway
 
-## Accepted JSON-output strategy
+Le catalogue public ne nécessite pas de connexion. Pour accéder aux ressources de votre compte, sélectionnez un projet et suivez la connexion dans le navigateur. Toute création de clé API demande votre confirmation.
 
-[ADR 0003](specifications/decisions/0003-prompt-json-bounded-repair.md): ordinary model calls request JSON; strict local parsing/schema validation drives safe error-guided correction, with five retries maximum, shared send/spend limits and no tools during repair. Native structured_output is disabled in the baseline. The [standalone offline helper](runtimes/strands-python/README.md) implements this baseline without SDK dependencies. Beads tracks its acceptance separately from live compatibility gates.
+Les appels de modèle et les déploiements peuvent être facturés. Vérifiez le projet, le modèle et le tarif avant de confirmer une action.
 
-## Repository organization
+## À savoir
 
-The [accepted progressive contract-first monorepo](specifications/repository-organization.md) separates the extension, provider adapters and independently runnable Strands runtime around language-neutral contracts. [ADR 0002](specifications/decisions/0002-contract-first-repository.md) records stakeholder approval of organization only. Current-phase entry points: [security](specifications/security/README.md), [Scaleway providers](specifications/providers/scaleway/README.md), [value validation](specifications/validation/README.md) and [evidence rules](evidence/README.md). Executable package trees are deferred until their gates open.
+- Les projets générés sont des bases à compléter, pas des agents prêts à exécuter.
+- Les nouvelles bases intégrées peuvent préparer leurs dépendances avec uv, Bun ou Cargo déjà présents ; elles ne lancent aucune inférence et ne déploient rien. Les templates personnels sont préservés.
+- **Mes ressources → Agents / Tools** est réservé aux ressources cloud ; leur inventaire n’est pas encore disponible.
+- Le playground hors ligne est une démonstration, distincte des appels réels au modèle.
 
-## Work tracking
+## Documentation
 
-Beads is the sole implementation task/status authority. Run `bd ready`, `bd blocked`, `bd show <id>`, and `bd prime`. Task descriptions link to the owning specifications; do not maintain a parallel Markdown backlog.
+- [Guide d’utilisation](apps/vscode-extension/README.md) : connexion, création, templates et modèles.
+- [Présentation du produit](PRODUCT.md) : objectifs et périmètre.
+- Contribution : [architecture](specifications/architecture.md) et [références techniques](specifications/references/README.md).
 
-Existing Git/Beads/Entire setup and hooks are preserved. No remote is configured. No commits, pushes, Dolt remote synchronization, recording setup or publishing are authorized by this planning request.
+## Organisation du dépôt
 
-Implementation epic: scaleway_ai_vscode-jgh. Inspect with bd show scaleway_ai_vscode-jgh.
+- `apps/vscode-extension/` : extension, assets et tests dans `tests/`.
+- `runtimes/` : runtime Python et ses tests.
+- `specifications/` : architecture et références techniques.
+- `artifacts/` : VSIX et rapports de validation locaux, exclus des nouveaux ajouts Git.
+
+Pour vérifier l’extension : `cd apps/vscode-extension && npm test`.
+La création de projets n’exécute pas ces tests et ne réalise aucun appel cloud.
+Les anciens tests documentaires/discovery ont été retirés. Les sources publiques épinglées et leurs rapports historiques restent sous `specifications/references/`.
+
+Le runtime Python sous `runtimes/` reste un sous-projet expérimental hors ligne :
+il n’est ni embarqué ni lancé par l’extension. Les prototypes de transport et les
+anciens validateurs de recherche ont été retirés ; les tests de l’extension
+ciblent ses adaptateurs et parcours réellement implémentés.
