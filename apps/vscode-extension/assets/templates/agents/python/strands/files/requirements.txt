@@ -1,0 +1,5 @@
+# ADR0004 / specifications/references/compatibility/runtime-contract-profile-v1.json
+# Validation-profile direct pins only; NOT a production lock or runtime approval.
+strands-agents[openai]==1.61.1
+openai==2.54.0
+httpx==0.28.1

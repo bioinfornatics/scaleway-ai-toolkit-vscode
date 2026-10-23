@@ -1,0 +1,17 @@
+{
+  "format_version": 1,
+  "id": "agents-rust-none",
+  "label": "Sans framework · rust",
+  "kind": "agents",
+  "language": "rust",
+  "framework": "none",
+  "category": "basic",
+  "usage": "stack",
+  "description": "Base langage · SDK agent à choisir.",
+  "files": [
+    "Cargo.toml",
+    "README.md",
+    "agent.authoring.json",
+    "src/lib.rs"
+  ]
+}

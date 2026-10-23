@@ -1,0 +1,8 @@
+{
+  "authoring_version": 1,
+  "kind": "tools",
+  "language": "rust",
+  "framework": "actix",
+  "incomplete": true,
+  "note": "Authoring metadata only; not AgentSpec or runtime authority."
+}

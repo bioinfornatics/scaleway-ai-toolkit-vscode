@@ -1,0 +1,72 @@
+body {
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  padding: 24px;
+}
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+h1 {
+  margin: 0;
+}
+h2 {
+  font-size: 1.1em;
+}
+p {
+  line-height: 1.6;
+}
+header p,
+.scope,
+.note {
+  color: var(--vscode-descriptionForeground);
+}
+button {
+  font: inherit;
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: 1px solid var(--vscode-contrastBorder, transparent);
+  padding: 8px 14px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+button:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+button:focus-visible {
+  outline: 2px solid var(--vscode-focusBorder);
+  outline-offset: 3px;
+}
+section {
+  padding: 8px 16px;
+  border: 1px solid var(--vscode-panel-border);
+  margin: 20px 0;
+}
+.table-scroll {
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+caption {
+  text-align: left;
+  font-weight: bold;
+  padding: 16px 0;
+}
+th,
+td {
+  text-align: left;
+  padding: 12px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+}

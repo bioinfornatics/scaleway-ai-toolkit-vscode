@@ -1,0 +1,16 @@
+{
+  "name": "local-agent",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p ."
+  },
+  "dependencies": {
+    "langchain": "^1.5.19",
+    "@langchain/openai": "^1.7.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0",
+    "@types/node": "^22.0.0"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "format_version": 1,
+  "id": "agents-typescript-elysia",
+  "label": "ElysiaJS · typescript",
+  "kind": "agents",
+  "language": "typescript",
+  "framework": "elysia",
+  "category": "backend",
+  "usage": "stack",
+  "description": "Base backend · SDK agent à intégrer.",
+  "files": [
+    "README.md",
+    "agent.authoring.json",
+    "package.json",
+    "src/agent.ts",
+    "tsconfig.json"
+  ]
+}

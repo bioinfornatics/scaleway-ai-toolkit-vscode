@@ -5,7 +5,7 @@
       "src/**",
       "media/*.js",
       "media/*.css",
-      "test/**",
+      "tests/**",
       "*.json",
       "!package-lock.json"
     ]

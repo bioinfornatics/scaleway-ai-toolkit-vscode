@@ -1,8 +1,8 @@
 {
   "name": "scaleway-ai-toolkit-preview",
-  "displayName": "Scaleway AI Toolkit \u2014 Preview",
-  "description": "Scaleway user browser login, read-only project resources and offline playground.",
-  "version": "0.0.34",
+  "displayName": "Scaleway AI Toolkit — Preview",
+  "description": "Scaleway browser login with SDK API-key bootstrap, read-only resources and offline playground.",
+  "version": "0.0.37",
   "publisher": "scaleway-ai-community-preview",
   "private": true,
   "license": "UNLICENSED",
@@ -32,12 +32,52 @@
   "contributes": {
     "commands": [
       {
+        "command": "scalewayAI.useExistingAPIKey",
+        "title": "Scaleway AI: Utiliser une clé API existante"
+      },
+      {
+        "command": "scalewayAI.openModels",
+        "title": "Scaleway AI: Ouvrir mes modèles"
+      },
+      {
+        "command": "scalewayAI.openAgents",
+        "title": "Scaleway AI: Ouvrir mes agents"
+      },
+      {
+        "command": "scalewayAI.openTools",
+        "title": "Scaleway AI: Ouvrir mes tools"
+      },
+      {
+        "command": "scalewayAI.openLocalAgents",
+        "title": "Scaleway AI: Ouvrir les bases d’agents locaux"
+      },
+      {
+        "command": "scalewayAI.openLocalTools",
+        "title": "Scaleway AI: Ouvrir les bases de tools locaux"
+      },
+      {
+        "command": "scalewayAI.openAgentTemplates",
+        "title": "Scaleway AI: Ouvrir mes templates agents"
+      },
+      {
+        "command": "scalewayAI.openToolTemplates",
+        "title": "Scaleway AI: Ouvrir mes templates tools"
+      },
+      {
+        "command": "scalewayAI.createAgent",
+        "title": "Scaleway AI: Créer un agent"
+      },
+      {
+        "command": "scalewayAI.createTool",
+        "title": "Scaleway AI: Créer un tool"
+      },
+      {
         "command": "scalewayAI.open",
         "title": "Scaleway AI: Open Offline Preview"
       },
       {
         "command": "scalewayAI.playground",
-        "title": "Scaleway AI: Ouvrir le playground mod\u00e8le",
+        "title": "Scaleway AI: Ouvrir le playground modèle",
         "icon": "$(play)"
       },
       {
@@ -51,12 +91,12 @@
       },
       {
         "command": "scalewayAI.catalog",
-        "title": "Scaleway AI: Catalogue de d\u00e9monstration",
+        "title": "Scaleway AI: Catalogue de démonstration",
         "icon": "$(library)"
       },
       {
         "command": "scalewayAI.getStarted",
-        "title": "Scaleway AI: Bien d\u00e9marrer"
+        "title": "Scaleway AI: Bien démarrer"
       },
       {
         "command": "scalewayAI.documentation",
@@ -64,7 +104,7 @@
       },
       {
         "command": "scalewayAI.login",
-        "title": "Scaleway AI: Se connecter \u00e0 Scaleway",
+        "title": "Scaleway AI: Se connecter à Scaleway",
         "icon": "$(account)"
       },
       {
@@ -74,43 +114,43 @@
       },
       {
         "command": "scalewayAI.loadModels",
-        "title": "Scaleway AI: Charger les mod\u00e8les (lecture seule)",
+        "title": "Scaleway AI: Charger les modèles (lecture seule)",
         "icon": "$(refresh)"
       },
       {
         "command": "scalewayAI.disconnect",
-        "title": "Scaleway AI: Se d\u00e9connecter"
+        "title": "Scaleway AI: Se déconnecter"
       },
       {
         "command": "scalewayAI.openCatalog",
-        "title": "Scaleway AI: Catalogue de mod\u00e8les"
+        "title": "Scaleway AI: Catalogue de modèles"
       },
       {
         "command": "scalewayAI.refreshModels",
-        "title": "Scaleway AI: Actualiser catalogues et d\u00e9ploiements",
+        "title": "Scaleway AI: Actualiser catalogues et déploiements",
         "icon": "$(refresh)"
       },
       {
         "command": "scalewayAI.setProject",
-        "title": "Scaleway AI: D\u00e9finir le projet Scaleway",
+        "title": "Scaleway AI: Définir le projet Scaleway",
         "icon": "$(organization)"
       },
       {
         "command": "scalewayAI.prepareDeployment",
-        "title": "Scaleway AI: Pr\u00e9parer un d\u00e9ploiement d\u00e9di\u00e9 (sans cr\u00e9ation)",
+        "title": "Scaleway AI: Préparer un déploiement dédié (sans création)",
         "icon": "$(server)"
       },
       {
         "command": "scalewayAI.deploymentDetails",
-        "title": "Scaleway AI: D\u00e9tails du d\u00e9ploiement (lecture seule)"
+        "title": "Scaleway AI: Détails du déploiement (lecture seule)"
       },
       {
         "command": "scalewayAI.saveExperiment",
-        "title": "Scaleway AI: Enregistrer l\u2019exp\u00e9rience hors ligne"
+        "title": "Scaleway AI: Enregistrer l’expérience hors ligne"
       },
       {
         "command": "scalewayAI.loadExperiment",
-        "title": "Scaleway AI: Reprendre une exp\u00e9rience hors ligne"
+        "title": "Scaleway AI: Reprendre une expérience hors ligne"
       },
       {
         "command": "scalewayAI.exportExperiment",
@@ -118,27 +158,43 @@
       },
       {
         "command": "scalewayAI.followDeployment",
-        "title": "Scaleway AI: Suivre un d\u00e9ploiement existant"
+        "title": "Scaleway AI: Suivre un déploiement existant"
       },
       {
         "command": "scalewayAI.stopDeploymentFollow",
-        "title": "Scaleway AI: Arr\u00eater le suivi (ne supprime rien)"
+        "title": "Scaleway AI: Arrêter le suivi (ne supprime rien)"
       },
       {
         "command": "scalewayAI.deploymentOperations",
-        "title": "Scaleway AI: Lire le journal local des d\u00e9ploiements"
+        "title": "Scaleway AI: Lire le journal local des déploiements"
       },
       {
         "command": "scalewayAI.reconcileDeploymentOperation",
-        "title": "Scaleway AI: Retrouver une ressource accept\u00e9e (lecture seule)"
+        "title": "Scaleway AI: Retrouver une ressource acceptée (lecture seule)"
       },
       {
         "command": "scalewayAI.inspectQuotas",
-        "title": "Scaleway AI: Examiner les quotas de l\u2019organisation (lecture seule)"
+        "title": "Scaleway AI: Examiner les quotas de l’organisation (lecture seule)"
       },
       {
         "command": "scalewayAI.inspectModelEula",
-        "title": "Scaleway AI: Lire l\u2019EULA d\u2019un mod\u00e8le d\u00e9di\u00e9 (sans acceptation)"
+        "title": "Scaleway AI: Lire l’EULA d’un modèle dédié (sans acceptation)"
+      },
+      {
+        "command": "scalewayAI.revokeAPIKey",
+        "title": "Scaleway AI: Révoquer la clé API et se déconnecter"
+      },
+      {
+        "command": "scalewayAI.useServerless",
+        "title": "Scaleway AI: Utiliser un modèle Serverless"
+      },
+      {
+        "command": "scalewayAI.deployModel",
+        "title": "Scaleway AI: Déployer un modèle dédié"
+      },
+      {
+        "command": "scalewayAI.openService",
+        "title": "Scaleway AI: Ouvrir un service"
       }
     ],
     "viewsContainers": {
@@ -158,7 +214,7 @@
         },
         {
           "id": "scalewayAI.tools",
-          "name": "Outils de d\u00e9veloppement"
+          "name": "Outils de développement"
         },
         {
           "id": "scalewayAI.help",
@@ -187,19 +243,35 @@
     }
   },
   "scripts": {
-    "build": "tsc -p .",
-    "test": "npm run build && node --test test/*.test.cjs",
-    "package": "npm run check && npm test && vsce package --allow-missing-repository --skip-license --out ../../artifacts/scaleway-ai-toolkit-preview-0.0.34.vsix",
+    "build": "npm run typecheck && node build.mjs",
+    "test": "npm run build && node tests/runScoped.mjs",
+    "package": "node package.mjs",
     "check": "biome check --error-on-warnings .",
     "lint": "biome lint --error-on-warnings .",
-    "format": "biome format --write ."
+    "format": "biome format --write .",
+    "typecheck": "tsc -p . --noEmit",
+    "test:scoped": "node tests/runScoped.mjs",
+    "test:full": "npm run build && node tests/runScoped.mjs --full",
+    "verify:vsix": "python3 verifyVsix.py"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
+    "@types/mustache": "4.2.6",
     "@types/node": "22.19.0",
     "@types/vscode": "1.96.0",
     "@vscode/vsce": "4.0.0",
+    "esbuild": "0.28.2",
     "typescript": "5.9.3"
   },
-  "icon": "media/scaleway-icon.png"
+  "icon": "media/scaleway-icon.png",
+  "dependencies": {
+    "@iarna/toml": "2.2.5",
+    "@scaleway/sdk-client": "2.16.0",
+    "@scaleway/sdk-iam": "2.21.3",
+    "@scaleway/sdk-inference": "2.20.3",
+    "mustache": "4.2.0"
+  },
+  "overrides": {
+    "@scaleway/random-name": "5.1.4"
+  }
 }

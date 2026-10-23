@@ -1,0 +1,2 @@
+# Starter constraints, not a production lock.
+Django>=5.2,<6

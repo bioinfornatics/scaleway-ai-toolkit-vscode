@@ -1,5 +1,5 @@
 import { visibleCatalogModels } from './catalogVisibility';
-import type { ListedModel } from './provider';
+import { type ListedModel, serverlessInvocation } from './provider';
 export function catalogDetails(
   rows: ListedModel[],
   kind: 'serverless' | 'dedicated-catalog',
@@ -14,15 +14,24 @@ export function catalogDetails(
     type: 'catalog-details' as const,
     label: row.label,
     status: row.status ?? 'Statut inconnu',
+    prices: (row.serverlessPrices ?? []).filter(
+      (price) => kind === 'serverless' && price.consumptionMode === 'realtime',
+    ),
+    pricingNote:
+      kind === 'serverless'
+        ? 'Tarifs publics · temps réel'
+        : 'Tarif selon la configuration · affiché avant confirmation du déploiement',
     source:
       kind === 'serverless'
-        ? 'Source : catalogue commercial public Scaleway · variantes regroupées par produit'
-        : 'Source : catalogue de modèles dédiés Scaleway · fr-par',
+        ? 'Catalogue public Scaleway'
+        : 'Catalogue dédié Scaleway',
     scope:
       kind === 'serverless' ? 'Serverless · offre publique · fr-par' : scope,
     limits:
       kind === 'serverless'
-        ? 'Accès inférence non vérifié. Prix, capacités et identifiant d’invocation non établis par cette source. Le playground actuel est uniquement une démonstration hors ligne, pas un test de ce modèle.'
-        : 'Modèle disponible au catalogue dédié, pas un déploiement existant. La préparation locale est disponible via la carte ; aucune allocation ni inférence n’est exécutée.',
+        ? serverlessInvocation(row)
+          ? 'Utiliser prépare l’accès avec la clé API active et vérifie la liste API, sans inférence. Exécuter dans le playground lance un appel potentiellement facturé.'
+          : 'Chat texte non applicable à cette offre ; aucune substitution de modèle.'
+        : 'Déployer : choisir la configuration, puis confirmer le coût et la licence.',
   };
 }

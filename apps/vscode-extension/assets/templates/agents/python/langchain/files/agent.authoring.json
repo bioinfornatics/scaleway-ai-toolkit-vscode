@@ -1,0 +1,7 @@
+{
+  "authoring_version": 1,
+  "kind": "agents",
+  "language": "python",
+  "ai_framework": "langchain",
+  "incomplete": false
+}

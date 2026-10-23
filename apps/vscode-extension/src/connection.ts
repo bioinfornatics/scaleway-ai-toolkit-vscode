@@ -1,4 +1,7 @@
 import { Buffer } from 'node:buffer';
+import { randomUUID } from 'node:crypto';
+import { mkdir, readFile, rmdir, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import * as vscode from 'vscode';
 import { browserLogin, parseSession, type UserSession } from './browserLogin';
 import {
@@ -7,12 +10,12 @@ import {
 } from './dedicatedPrices';
 import { DeploymentJournal } from './deploymentJournal';
 import {
-  DeploymentLifecycle,
   type DeploymentOperation,
   followDeployment,
-  type ReviewedCreationTransport,
 } from './deploymentLifecycle';
 import { deploymentWizard } from './deploymentWizard';
+import { createService, reviewService } from './deployService';
+import { LlmAccessRegistry, type LlmAccessScope } from './llmAccessRegistry';
 import { getModelEula, type ModelEula } from './modelEula';
 import { createProject } from './projectCreation';
 import {
@@ -30,26 +33,121 @@ import {
   uuid,
 } from './provider';
 import { listQuotaEvidence, type QuotaSnapshot } from './quotas';
+import {
+  createUserAPIKey,
+  inspectExistingUserAPIKey,
+  revokeUserAPIKey,
+  SDKError,
+} from './scalewaySdk';
 
 interface Metadata {
   name: string;
   organizationId: string;
   organizationName?: string;
 }
+const keyBootstraps = new Set<string>();
+interface KeyPrincipal {
+  mode: 'api-key';
+  userId: string;
+  expiresAt: number;
+  token?: undefined;
+}
+type Principal = UserSession | KeyPrincipal;
+const AUTH_CONFIGURATION = 'scalewayAI.authConfiguration.v1';
+const IMPORTED_KEY_SECRET = 'scalewayAI.importedKey.v1';
 const SESSION_SECRET = 'scalewayAI.userSession.v1';
+const keySecret = (userId: string) => `scalewayAI.sdkKey.v1.${userId}`;
+interface StoredAPIKey {
+  userId: string;
+  accessKey: string;
+  secretKey: string;
+  expiresAt: number;
+}
+function validKey(value: unknown, userId: string): value is StoredAPIKey {
+  if (!value || typeof value !== 'object') return false;
+  const key = value as StoredAPIKey;
+  return (
+    key.userId === userId &&
+    typeof key.accessKey === 'string' &&
+    /^SCW[A-Z0-9]{17}$/.test(key.accessKey) &&
+    uuid(key.secretKey) &&
+    Number.isFinite(key.expiresAt) &&
+    key.expiresAt > Date.now() + 30000
+  );
+}
 const preferenceKey = (userId: string) => `scalewayAI.preferences.v1.${userId}`;
 export class Connection implements vscode.Disposable {
   metadata: Metadata | undefined;
   project: Project | undefined;
   serverless: ListedModel[] = [];
+  serverlessResources: ListedModel[] = [];
   dedicated: ListedModel[] = [];
   dedicatedCatalog: ListedModel[] = [];
   serverlessState = 'Non chargé · catalogue public';
   dedicatedState = 'Non chargés';
   dedicatedCatalogState = 'Non chargé';
   busy = false;
-  private session: UserSession | undefined;
+  private session: Principal | undefined;
+  private apiKey: StoredAPIKey | undefined;
+  private imported = false;
+  private keyValidated = false;
   private generation = 0;
+  private inferenceScopes = new Set<AbortController>();
+  invalidateInference() {
+    this.serverlessResources = this.serverlessResources.map(
+      ({
+        serverlessAvailability: _availability,
+        serverlessCreatedAt: _createdAt,
+        ...row
+      }) => row,
+    );
+    for (const scope of this.inferenceScopes) scope.abort();
+    this.inferenceScopes.clear();
+  }
+  /** Pin a panel to this session/project. Only Exécuter asks for a secret. */
+  inferenceScope() {
+    const project = this.project;
+    const session = this.session;
+    const generation = this.generation;
+    if (
+      !project ||
+      !session ||
+      !this.connected ||
+      !vscode.workspace.isTrusted ||
+      this.disposed
+    )
+      throw new ReadError('invalid_scope');
+    const abort = new AbortController();
+    this.inferenceScopes.add(abort);
+    const current = () =>
+      !abort.signal.aborted &&
+      generation === this.generation &&
+      project === this.project &&
+      session === this.session &&
+      this.connected &&
+      vscode.workspace.isTrusted &&
+      !this.disposed;
+    const guard = setInterval(() => {
+      if (!current()) abort.abort();
+    }, 250);
+    guard.unref();
+    abort.signal.addEventListener('abort', () => clearInterval(guard), {
+      once: true,
+    });
+    return {
+      project,
+      signal: abort.signal,
+      current,
+      authorize: () => {
+        if (!current()) throw new ReadError('invalid_scope');
+        return this.token();
+      },
+      dispose: () => {
+        this.inferenceScopes.delete(abort);
+        abort.abort();
+      },
+    };
+  }
   private abort: AbortController | undefined;
   private expiry: ReturnType<typeof setTimeout> | undefined;
   private storage: Promise<void> = Promise.resolve();
@@ -58,10 +156,12 @@ export class Connection implements vscode.Disposable {
     | { userId: string; project: Project; journal: DeploymentJournal }
     | undefined;
   readonly ready: Promise<void>;
+  private readonly llmAccess: LlmAccessRegistry;
   constructor(
     private context: vscode.ExtensionContext,
     private changed: () => void,
   ) {
+    this.llmAccess = new LlmAccessRegistry(context);
     this.ready = this.restoreSession();
   }
   private write(action: () => PromiseLike<void>): Promise<void> {
@@ -75,6 +175,63 @@ export class Connection implements vscode.Disposable {
     const generation = this.generation;
     if (vscode.env.remoteName) return;
     try {
+      const configuration = this.context.globalState.get<{
+        mode: string;
+        userId?: string;
+      }>(AUTH_CONFIGURATION);
+      if (configuration?.mode === 'disconnected') return;
+      if (configuration?.mode === 'api-key' && uuid(configuration.userId)) {
+        const stored = await this.context.secrets.get(IMPORTED_KEY_SECRET);
+        if (generation !== this.generation || this.disposed) return;
+        let key: unknown;
+        try {
+          key = stored ? JSON.parse(stored) : undefined;
+        } catch {
+          /* Keep non-secret selections. */
+        }
+        this.restoreKeyWithoutBrowser(configuration.userId, key, true);
+        return;
+      }
+      if (configuration?.mode === 'browser' && uuid(configuration.userId)) {
+        const stored = await this.context.secrets.get(
+          keySecret(configuration.userId),
+        );
+        if (generation !== this.generation || this.disposed) return;
+        let key: unknown;
+        try {
+          key = stored ? JSON.parse(stored) : undefined;
+        } catch {
+          /* Keep non-secret selections. */
+        }
+        const saved = await this.context.secrets.get(SESSION_SECRET);
+        if (generation !== this.generation || this.disposed) return;
+        let browser: UserSession | undefined;
+        try {
+          const row = saved ? JSON.parse(saved) : undefined;
+          if (row?.userId === configuration.userId)
+            browser = parseSession(
+              Buffer.from(
+                JSON.stringify({
+                  token: row.token,
+                  jwt: {
+                    audienceId: row.userId,
+                    expiresAt: new Date(row.expiresAt).toISOString(),
+                  },
+                }),
+              ).toString('base64'),
+            );
+        } catch {
+          /* An expired browser JWT does not invalidate a separate API key. */
+        }
+        if (browser && validKey(key, configuration.userId)) {
+          this.imported = false;
+          this.apiKey = key;
+          this.installSession(browser);
+        } else {
+          this.restoreKeyWithoutBrowser(configuration.userId, key, false);
+        }
+        return;
+      }
       const saved = await this.context.secrets.get(SESSION_SECRET);
       if (generation !== this.generation || this.disposed || !saved) return;
       const row = JSON.parse(saved);
@@ -89,6 +246,14 @@ export class Connection implements vscode.Disposable {
           }),
         ).toString('base64'),
       );
+      const storedKey = await this.context.secrets.get(
+        keySecret(session.userId),
+      );
+      if (generation !== this.generation || this.disposed) return;
+      if (storedKey) {
+        const value: unknown = JSON.parse(storedKey);
+        if (validKey(value, session.userId)) this.apiKey = value;
+      }
       this.installSession(session);
     } catch {
       if (generation === this.generation && !this.disposed) {
@@ -96,14 +261,14 @@ export class Connection implements vscode.Disposable {
       }
     }
   }
-  private installSession(session: UserSession) {
-    this.session = session;
+  /** Restore selections only; this never certifies credentials or remote access. */
+  private restorePreferences(userId: string) {
     this.metadata = { name: 'Utilisateur connecté', organizationId: '' };
     const saved = this.context.globalState.get<{
       organizationId: unknown;
       organizationName?: string;
       project?: Project;
-    }>(preferenceKey(session.userId));
+    }>(preferenceKey(userId));
     if (saved && uuid(saved.organizationId)) {
       this.metadata.organizationId = saved.organizationId;
       if (
@@ -127,11 +292,36 @@ export class Connection implements vscode.Disposable {
           organizationId: p.organizationId,
         };
     }
+    if (this.metadata)
+      this.metadata.name = 'Configuration restaurée · accès non vérifié';
+    this.changed();
+  }
+  private restoreKeyWithoutBrowser(
+    userId: string,
+    key: unknown,
+    imported: boolean,
+  ): boolean {
+    this.imported = imported;
+    this.keyValidated = false;
+    this.restorePreferences(userId);
+    if (!validKey(key, userId)) return false;
+    this.apiKey = key;
+    this.installSession({ mode: 'api-key', userId, expiresAt: key.expiresAt });
+    return true;
+  }
+  private installSession(session: Principal) {
+    this.session = session;
+    this.restorePreferences(session.userId);
+    this.restoreServerlessResources();
     clearTimeout(this.expiry);
     const expire = () => {
       if (this.session !== session || this.disposed) return;
-      if (session.expiresAt <= Date.now() + 30000) this.dropSession();
-      else
+      if (session.expiresAt <= Date.now() + 30000) {
+        const key = this.apiKey,
+          imported = this.imported;
+        this.dropSession();
+        this.restoreKeyWithoutBrowser(session.userId, key, imported);
+      } else
         this.expiry = setTimeout(
           expire,
           Math.min(session.expiresAt - Date.now() - 30000, 2147483647),
@@ -141,12 +331,15 @@ export class Connection implements vscode.Disposable {
     this.changed();
   }
   private clear() {
+    this.invalidateInference();
     this.generation++;
     this.abort?.abort();
     this.abort = undefined;
     this.project = undefined;
     this.operationJournal = undefined;
     this.serverless = [];
+    this.serverlessResources = [];
+    this.llmAccess.clear();
     this.dedicated = [];
     this.dedicatedCatalog = [];
     this.serverlessState = 'Non chargé · catalogue public';
@@ -158,6 +351,7 @@ export class Connection implements vscode.Disposable {
     clearTimeout(this.expiry);
     this.expiry = undefined;
     this.session = undefined;
+    this.apiKey = undefined;
     this.metadata = undefined;
     this.clear();
     void this.write(() => this.context.secrets.delete(SESSION_SECRET)).catch(
@@ -170,19 +364,42 @@ export class Connection implements vscode.Disposable {
     );
   }
   private token(): string {
+    if (this.session && 'mode' in this.session && !this.keyValidated)
+      throw new ReadError('api_key_validation_required');
     if (!this.session || this.session.expiresAt <= Date.now() + 30000) {
+      const previous = this.session,
+        key = this.apiKey,
+        imported = this.imported;
       this.dropSession();
+      if (previous)
+        this.restoreKeyWithoutBrowser(previous.userId, key, imported);
       throw new ReadError('session_expired');
     }
-    return this.session.token;
+    if (!this.apiKey || !validKey(this.apiKey, this.session.userId))
+      throw new ReadError('api_key_required');
+    return this.apiKey.secretKey;
   }
   get connected(): boolean {
-    return !!this.session && this.session.expiresAt > Date.now() + 30000;
+    return (
+      !!this.session &&
+      this.session.expiresAt > Date.now() + 30000 &&
+      !!this.apiKey &&
+      validKey(this.apiKey, this.session.userId)
+    );
   }
   /** Command-level gate: login and project selection, then resume only if ready. */
-  async ensureProject(): Promise<boolean> {
+  async ensureProject(silent = false): Promise<boolean> {
     await this.ready;
     if (this.busy || !vscode.workspace.isTrusted) return false;
+    if (
+      this.connected &&
+      this.session &&
+      'mode' in this.session &&
+      !this.keyValidated
+    ) {
+      if (!(await this.validateImportedKey(silent))) return false;
+    }
+    if (silent && (!this.connected || !this.project)) return false;
     if (!this.connected) {
       this.dropSession();
       await this.login();
@@ -195,8 +412,24 @@ export class Connection implements vscode.Disposable {
     );
   }
   private async report(error: unknown) {
-    const code = error instanceof ReadError ? error.code : 'local_error';
-    if (code === 'access_denied') this.dropSession();
+    const code =
+      error instanceof ReadError || error instanceof SDKError
+        ? error.code
+        : 'local_error';
+    if (
+      this.session &&
+      'mode' in this.session &&
+      ['invalid_api_key', 'api_key_expired'].includes(code)
+    ) {
+      this.keyValidated = false;
+      this.invalidateInference();
+      await vscode.window.showErrorMessage(
+        'Clé API invalide ou expirée. Utilisez « Utiliser une clé existante » pour la remplacer, ou la connexion navigateur pour en créer une. Configuration conservée ; aucune clé créée.',
+      );
+      return;
+    }
+    if (code === 'access_denied' && this.session && !('mode' in this.session))
+      this.dropSession();
     if (code !== 'cancelled')
       await vscode.window.showErrorMessage(
         'Scaleway : ' +
@@ -221,12 +454,31 @@ export class Connection implements vscode.Disposable {
     }
     this.busy = true;
     const operation = this.generation;
+    let releaseKeyLock: (() => Promise<void>) | undefined;
+    let pendingKey:
+      | {
+          key: StoredAPIKey;
+          token: string;
+          generation: number;
+          created: boolean;
+        }
+      | undefined;
     try {
       const consent = await vscode.window.showInformationMessage(
-        'Ouvrir la connexion utilisateur Scaleway dans votre navigateur ? JWT conservé dans SecretStorage VS Code ; aucune clé API créée. Délai : 3 minutes.',
+        'Connexion Scaleway : utilisez une clé API existante ou connectez-vous dans le navigateur. Le parcours web réutilise la clé enregistrée ou propose sa création avec confirmation (30 jours). Secrets conservés dans SecretStorage VS Code ; aucune inférence. Délai navigateur : 3 minutes.',
         { modal: true },
         'Se connecter',
+        'Utiliser une clé existante',
       );
+      if (
+        consent === 'Utiliser une clé existante' &&
+        operation === this.generation &&
+        vscode.workspace.isTrusted
+      ) {
+        this.busy = false;
+        await this.useExistingAPIKey();
+        return;
+      }
       if (
         consent !== 'Se connecter' ||
         operation !== this.generation ||
@@ -262,6 +514,16 @@ export class Connection implements vscode.Disposable {
         !vscode.workspace.isTrusted
       )
         return;
+      releaseKeyLock = await this.lockKeyBootstrap(session.userId);
+      const bootstrapped = await this.bootstrapKey(session, generation, abort);
+      if (!bootstrapped) return;
+      const apiKey = bootstrapped.key;
+      pendingKey = {
+        key: apiKey,
+        token: session.token,
+        generation,
+        created: bootstrapped.created,
+      };
       // Migration: remove old API-key storage; never read/import it as a fallback.
       await this.context.secrets.delete('scalewayAI.apiKey.v1');
       await this.context.globalState.update('scalewayAI.connection', undefined);
@@ -287,14 +549,421 @@ export class Connection implements vscode.Disposable {
         await this.write(() => this.context.secrets.delete(SESSION_SECRET));
         return;
       }
+      await this.write(() =>
+        this.context.globalState.update(AUTH_CONFIGURATION, {
+          mode: 'browser',
+          userId: session.userId,
+        }),
+      );
+      if (
+        generation !== this.generation ||
+        this.disposed ||
+        !vscode.workspace.isTrusted ||
+        abort.signal.aborted
+      )
+        return;
+      this.imported = false;
+      this.apiKey = apiKey;
       this.installSession(session);
+      pendingKey = undefined;
     } catch (error) {
       await this.report(error);
     } finally {
+      if (
+        pendingKey?.created &&
+        (pendingKey.generation !== this.generation ||
+          this.disposed ||
+          !vscode.workspace.isTrusted)
+      ) {
+        await this.cleanupKey(
+          pendingKey.key,
+          pendingKey.token,
+          keySecret(pendingKey.key.userId),
+        );
+      }
+      await releaseKeyLock?.();
       this.busy = false;
       this.changed();
     }
-    if (this.session && !this.project) await this.switchProject();
+    if (this.connected && !this.project) await this.switchProject();
+  }
+  private async validateImportedKey(silent = false): Promise<boolean> {
+    if (this.busy) return false;
+    const key = this.apiKey,
+      generation = this.generation;
+    if (
+      !key ||
+      !this.session ||
+      !('mode' in this.session) ||
+      !vscode.workspace.isTrusted ||
+      this.disposed
+    )
+      return false;
+    const abort = new AbortController();
+    this.abort = abort;
+    this.busy = true;
+    try {
+      const inspected = await inspectExistingUserAPIKey(
+        key.accessKey,
+        key.secretKey,
+        abort.signal,
+      );
+      if (
+        this.generation !== generation ||
+        abort.signal.aborted ||
+        this.disposed ||
+        !vscode.workspace.isTrusted
+      )
+        return false;
+      if (inspected.userId !== key.userId)
+        throw new SDKError('invalid_api_key');
+      this.apiKey = { ...key, expiresAt: inspected.expiresAt };
+      if (this.session && 'mode' in this.session)
+        this.session.expiresAt = inspected.expiresAt;
+      await this.write(() =>
+        this.context.secrets.store(
+          this.imported ? IMPORTED_KEY_SECRET : keySecret(key.userId),
+          JSON.stringify(this.apiKey),
+        ),
+      );
+      if (
+        generation !== this.generation ||
+        this.disposed ||
+        abort.signal.aborted ||
+        !vscode.workspace.isTrusted
+      )
+        return false;
+      this.keyValidated = true;
+      return true;
+    } catch (error) {
+      if (!silent) await this.report(error);
+      return false;
+    } finally {
+      this.busy = false;
+      if (this.abort === abort) this.abort = undefined;
+      this.changed();
+    }
+  }
+  async useExistingAPIKey(): Promise<void> {
+    await this.ready;
+    if (
+      this.busy ||
+      this.disposed ||
+      !vscode.workspace.isTrusted ||
+      vscode.env.remoteName
+    )
+      return;
+    this.busy = true;
+    const generation = this.generation,
+      abort = new AbortController();
+    this.abort = abort;
+    const current = () =>
+      generation === this.generation &&
+      !abort.signal.aborted &&
+      !this.disposed &&
+      vscode.workspace.isTrusted;
+    try {
+      const stored = await this.context.secrets.get(IMPORTED_KEY_SECRET);
+      let candidate: unknown;
+      try {
+        candidate = stored ? JSON.parse(stored) : undefined;
+      } catch {
+        /* Explicit input replaces corrupt storage. */
+      }
+      let access: string | undefined, secret: string | undefined;
+      if (
+        candidate &&
+        typeof candidate === 'object' &&
+        'userId' in candidate &&
+        typeof candidate.userId === 'string' &&
+        validKey(candidate, candidate.userId)
+      ) {
+        const choice = await vscode.window.showQuickPick(
+          ['Réutiliser la clé enregistrée', 'Utiliser une autre clé'],
+          { title: 'Clé API existante' },
+        );
+        if (!choice || !current()) return;
+        if (choice === 'Réutiliser la clé enregistrée') {
+          access = candidate.accessKey;
+          secret = candidate.secretKey;
+        }
+      }
+      if (!access) {
+        access = await vscode.window.showInputBox({
+          title: 'Access Key Scaleway',
+          password: true,
+          ignoreFocusOut: true,
+          validateInput: (value) =>
+            /^SCW[A-Z0-9]{17}$/.test(value)
+              ? undefined
+              : 'Access Key Scaleway requis.',
+        });
+        if (!access || !current()) return;
+        secret = await vscode.window.showInputBox({
+          title: 'Secret Key Scaleway',
+          password: true,
+          ignoreFocusOut: true,
+          prompt:
+            'Stockage sécurisé VS Code uniquement. Une lecture de validation IAM ; aucune création ni inférence.',
+          validateInput: (value) =>
+            uuid(value) ? undefined : 'Secret Key au format UUID requis.',
+        });
+      }
+      if (!secret || !current()) return;
+      const inspected = await inspectExistingUserAPIKey(
+        access,
+        secret,
+        abort.signal,
+      );
+      if (!current()) return;
+      const key: StoredAPIKey = { ...inspected, secretKey: secret };
+      await this.write(() =>
+        this.context.secrets.store(IMPORTED_KEY_SECRET, JSON.stringify(key)),
+      );
+      if (!current()) return;
+      await this.write(() =>
+        this.context.globalState.update(AUTH_CONFIGURATION, {
+          mode: 'api-key',
+          userId: key.userId,
+        }),
+      );
+      if (!current()) {
+        await this.write(() =>
+          this.context.globalState.update(AUTH_CONFIGURATION, {
+            mode: 'disconnected',
+          }),
+        );
+        return;
+      }
+      this.dropSession();
+      this.imported = true;
+      this.keyValidated = true;
+      this.apiKey = key;
+      this.installSession({
+        mode: 'api-key',
+        userId: key.userId,
+        expiresAt: key.expiresAt,
+      });
+    } catch (error) {
+      const code =
+        error instanceof SDKError ? error.code : 'secret_storage_unavailable';
+      await vscode.window.showErrorMessage(
+        'Scaleway : ' +
+          code +
+          '. Clé non connectée ; remplacez-la si invalide, ou utilisez la connexion navigateur. Aucune clé créée ni révoquée.',
+      );
+    } finally {
+      this.busy = false;
+      if (this.abort === abort) this.abort = undefined;
+      this.changed();
+    }
+    if (this.connected && !this.project) await this.switchProject();
+  }
+  private async lockKeyBootstrap(userId: string): Promise<() => Promise<void>> {
+    if (keyBootstraps.has(userId))
+      throw new ReadError('api_key_bootstrap_busy');
+    keyBootstraps.add(userId);
+    // mkdir is atomic across extension hosts; never expire a lock by elapsed time.
+    // A paused host could still complete its POST after a time-based lease expires.
+    const root = this.context.globalStorageUri?.fsPath;
+    const lock = root
+      ? join(root, `api-key-bootstrap-${userId}.lock`)
+      : undefined;
+    try {
+      if (root && lock) {
+        await mkdir(root, { recursive: true });
+        await mkdir(lock);
+      }
+    } catch {
+      keyBootstraps.delete(userId);
+      throw new ReadError('api_key_bootstrap_locked');
+    }
+    return async () => {
+      try {
+        if (lock) await rmdir(lock);
+      } catch {
+        await vscode.window.showWarningMessage(
+          'Verrou de connexion non supprimé. Fermez toutes les fenêtres VS Code avant de supprimer le dossier api-key-bootstrap-*.lock dans le stockage global de cette extension.',
+        );
+      } finally {
+        keyBootstraps.delete(userId);
+      }
+    };
+  }
+  private async bootstrapKey(
+    session: UserSession,
+    generation: number,
+    abort: AbortController,
+  ): Promise<{ key: StoredAPIKey; created: boolean } | undefined> {
+    const current = () =>
+      generation === this.generation &&
+      !abort.signal.aborted &&
+      !this.disposed &&
+      vscode.workspace.isTrusted &&
+      session.expiresAt > Date.now() + 30000;
+    const slot = keySecret(session.userId);
+    const stored = await this.context.secrets.get(slot);
+    if (!current()) return;
+    if (stored) {
+      let row: unknown;
+      try {
+        row = JSON.parse(stored);
+      } catch {
+        throw new ReadError('invalid_saved_api_key');
+      }
+      if (validKey(row, session.userId)) return { key: row, created: false };
+      if (
+        row &&
+        typeof row === 'object' &&
+        'userId' in row &&
+        row.userId !== session.userId
+      )
+        throw new ReadError('invalid_saved_api_key');
+      if (row && typeof row === 'object' && 'pending' in row) {
+        const resolved = await vscode.window.showWarningMessage(
+          'Une tentative de création de clé a un résultat inconnu. Aucun nouvel envoi. Dans la console Scaleway, vérifiez et révoquez les clés « Generated by Scaleway AI Toolkit for VS Code » issues de cette tentative avant de confirmer. Relancez ensuite la connexion.',
+          { modal: true },
+          'Tentative vérifiée et clés révoquées',
+        );
+        if (resolved === 'Tentative vérifiée et clés révoquées' && current())
+          await this.write(() => this.context.secrets.delete(slot));
+        throw new ReadError('api_key_creation_outcome_unknown');
+      }
+    }
+    const consent = await vscode.window.showInformationMessage(
+      'Créer une clé API pour Scaleway AI Toolkit, valable 30 jours ? Elle hérite de vos droits IAM (pas limitée au projet sélectionné). SecretStorage uniquement. Une seule tentative ; aucune inférence. Déconnexion locale ne révoque pas la clé distante.',
+      { modal: true },
+      'Créer la clé API',
+    );
+    if (consent !== 'Créer la clé API' || !current()) return;
+    // Persist BEFORE dispatch: a crash/timeout must never silently retry a possibly successful POST.
+    await this.write(() =>
+      this.context.secrets.store(
+        slot,
+        JSON.stringify({ userId: session.userId, pending: true }),
+      ),
+    );
+    if (!current()) {
+      await this.write(() => this.context.secrets.delete(slot));
+      return;
+    }
+    let created: StoredAPIKey;
+    try {
+      created = {
+        ...(await createUserAPIKey(
+          session.userId,
+          session.token,
+          abort.signal,
+        )),
+        userId: session.userId,
+      };
+    } catch (error) {
+      if (
+        error instanceof SDKError &&
+        ['access_denied', 'rate_limited', 'invalid_request'].includes(
+          error.code,
+        )
+      )
+        await this.write(() => this.context.secrets.delete(slot));
+      if (
+        !(error instanceof SDKError) ||
+        !['access_denied', 'rate_limited', 'invalid_request'].includes(
+          error.code,
+        )
+      )
+        await vscode.window.showWarningMessage(
+          'Résultat de création de clé inconnu. Aucun retry. Vérifiez les clés créées par Scaleway AI Toolkit dans la console ; la prochaine connexion proposera une récupération explicite.',
+        );
+      throw error;
+    }
+    if (!current()) {
+      await this.cleanupKey(created, session.token, slot);
+      return;
+    }
+    try {
+      await this.write(() =>
+        this.context.secrets.store(slot, JSON.stringify(created)),
+      );
+    } catch {
+      await this.cleanupKey(created, session.token, slot);
+      throw new ReadError('secret_storage_unavailable');
+    }
+    if (!current()) {
+      await this.cleanupKey(created, session.token, slot);
+      return;
+    }
+    return { key: created, created: true };
+  }
+  private async cleanupKey(
+    key: StoredAPIKey,
+    token: string,
+    slot: string,
+  ): Promise<void> {
+    try {
+      await revokeUserAPIKey(
+        key.accessKey,
+        token,
+        new AbortController().signal,
+      );
+      await this.write(() => this.context.secrets.delete(slot));
+    } catch {
+      await vscode.window.showWarningMessage(
+        'Clé API potentiellement créée : révocation automatique non confirmée. Vérifiez les clés « Generated by Scaleway AI Toolkit for VS Code » dans la console avant de réessayer.',
+      );
+    }
+  }
+  async revokeAPIKey(): Promise<void> {
+    await this.ready;
+    if (
+      !this.session?.token ||
+      this.imported ||
+      !this.apiKey ||
+      this.busy ||
+      !vscode.workspace.isTrusted
+    )
+      return;
+    const session = this.session;
+    const key = this.apiKey;
+    const generation = this.generation;
+    const consent = await vscode.window.showInformationMessage(
+      'Révoquer la clé API créée par cette extension et se déconnecter ? Cette action est irréversible.',
+      { modal: true },
+      'Révoquer la clé API',
+    );
+    if (
+      consent !== 'Révoquer la clé API' ||
+      this.session !== session ||
+      generation !== this.generation ||
+      this.busy ||
+      !vscode.workspace.isTrusted ||
+      session.expiresAt <= Date.now() + 30000
+    )
+      return;
+    this.busy = true;
+    const abort = new AbortController();
+    this.abort = abort;
+    try {
+      this.invalidateInference();
+      await revokeUserAPIKey(key.accessKey, session.token, abort.signal);
+      await this.write(() =>
+        this.context.secrets.delete(keySecret(session.userId)),
+      );
+      if (
+        this.apiKey === key &&
+        this.session === session &&
+        generation === this.generation
+      ) {
+        this.apiKey = undefined;
+        await this.disconnect();
+      }
+    } catch (error) {
+      if (this.session === session && generation === this.generation)
+        await this.report(error);
+    } finally {
+      this.busy = false;
+      if (this.abort === abort) this.abort = undefined;
+      this.changed();
+    }
   }
   private async pickProject(projects: Project[], generation: number) {
     if (!projects.length) {
@@ -314,7 +983,9 @@ export class Connection implements vscode.Disposable {
     if (!pick || generation !== this.generation) return;
     const userId = this.session?.userId;
     this.token();
+    this.invalidateInference();
     this.project = pick.project;
+    this.restoreServerlessResources();
     this.changed();
     if (userId)
       await this.write(() =>
@@ -332,6 +1003,13 @@ export class Connection implements vscode.Disposable {
       return this.login();
     }
     if (this.busy || !vscode.workspace.isTrusted) return;
+    if (
+      this.session &&
+      'mode' in this.session &&
+      !this.keyValidated &&
+      !(await this.validateImportedKey())
+    )
+      return;
     this.busy = true;
     try {
       const operation = this.generation;
@@ -416,7 +1094,12 @@ export class Connection implements vscode.Disposable {
     if (!this.connected || this.busy || !vscode.workspace.isTrusted)
       return false;
     const session = this.session;
-    if (!session) return false;
+    if (!session?.token) {
+      await vscode.window.showInformationMessage(
+        'La création de projet nécessite la connexion navigateur. La clé existante reste conservée.',
+      );
+      return false;
+    }
     this.busy = true;
     const generation = this.generation;
     const abort = new AbortController();
@@ -465,7 +1148,7 @@ export class Connection implements vscode.Disposable {
       if (confirmation !== 'Créer ce projet' || !current()) return false;
       created = await createProject(
         { organizationId: pick.organization.id, name, confirmed: true },
-        this.token(),
+        session.token,
         abort.signal,
       );
       if (!current()) {
@@ -500,6 +1183,7 @@ export class Connection implements vscode.Disposable {
         organizationName: pick.organization.name,
       };
       this.project = created;
+      this.restoreServerlessResources();
       return true;
     } catch (error) {
       if (
@@ -544,6 +1228,13 @@ export class Connection implements vscode.Disposable {
           vscode.workspace.isTrusted
         ) {
           this.serverless = rows;
+          // Refresh ephemeral capabilities/prices without persisting provider config or secrets.
+          this.serverlessResources = this.serverlessResources.map(
+            (resource) => ({
+              ...resource,
+              ...rows.find((model) => model.id === resource.id),
+            }),
+          );
           this.serverlessState = rows.length
             ? 'Offres publiques · accès inférence non vérifié'
             : 'Aucune offre retournée';
@@ -579,6 +1270,13 @@ export class Connection implements vscode.Disposable {
       this.changed();
       return;
     }
+    if (
+      this.session &&
+      'mode' in this.session &&
+      !this.keyValidated &&
+      !(await this.validateImportedKey())
+    )
+      return;
     this.busy = true;
     const operation = this.generation;
     const abort = new AbortController();
@@ -608,10 +1306,20 @@ export class Connection implements vscode.Disposable {
       this.changed();
     }
   }
-  async loadModels(): Promise<void> {
+  async loadModels(silent = false): Promise<void> {
     await this.ready;
-    if (!this.session || !this.project) return this.switchProject();
+    if (!this.session || !this.project) {
+      if (!silent) await this.switchProject();
+      return;
+    }
     if (this.busy || !vscode.workspace.isTrusted) return;
+    if (
+      this.session &&
+      'mode' in this.session &&
+      !this.keyValidated &&
+      !(await this.validateImportedKey(silent))
+    )
+      return;
     this.busy = true;
     try {
       const operation = this.generation;
@@ -638,11 +1346,386 @@ export class Connection implements vscode.Disposable {
         : 'Aucun déploiement';
     } catch (error) {
       this.dedicatedState = 'Erreur · non vérifié';
-      await this.report(error);
+      if (!silent) await this.report(error);
     } finally {
       this.busy = false;
       this.changed();
     }
+  }
+  /** Host-only identity/credentials for access configuration. Agent bearer remains separate. */
+  private accessScope(
+    scope: ReturnType<Connection['inferenceScope']>,
+  ): LlmAccessScope {
+    const userId = this.session?.userId;
+    const session = this.session;
+    if (!userId || !session) throw new ReadError('invalid_scope');
+    return {
+      ...scope,
+      userId,
+      controlCredential: () => {
+        if (!scope.current()) throw new ReadError('invalid_scope');
+        return session.token ?? scope.authorize();
+      },
+      reuseCredential: () => {
+        scope.authorize();
+        if (!this.apiKey || !scope.current())
+          throw new ReadError('api_key_required');
+        return {
+          accessKey: this.apiKey.accessKey,
+          secretKey: this.apiKey.secretKey,
+        };
+      },
+    };
+  }
+  async refreshServerlessAvailability(silent = false): Promise<void> {
+    if (!(await this.ensureProject(silent))) return;
+    const scope = this.inferenceScope();
+    // Unverified records are never shown as active while a refresh is pending.
+    this.serverlessResources = [];
+    this.changed();
+    try {
+      const rows = await this.llmAccess.refresh(
+        this.accessScope(scope),
+        this.serverless,
+      );
+      if (scope.current()) this.serverlessResources = rows;
+    } finally {
+      scope.dispose();
+      this.changed();
+    }
+  }
+  private restoreServerlessResources(): void {
+    // Legacy workspace favourites have no IAM/secret binding: no automatic migration.
+    this.serverlessResources = [];
+    this.llmAccess.clear();
+  }
+  private serverlessUsePending = false;
+  async useServerless(id: string): Promise<ListedModel | undefined> {
+    if (!text(id) || this.serverlessUsePending) return;
+    this.serverlessUsePending = true;
+    let scope: ReturnType<Connection['inferenceScope']> | undefined;
+    try {
+      const offered = this.serverless.find((model) => model.id === id);
+      if (!(await this.ensureProject())) return;
+      const row = this.serverless.find((model) => model.id === id) ?? offered;
+      if (row?.kind !== 'serverless') return;
+      scope = this.inferenceScope();
+      const accessScope = this.accessScope(scope);
+      const configured = await this.llmAccess.configure(row, accessScope);
+      if (!configured || !scope.current()) return;
+      this.serverlessResources = this.llmAccess.rows(accessScope);
+      this.changed();
+      return configured;
+    } finally {
+      scope?.dispose();
+      this.serverlessUsePending = false;
+    }
+  }
+  /** Resolve and revalidate the selected access key, never silently use the login key. */
+  async modelCredentialScope(projectId: string, model: ListedModel) {
+    const scope = this.inferenceScope();
+    try {
+      if (scope.project.id !== projectId) throw new ReadError('invalid_scope');
+      if (model.kind !== 'serverless')
+        return {
+          current: scope.current,
+          secretKey: scope.authorize,
+          dispose: scope.dispose,
+        };
+      const credential = await this.llmAccess.credential(
+        this.accessScope(scope),
+        model,
+      );
+      return { ...credential, dispose: scope.dispose };
+    } catch (error) {
+      scope.dispose();
+      if (model.kind === 'serverless') {
+        this.serverlessResources = this.serverlessResources.filter(
+          (r) => r.llmAccess?.id !== model.llmAccess?.id,
+        );
+        this.changed();
+      }
+      throw error;
+    }
+  }
+  async modelInferenceScope(model: ListedModel) {
+    const scope = this.inferenceScope();
+    try {
+      if (model.kind !== 'serverless') return scope;
+      const credential = await this.llmAccess.credential(
+        this.accessScope(scope),
+        model,
+      );
+      return {
+        ...scope,
+        current: credential.current,
+        authorize: credential.secretKey,
+      };
+    } catch (error) {
+      scope.dispose();
+      throw error;
+    }
+  }
+  async deployModel(id: string): Promise<ListedModel | undefined> {
+    if (!uuid(id) || !(await this.ensureProject())) return;
+    // Refresh resource inventory before deciding whether another allocation is needed.
+    await this.loadModels();
+    if (!this.connected || this.dedicatedState.startsWith('Erreur')) {
+      await vscode.window.showWarningMessage(
+        'Impossible de vérifier les services existants. Actualisez Mes ressources avant de déployer pour éviter une allocation en double.',
+      );
+      return;
+    }
+    const existing = this.dedicated.find(
+      (row) => row.deploymentInfo?.modelId === id && row.status !== 'deleted',
+    );
+    if (existing) return existing;
+    if (!this.dedicatedCatalog.some((row) => row.id === id))
+      await this.loadCatalogs();
+    const model = this.dedicatedCatalog.find((row) => row.id === id);
+    const project = this.project;
+    const session = this.session;
+    if (!model || !project || !session || this.busy || !this.connected) return;
+    const generation = this.generation;
+    const abort = new AbortController();
+    this.abort = abort;
+    this.busy = true;
+    const current = () =>
+      generation === this.generation &&
+      this.project === project &&
+      this.session === session &&
+      this.connected &&
+      !this.disposed &&
+      !abort.signal.aborted &&
+      vscode.workspace.isTrusted;
+    let release: (() => Promise<void>) | undefined;
+    let operation: DeploymentOperation | undefined;
+    let accepted: ListedModel | undefined;
+    try {
+      const journal = this.journal();
+      // Shared local lock also serializes paid creation across extension windows.
+      release = await this.lockKeyBootstrap(project.id);
+      if (!current()) return;
+      // Re-read under the shared allocation lock; another window may have allocated while we waited.
+      const inventory = await listDedicated(
+        project,
+        this.token(),
+        abort.signal,
+      );
+      if (!current()) return;
+      this.dedicated = inventory;
+      const deployed = inventory.find(
+        (row) => row.deploymentInfo?.modelId === id && row.status !== 'deleted',
+      );
+      if (deployed) return deployed;
+      const marker = this.context.globalStorageUri?.fsPath
+        ? join(
+            this.context.globalStorageUri.fsPath,
+            `allocation-${project.id}-${id}.json`,
+          )
+        : undefined;
+      if (marker) {
+        let saved: DeploymentOperation | undefined;
+        try {
+          saved = JSON.parse(await readFile(marker, 'utf8'));
+        } catch (error) {
+          if (
+            !(
+              error &&
+              typeof error === 'object' &&
+              'code' in error &&
+              error.code === 'ENOENT'
+            )
+          )
+            throw new ReadError('invalid_operation_journal');
+        }
+        if (
+          saved &&
+          (!uuid(saved.id) ||
+            saved.projectId !== project.id ||
+            saved.organizationId !== project.organizationId ||
+            saved.modelId !== id ||
+            saved.region !== 'fr-par' ||
+            !text(saved.name) ||
+            ![
+              'prepared',
+              'submitting',
+              'accepted',
+              'unknown',
+              'rejected',
+            ].includes(saved.status) ||
+            (saved.status === 'accepted' && !uuid(saved.deploymentId)))
+        )
+          throw new ReadError('invalid_operation_journal');
+        if (
+          saved &&
+          saved.projectId === project.id &&
+          saved.modelId === id &&
+          ['unknown', 'submitting', 'accepted'].includes(saved.status)
+        ) {
+          if (saved.status === 'accepted' && saved.deploymentId) {
+            const resource = await getDeployment(
+              project,
+              saved.deploymentId,
+              this.token(),
+              abort.signal,
+            );
+            if (!current()) return;
+            if (resource.status !== 'deleted') {
+              this.dedicated = [
+                ...inventory.filter((row) => row.id !== resource.id),
+                resource,
+              ];
+              return resource;
+            }
+          } else {
+            const resolved = await vscode.window.showWarningMessage(
+              'Résultat de création inconnu. Vérifiez et supprimez dans la console tout service issu de cette opération avant de confirmer. Aucun nouvel envoi sur ce clic.',
+              { modal: true },
+              'Services vérifiés et supprimés',
+            );
+            if (resolved !== 'Services vérifiés et supprimés' || !current())
+              return;
+          }
+          await writeFile(
+            marker,
+            JSON.stringify({
+              ...saved,
+              status: 'rejected',
+              deploymentId: undefined,
+            }),
+            { mode: 0o600 },
+          );
+          // Existing per-host journals remain conservative; a new name allows an explicitly new reviewed operation.
+          await vscode.window.showInformationMessage(
+            'Opération résolue. Relancez Déployer avec un nouveau nom de service.',
+          );
+          return;
+        }
+      }
+      const nodes = await listNodeTypes(this.token(), abort.signal);
+      if (!current()) return;
+      const prices = await listDedicatedPrices(abort.signal);
+      if (!current()) return;
+      const eula =
+        model.dedicatedInfo?.hasEula === true
+          ? await getModelEula(project, model, this.token(), abort.signal)
+          : undefined;
+      if (!current()) return;
+      const receipt = await reviewService(
+        project,
+        model,
+        nodes,
+        prices,
+        eula,
+        current,
+      );
+      if (!receipt || !current()) return;
+      const prior = await journal.recover();
+      let resolvedMarker = false;
+      if (marker) {
+        try {
+          resolvedMarker =
+            JSON.parse(await readFile(marker, 'utf8')).status === 'rejected';
+        } catch {
+          /* no previous operation */
+        }
+      }
+      if (
+        prior.some(
+          (row) =>
+            !resolvedMarker &&
+            row.modelId === id &&
+            ['unknown', 'submitting', 'accepted'].includes(row.status),
+        )
+      ) {
+        await vscode.window.showWarningMessage(
+          'Une opération existe pour ce modèle. Actualisez les ressources ou consultez son historique avant toute nouvelle création ; aucun retry automatique.',
+        );
+        return;
+      }
+      operation = {
+        version: 1,
+        id: randomUUID(),
+        projectId: project.id,
+        organizationId: project.organizationId,
+        modelId: id,
+        name: receipt.body.name,
+        region: 'fr-par',
+        status: 'prepared',
+      };
+      await journal.save(operation);
+      if (!current()) return;
+      operation = { ...operation, status: 'submitting' };
+      await journal.save(operation);
+      if (marker)
+        await writeFile(marker, JSON.stringify(operation), { mode: 0o600 });
+      if (!current()) {
+        await journal.save({ ...operation, status: 'prepared' });
+        return;
+      }
+      try {
+        accepted = await createService(receipt, this.token(), abort.signal);
+      } catch (error) {
+        const rejected =
+          error instanceof ReadError &&
+          [
+            'access_denied',
+            'creation_rejected',
+            'rate_limited',
+            'deployment_confirmation_required',
+            'invalid_approval',
+            'invalid_request',
+            'invalid_scope',
+            'cancelled',
+          ].includes(error.code);
+        const result: DeploymentOperation = {
+          ...operation,
+          status: rejected ? 'rejected' : 'unknown',
+        };
+        if (marker)
+          await writeFile(marker, JSON.stringify(result), { mode: 0o600 });
+        await journal.save(result);
+        if (current())
+          await vscode.window.showWarningMessage(
+            rejected
+              ? 'Déploiement refusé. Vérifiez la configuration et vos droits dans les détails.'
+              : 'Résultat du déploiement inconnu : le service peut exister. Actualisez Mes ressources avant toute nouvelle tentative.',
+          );
+        return;
+      }
+      const result: DeploymentOperation = {
+        ...operation,
+        status: 'accepted',
+        deploymentId: accepted.id,
+      };
+      if (marker)
+        await writeFile(marker, JSON.stringify(result), { mode: 0o600 });
+      await journal.save(result);
+      if (!current()) return;
+      this.dedicated = [
+        ...this.dedicated.filter((row) => row.id !== accepted?.id),
+        accepted,
+      ];
+      this.dedicatedState = 'Déploiement accepté';
+      this.changed();
+    } catch (error) {
+      if (accepted)
+        await vscode.window.showWarningMessage(
+          'Service accepté mais journal local non enregistré. Actualisez Mes ressources ; ne recréez pas le service.',
+        );
+      else if (current()) await this.report(error);
+    } finally {
+      await release?.();
+      this.busy = false;
+      if (this.abort === abort) this.abort = undefined;
+      this.changed();
+    }
+    if (accepted && current()) {
+      await this.followDeployment(accepted.id);
+      return this.dedicated.find((row) => row.id === accepted?.id) ?? accepted;
+    }
+    return;
   }
   private journal(): DeploymentJournal {
     const session = this.session;
@@ -702,59 +1785,6 @@ export class Connection implements vscode.Disposable {
       if (generation === this.generation) await this.report(error);
       return;
     }
-  }
-  /** Host-only future allocation boundary. No command or production transport calls this yet. */
-  async deploymentLifecycle(
-    model: ListedModel,
-    name: string,
-    post: ReviewedCreationTransport,
-  ): Promise<DeploymentLifecycle> {
-    await this.ready;
-    const project = this.project;
-    const session = this.session;
-    const generation = this.generation;
-    if (
-      !project ||
-      !session ||
-      this.busy ||
-      model.kind !== 'dedicated-catalog' ||
-      !this.dedicatedCatalog.some((row) => row === model)
-    )
-      throw new ReadError('invalid_scope');
-    const journal = this.journal();
-    const rows = await journal.recover();
-    const current = () =>
-      generation === this.generation &&
-      this.session === session &&
-      this.project === project &&
-      !this.disposed &&
-      this.connected &&
-      vscode.workspace.isTrusted;
-    if (!current()) throw new ReadError('invalid_scope');
-    if (rows.some((row) => row.modelId === model.id && row.name === name))
-      throw new ReadError('reconcile_before_retry');
-    const lifecycle = new DeploymentLifecycle(
-      project,
-      model,
-      name,
-      async (operation) => {
-        // Always preserve a terminal result in its original user/project journal,
-        // including a response arriving after logout. Never revive account state.
-        const beforeSend =
-          operation.status === 'submitting' || operation.status === 'prepared';
-        if (beforeSend && !current()) throw new ReadError('invalid_scope');
-        await journal.save(operation);
-        if (beforeSend && !current()) throw new ReadError('invalid_scope');
-      },
-      async (body, signal) => {
-        if (!current() || signal.aborted) throw new ReadError('cancelled');
-        return post(body, signal);
-      },
-    );
-    // Reserve identity before returning the engine: concurrent/repeated factories fail closed.
-    await journal.save(lifecycle.snapshot);
-    if (!current()) throw new ReadError('invalid_scope');
-    return lifecycle;
   }
   /** One exact control-plane GET, only for an accepted ID from this scoped journal. */
   async reconcileDeploymentOperation(
@@ -1104,23 +2134,42 @@ export class Connection implements vscode.Disposable {
   }
   async disconnect(): Promise<void> {
     const userId = this.session?.userId;
+    const hadKey = !!this.apiKey;
+    const imported = this.imported;
     this.dropSession();
+    await this.write(() =>
+      this.context.globalState.update(AUTH_CONFIGURATION, {
+        mode: 'disconnected',
+      }),
+    );
+    if (imported) {
+      await this.storage;
+      return;
+    }
     await this.storage;
+    if (userId)
+      await this.write(() => this.context.secrets.delete(keySecret(userId)));
     if (userId)
       await this.write(() =>
         this.context.globalState.update(preferenceKey(userId), undefined),
       );
     await this.context.secrets.delete('scalewayAI.apiKey.v1');
     await this.context.globalState.update('scalewayAI.connection', undefined);
+    if (hadKey)
+      await vscode.window.showWarningMessage(
+        'Déconnexion locale : la clé distante reste active jusqu’à expiration (30 jours). Révoquez-la dans la console Scaleway si nécessaire. Pour supprimer la clé avant déconnexion, utilisez Révoquer la clé API.',
+      );
   }
   dispose() {
-    // Shutdown clears memory only. Explicit logout/expiry removes persisted JWT.
+    // Shutdown clears memory only. Expiry removes JWT but preserves the key for renewed login.
     this.disposed = true;
     this.publicAbort?.abort();
     clearTimeout(this.expiry);
     this.expiry = undefined;
     this.session = undefined;
+    this.apiKey = undefined;
     this.metadata = undefined;
     this.clear();
+    this.llmAccess.dispose();
   }
 }

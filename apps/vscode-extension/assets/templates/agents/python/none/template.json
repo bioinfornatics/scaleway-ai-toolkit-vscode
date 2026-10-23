@@ -1,0 +1,22 @@
+{
+  "format_version": 1,
+  "id": "agents-python-none",
+  "label": "Sans framework \u00b7 python",
+  "kind": "agents",
+  "language": "python",
+  "framework": "none",
+  "category": "basic",
+  "usage": "stack",
+  "description": "Base langage \u00b7 SDK agent \u00e0 choisir.",
+  "files": [
+    "README.md",
+    "agent.authoring.json",
+    "evals/README.md",
+    "evals/test_agent_eval.py",
+    "src/agent_app/__init__.py",
+    "src/agent_app/api.py",
+    "src/agent_app/config.py",
+    "tests/integration/README.md",
+    "tests/unit/test_config.py"
+  ]
+}

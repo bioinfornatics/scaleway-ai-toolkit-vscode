@@ -1,0 +1,8 @@
+{
+  "authoring_version": 1,
+  "kind": "tools",
+  "language": "typescript",
+  "framework": "elysia",
+  "incomplete": true,
+  "note": "Authoring metadata only; not AgentSpec or runtime authority."
+}

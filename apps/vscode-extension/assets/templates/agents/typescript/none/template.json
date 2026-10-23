@@ -1,0 +1,18 @@
+{
+  "format_version": 1,
+  "id": "agents-typescript-none",
+  "label": "Sans framework · typescript",
+  "kind": "agents",
+  "language": "typescript",
+  "framework": "none",
+  "category": "basic",
+  "usage": "stack",
+  "description": "Base langage · SDK agent à choisir.",
+  "files": [
+    "README.md",
+    "agent.authoring.json",
+    "package.json",
+    "src/agent.ts",
+    "tsconfig.json"
+  ]
+}

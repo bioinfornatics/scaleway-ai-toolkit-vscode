@@ -1,0 +1,19 @@
+{
+  "format_version": 1,
+  "id": "tools-python-django",
+  "label": "Django · python",
+  "kind": "tools",
+  "language": "python",
+  "framework": "django",
+  "category": "backend",
+  "usage": "stack",
+  "description": "Base backend · transport outil/MCP à intégrer.",
+  "files": [
+    "README.md",
+    "requirements.txt",
+    "settings.py",
+    "tool.authoring.json",
+    "tool.py",
+    "urls.py"
+  ]
+}

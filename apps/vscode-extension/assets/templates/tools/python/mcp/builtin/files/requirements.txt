@@ -1,0 +1,2 @@
+# Repository inventory only; launch compatibility unverified.
+mcp==2.1.1

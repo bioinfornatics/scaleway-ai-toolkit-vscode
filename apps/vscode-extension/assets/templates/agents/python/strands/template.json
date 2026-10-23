@@ -1,0 +1,25 @@
+{
+  "format_version": 1,
+  "id": "agents-python-strands",
+  "label": "Strands \u00b7 python",
+  "kind": "agents",
+  "language": "python",
+  "framework": "strands",
+  "category": "agent",
+  "usage": "stack",
+  "description": "Agent minimal strands connect\u00e9 \u00e0 un endpoint Scaleway ; d\u00e9pendances \u00e0 installer explicitement.",
+  "files": [
+    ".env.example",
+    ".gitignore",
+    "README.md",
+    "agent.authoring.json",
+    "evals/README.md",
+    "evals/test_agent_eval.py",
+    "requirements.txt",
+    "src/agent_app/__init__.py",
+    "src/agent_app/agent.py",
+    "src/agent_app/config.py",
+    "tests/integration/README.md",
+    "tests/unit/test_config.py"
+  ]
+}

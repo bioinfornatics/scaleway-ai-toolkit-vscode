@@ -1,0 +1,19 @@
+{
+  "format_version": 1,
+  "id": "agents-typescript-strands",
+  "label": "Strands \u00b7 typescript",
+  "kind": "agents",
+  "language": "typescript",
+  "framework": "strands",
+  "category": "agent",
+  "usage": "stack",
+  "description": "Agent minimal strands connect\u00e9 \u00e0 un endpoint Scaleway ; d\u00e9pendances \u00e0 installer explicitement.",
+  "files": [
+    "README.md",
+    "agent.authoring.json",
+    "package.json",
+    "src/agent.ts",
+    "tsconfig.json",
+    "src/config.ts"
+  ]
+}

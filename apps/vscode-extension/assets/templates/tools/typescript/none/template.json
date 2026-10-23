@@ -1,0 +1,18 @@
+{
+  "format_version": 1,
+  "id": "tools-typescript-none",
+  "label": "Sans framework · typescript",
+  "kind": "tools",
+  "language": "typescript",
+  "framework": "none",
+  "category": "basic",
+  "usage": "stack",
+  "description": "Fonction locale · sans serveur.",
+  "files": [
+    "README.md",
+    "package.json",
+    "src/tool.ts",
+    "tool.authoring.json",
+    "tsconfig.json"
+  ]
+}

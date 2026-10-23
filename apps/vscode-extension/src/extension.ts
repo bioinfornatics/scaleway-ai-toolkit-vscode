@@ -4,13 +4,24 @@ import { catalogDetails } from './catalogDetails';
 import { CatalogHealth } from './catalogHealth';
 import { visibleCatalogModels } from './catalogVisibility';
 import { Connection } from './connection';
+import { dedicatedConsent } from './dedicatedConsent';
+import { dedicatedInvocationPolicy } from './dedicatedInvocationPolicy';
 import { type DemoModel, type Experiment, models, runDemo } from './demo';
+import { DeployedResources } from './deployedResources';
 import {
   exportExperiment,
   loadExperiment,
   saveExperiment,
 } from './experimentActions';
 import { parseInput } from './ipc';
+import { LocalCreation } from './localCreation';
+import { LocalInventory } from './localInventory';
+import { initializePythonIde, initializeCompiledIde } from './projectActions';
+import type { ListedModel } from './provider';
+import { serverlessInvocation } from './provider';
+import { modelsOverviewHtml, parseOverviewInput } from './resourceOverview';
+import { ServicePlayground } from './servicePlayground';
+import { servicePlaygroundHtml } from './servicePlaygroundView';
 import { playgroundHtml } from './webview';
 
 interface Node {
@@ -23,22 +34,59 @@ interface Node {
   description?: string;
 }
 export function activate(context: vscode.ExtensionContext): void {
+  initializePythonIde(context);
+  initializeCompiledIde(context);
   let selected: DemoModel = models[0];
   let last: Experiment | undefined;
   let active: { cancelled: boolean } | undefined;
   let panel: vscode.WebviewPanel | undefined;
   let catalogPanel: vscode.WebviewPanel | undefined;
+  let modelsPanel: vscode.WebviewPanel | undefined;
+  let overviewToken: string | undefined;
+  const liveServicePanels = new Set<vscode.WebviewPanel>();
+  context.subscriptions.push({
+    dispose: () => {
+      try {
+        for (const servicePanel of [...liveServicePanels]) {
+          try {
+            servicePanel.dispose();
+          } catch {
+            /* Continue releasing other panels. */
+          }
+        }
+      } finally {
+        liveServicePanels.clear();
+      }
+    },
+  });
   const catalogHealth = new CatalogHealth();
   let response = '';
   let importedPrompt: string | undefined;
   let message = 'Prêt · Ctrl+Entrée pour exécuter';
   const changed = new vscode.EventEmitter<void>();
+  const status = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Left,
+    20,
+  );
+  status.command = 'scalewayAI.setProject';
+  const updateStatus = () => {
+    const project = connection.project;
+    status.text = project
+      ? `$(organization) Scaleway AI · Projet : ${project.name}${connection.connected ? '' : ' · à reconnecter'}`
+      : '$(organization) Scaleway AI · Choisir un projet';
+    status.tooltip =
+      'Choisir ou changer le projet Scaleway · sélection de contexte, pas une vérification du cloud';
+  };
   const updateCatalog = () => {
     void catalogPanel?.webview.postMessage({
       type: 'catalog-state',
       revision: catalogHealth.next(),
       serverless: visibleCatalogModels(connection.serverless),
       dedicated: visibleCatalogModels(connection.dedicatedCatalog),
+      deployments: connection.dedicated,
+      selectedServerless: connection.serverlessResources.map(
+        (model) => model.id,
+      ),
       publicStatus: connection.serverlessState,
       dedicatedStatus: connection.dedicatedCatalogState,
       scope: connection.project
@@ -49,6 +97,10 @@ export function activate(context: vscode.ExtensionContext): void {
   const refresh = () => {
     changed.fire();
     updateCatalog();
+    updateStatus();
+    deployedResources.refresh();
+    localCreation.modelsChanged();
+    if (modelsPanel) renderModelsOverview();
   };
   const update = () => {
     void panel?.webview.postMessage({
@@ -66,84 +118,98 @@ export function activate(context: vscode.ExtensionContext): void {
       !!active,
     );
   };
+  const localInventory = new LocalInventory(context);
+  context.subscriptions.push(localInventory);
+  const localCreation = new LocalCreation(context, {
+    current: () => ({
+      key:
+        connection.connected && connection.project
+          ? JSON.stringify(connection.project)
+          : '',
+      projectId: connection.connected ? connection.project?.id : undefined,
+      status: connection.dedicatedState,
+      rows: connection.connected
+        ? [...connection.serverlessResources, ...connection.dedicated]
+        : [],
+    }),
+    credentialScope: (projectId, model) =>
+      connection.modelCredentialScope(projectId, model),
+    refresh: async () => {
+      if (!(await connection.ensureProject())) return;
+      await connection.refreshServerlessAvailability();
+      await connection.loadModels();
+    },
+  });
+  context.subscriptions.push(localCreation);
+  const deployedResources = new DeployedResources(context, () => ({
+    projectName: connection.project?.name,
+    connected: connection.connected,
+  }));
+  context.subscriptions.push(deployedResources);
   const connection = new Connection(context, refresh);
   context.subscriptions.push(connection);
-  const modelNodes = (): Node[] =>
-    models.map((m) => ({
-      id: m.id,
-      label: m.label.replace('Demo · ', ''),
-      icon: selected.id === m.id ? 'check' : 'symbol-method',
-      description: selected.id === m.id ? 'Sélectionné' : 'Synthétique',
-      command: 'scalewayAI.select',
-      args: [m.id],
-    }));
-  const realModelNodes = (
-    kind: 'serverless' | 'dedicated' | 'dedicated-catalog',
-  ): Node[] => {
-    const rows =
-      kind === 'serverless'
-        ? connection.serverless
-        : kind === 'dedicated-catalog'
-          ? connection.dedicatedCatalog
-          : connection.dedicated;
-    return visibleCatalogModels(rows).map((m) => ({
-      id: `${kind}:${m.id}`,
-      label: m.label,
-      icon: 'symbol-method',
-      description: m.status,
-      command:
-        kind === 'dedicated'
-          ? 'scalewayAI.deploymentDetails'
-          : 'scalewayAI.modelInfo',
-      args: kind === 'dedicated' ? [m.id] : [kind, m.id],
-    }));
-  };
   const resources = (): Node[] => [
     {
       id: 'project',
       label: connection.project
-        ? `Projet Scaleway : ${connection.project.name}`
-        : 'Définir le projet Scaleway',
+        ? `Projet : ${connection.project.name}`
+        : 'Choisir un projet',
       icon: 'organization',
       command: 'scalewayAI.setProject',
     },
-    ...(connection.project
-      ? [{ id: 'region', label: 'Région dédiée : fr-par', icon: 'globe' }]
-      : []),
     {
       id: 'real-models',
       label: 'Modèles',
       icon: 'library',
-      command: 'scalewayAI.refreshModels',
+      command: 'scalewayAI.openModels',
+    },
+    {
+      id: 'agents',
+      label: 'Agents',
+      icon: 'hubot',
+      command: 'scalewayAI.openAgents',
+    },
+    {
+      id: 'resource-tools',
+      label: 'Tools',
+      icon: 'tools',
+      command: 'scalewayAI.openTools',
+    },
+    {
+      id: 'local',
+      label: 'Ressources locales',
+      icon: 'device-desktop',
       children: [
         {
-          id: 'load',
-          label: connection.busy
-            ? 'Chargement…'
-            : 'Charger / actualiser les modèles',
-          icon: 'refresh',
-          command: 'scalewayAI.refreshModels',
+          id: 'local-agents',
+          label: 'Agents',
+          icon: 'hubot',
+          command: 'scalewayAI.openLocalAgents',
         },
         {
-          id: 'serverless',
-          label: 'Serverless · offres disponibles',
-          command: 'scalewayAI.openCatalog',
-          description: connection.serverlessState,
-          children: realModelNodes('serverless'),
+          id: 'local-tools',
+          label: 'Tools',
+          icon: 'tools',
+          command: 'scalewayAI.openLocalTools',
+        },
+      ],
+    },
+    {
+      id: 'templates',
+      label: 'Mes templates',
+      icon: 'files',
+      children: [
+        {
+          id: 'templates-agents',
+          label: 'Agents',
+          icon: 'hubot',
+          command: 'scalewayAI.openAgentTemplates',
         },
         {
-          id: 'dedicated-catalog',
-          label: 'Dédiés · modèles à déployer',
-          command: 'scalewayAI.openCatalog',
-          description: connection.dedicatedCatalogState,
-          children: realModelNodes('dedicated-catalog'),
-        },
-        {
-          id: 'dedicated',
-          label: 'Dédiés · déploiements existants',
-          command: 'scalewayAI.loadModels',
-          description: connection.dedicatedState,
-          children: realModelNodes('dedicated'),
+          id: 'templates-tools',
+          label: 'Tools',
+          icon: 'tools',
+          command: 'scalewayAI.openToolTemplates',
         },
       ],
     },
@@ -155,31 +221,19 @@ export function activate(context: vscode.ExtensionContext): void {
         ? [
             {
               id: 'last',
-              label: 'Dernière expérience de démo',
+              label: 'Dernière expérience',
               description: last.status,
               command: 'scalewayAI.experiment',
             },
           ]
         : [{ id: 'no-recent', label: 'Aucune expérience récente' }],
     },
-    {
-      id: 'local',
-      label: 'Ressources locales',
-      icon: 'device-desktop',
-      children: [
-        {
-          id: 'models',
-          label: 'Démonstration hors ligne',
-          icon: 'beaker',
-          children: modelNodes(),
-        },
-      ],
-    },
   ];
   const tools = (): Node[] => [
     {
       id: 'discover',
       label: 'Découvrir',
+      icon: 'search',
       children: [
         {
           id: 'real-catalog',
@@ -192,80 +246,54 @@ export function activate(context: vscode.ExtensionContext): void {
     {
       id: 'build',
       label: 'Construire',
+      icon: 'tools',
       children: [
         {
-          id: 'deployment-operations',
-          label: 'Reprendre les opérations de déploiement',
-          icon: 'history',
-          command: 'scalewayAI.deploymentOperations',
+          id: 'create-agent',
+          label: 'Créer un agent',
+          icon: 'add',
+          command: 'scalewayAI.createAgent',
         },
         {
-          id: 'reconcile-operation',
-          label: 'Retrouver une ressource acceptée',
-          icon: 'refresh',
-          command: 'scalewayAI.reconcileDeploymentOperation',
+          id: 'create-tool',
+          label: 'Créer un tool',
+          icon: 'add',
+          command: 'scalewayAI.createTool',
         },
-        {
-          id: 'follow-deployment',
-          label: 'Suivre un déploiement existant',
-          icon: 'sync',
-          command: 'scalewayAI.followDeployment',
-        },
-        ...(connection.followingDeployment
-          ? [
-              {
-                id: 'stop-follow',
-                label: 'Arrêter le suivi du déploiement',
-                icon: 'debug-stop',
-                command: 'scalewayAI.stopDeploymentFollow',
-              },
-            ]
-          : []),
-        {
-          id: 'inspect-eula',
-          label: 'Lire l’EULA d’un modèle dédié',
-          icon: 'law',
-          command: 'scalewayAI.inspectModelEula',
-        },
-        {
-          id: 'inspect-quotas',
-          label: 'Examiner les quotas de l’organisation',
-          icon: 'checklist',
-          command: 'scalewayAI.inspectQuotas',
-        },
-        {
-          id: 'prepare-deployment',
-          label: 'Préparer un déploiement dédié',
-          icon: 'server',
-          command: 'scalewayAI.prepareDeployment',
-        },
-        {
-          id: 'load-experiment',
-          label: 'Reprendre une expérience hors ligne',
-          icon: 'folder-open',
-          command: 'scalewayAI.loadExperiment',
-        },
-        ...(last
-          ? [
-              {
-                id: 'save-experiment',
-                label: 'Enregistrer l’expérience',
-                icon: 'save',
-                command: 'scalewayAI.saveExperiment',
-              },
-              {
-                id: 'export-experiment',
-                label: 'Exporter Python / TypeScript (hors ligne)',
-                icon: 'code',
-                command: 'scalewayAI.exportExperiment',
-              },
-            ]
-          : []),
         {
           id: 'playground',
           label: 'Playground modèle',
           icon: 'beaker',
           command: 'scalewayAI.playground',
+        },
+        {
+          id: 'experiments',
+          label: 'Expériences',
+          icon: 'history',
+          children: [
+            {
+              id: 'load-experiment',
+              label: 'Reprendre une expérience',
+              icon: 'folder-open',
+              command: 'scalewayAI.loadExperiment',
+            },
+            ...(last
+              ? [
+                  {
+                    id: 'save-experiment',
+                    label: 'Enregistrer l’expérience',
+                    icon: 'save',
+                    command: 'scalewayAI.saveExperiment',
+                  },
+                  {
+                    id: 'export-experiment',
+                    label: 'Exporter Python / TypeScript',
+                    icon: 'code',
+                    command: 'scalewayAI.exportExperiment',
+                  },
+                ]
+              : []),
+          ],
         },
       ],
     },
@@ -287,9 +315,15 @@ export function activate(context: vscode.ExtensionContext): void {
       ? [
           {
             id: 'logout',
-            label: 'Se déconnecter',
+            label: 'Se déconnecter (local)',
             icon: 'sign-out',
             command: 'scalewayAI.disconnect',
+          },
+          {
+            id: 'revokeKey',
+            label: 'Révoquer la clé API et se déconnecter',
+            icon: 'key',
+            command: 'scalewayAI.revokeAPIKey',
           },
         ]
       : []),
@@ -340,6 +374,152 @@ export function activate(context: vscode.ExtensionContext): void {
         return callback(...args);
       }),
     );
+  let overviewScope: ReturnType<Connection['inferenceScope']> | undefined;
+  const clearOverviewScope = () => {
+    const previous = overviewScope;
+    overviewScope = undefined;
+    overviewToken = undefined;
+    previous?.dispose();
+  };
+  const renderModelsOverview = () => {
+    if (!modelsPanel) return;
+    clearOverviewScope();
+    if (
+      connection.connected &&
+      connection.project &&
+      vscode.workspace.isTrusted
+    ) {
+      try {
+        overviewScope = connection.inferenceScope();
+      } catch {
+        // No usable session: render an empty page, never request credentials.
+      }
+    }
+    const scope = overviewScope;
+    const rendered = modelsOverviewHtml(
+      modelsPanel.webview,
+      context.extensionUri,
+      scope?.project.name,
+      scope ? connection.serverlessResources : [],
+      scope
+        ? connection.dedicated.filter(
+            (row) =>
+              !row.deploymentInfo ||
+              row.deploymentInfo.projectId === scope.project.id,
+          )
+        : [],
+      connection.dedicatedState,
+    );
+    overviewToken = rendered.token;
+    modelsPanel.webview.html = rendered.html;
+    scope?.signal.addEventListener(
+      'abort',
+      () => {
+        if (overviewScope !== scope) return;
+        clearOverviewScope();
+        if (!modelsPanel) return;
+        const empty = modelsOverviewHtml(
+          modelsPanel.webview,
+          context.extensionUri,
+          undefined,
+          [],
+          [],
+          'Non chargé',
+        );
+        // Invalidated documents cannot dispatch account actions.
+        modelsPanel.webview.html = empty.html;
+      },
+      { once: true },
+    );
+  };
+  const openOverview = () => {
+    clearOverviewScope();
+    if (!modelsPanel) {
+      modelsPanel = vscode.window.createWebviewPanel(
+        'scalewayAI.resources',
+        'Modèles',
+        vscode.ViewColumn.One,
+        {
+          enableScripts: true,
+          localResourceRoots: [
+            vscode.Uri.joinPath(context.extensionUri, 'media'),
+          ],
+        },
+      );
+      const origin = modelsPanel;
+      const messages = origin.webview.onDidReceiveMessage(
+        async (value: unknown) => {
+          if (modelsPanel !== origin) return;
+          const input = parseOverviewInput(value);
+          if (!input || !overviewToken || input.token !== overviewToken) return;
+          if (input.type === 'catalog') {
+            await vscode.commands.executeCommand('scalewayAI.openCatalog');
+            return;
+          }
+          const scope = overviewScope;
+          if (!scope?.current()) return;
+          if (input.type === 'refresh') {
+            overviewToken = undefined;
+            await vscode.commands.executeCommand('scalewayAI.refreshModels');
+            if (modelsPanel === origin) renderModelsOverview();
+            return;
+          }
+          if (input.type !== 'open') return;
+          const rows =
+            input.kind === 'serverless'
+              ? connection.serverlessResources
+              : connection.dedicated;
+          const member = rows.some(
+            (row) =>
+              row.id === input.id &&
+              row.kind === input.kind &&
+              row.status !== 'deleted' &&
+              (!row.deploymentInfo ||
+                row.deploymentInfo.projectId === scope.project.id),
+          );
+          if (!member || !scope.current()) return;
+          await vscode.commands.executeCommand(
+            input.kind === 'serverless'
+              ? 'scalewayAI.openServerlessResource'
+              : 'scalewayAI.openService',
+            input.id,
+          );
+        },
+      );
+      origin.onDidDispose(() => {
+        messages.dispose();
+        if (modelsPanel === origin) {
+          clearOverviewScope();
+          modelsPanel = undefined;
+        }
+      });
+    } else modelsPanel.reveal(vscode.ViewColumn.One);
+    modelsPanel.title = 'Modèles';
+    renderModelsOverview();
+  };
+  register('scalewayAI.openModels', async () => {
+    await connection.ready;
+    openOverview();
+    // No browser login, project picker or notifications during automatic reads.
+    if (
+      connection.connected &&
+      connection.project &&
+      vscode.workspace.isTrusted
+    )
+      await refreshResources(true);
+  });
+  register('scalewayAI.openAgents', () => deployedResources.open('agents'));
+  register('scalewayAI.openTools', () => deployedResources.open('tools'));
+  register('scalewayAI.openLocalAgents', () => localInventory.open('agents'));
+  register('scalewayAI.openLocalTools', () => localInventory.open('tools'));
+  register('scalewayAI.openAgentTemplates', () =>
+    localCreation.open('agents', 'templates'),
+  );
+  register('scalewayAI.openToolTemplates', () =>
+    localCreation.open('tools', 'templates'),
+  );
+  register('scalewayAI.createAgent', () => localCreation.open('agents'));
+  register('scalewayAI.createTool', () => localCreation.open('tools'));
   const openExperiment = async () => {
     if (!last) {
       void vscode.window.showInformationMessage(
@@ -433,6 +613,9 @@ export function activate(context: vscode.ExtensionContext): void {
     });
   };
   register('scalewayAI.login', () => connection.login());
+  register('scalewayAI.useExistingAPIKey', () =>
+    connection.useExistingAPIKey(),
+  );
   register('scalewayAI.setProject', async () => {
     await connection.ready;
     const choice = await vscode.window.showQuickPick(
@@ -457,14 +640,24 @@ export function activate(context: vscode.ExtensionContext): void {
     );
     if (choice?.id === 'switch') await connection.switchProject();
     if (choice?.id === 'create') await connection.createProject();
-  });
-  register('scalewayAI.switchProject', () => connection.switchProject());
-  register('scalewayAI.loadModels', () => connection.loadModels());
-  register('scalewayAI.refreshModels', async () => {
-    await connection.loadCatalogs();
-    if (connection.connected && connection.project)
+    if (choice && connection.connected && connection.project)
       await connection.loadModels();
   });
+  register('scalewayAI.switchProject', () => connection.switchProject());
+  let resourceRefresh: Promise<void> | undefined;
+  const refreshResources = (silent = false): Promise<void> => {
+    if (resourceRefresh) return resourceRefresh;
+    resourceRefresh = (async () => {
+      // Check Serverless independently: dedicated discovery may be denied by IAM.
+      await connection.refreshServerlessAvailability(silent);
+      await connection.loadModels(silent);
+    })().finally(() => {
+      resourceRefresh = undefined;
+    });
+    return resourceRefresh;
+  };
+  register('scalewayAI.loadModels', () => refreshResources());
+  register('scalewayAI.refreshModels', () => refreshResources());
   register('scalewayAI.inspectModelEula', async (id: unknown) => {
     const eula = await connection.inspectModelEula(
       typeof id === 'string' ? id : undefined,
@@ -601,8 +794,21 @@ export function activate(context: vscode.ExtensionContext): void {
             );
             return;
           }
-          if (input.type === 'prepare')
-            await connection.prepareDeployment(input.id);
+          if (input.type === 'prepare' || input.type === 'deploy') {
+            const row = await connection.deployModel(input.id);
+            if (row) await showService(row);
+            updateCatalog();
+          }
+          if (input.type === 'use')
+            await vscode.commands.executeCommand(
+              'scalewayAI.useServerless',
+              input.id,
+            );
+          if (input.type === 'open-deployment')
+            await vscode.commands.executeCommand(
+              'scalewayAI.openService',
+              input.id,
+            );
           if (input.type === 'details') {
             const details = catalogDetails(
               input.kind === 'serverless'
@@ -670,30 +876,175 @@ export function activate(context: vscode.ExtensionContext): void {
         .length,
     };
   });
+  const showService = async (row: ListedModel) => {
+    const scope = connection.project;
+    const choice = await vscode.window.showQuickPick(
+      [
+        {
+          label: 'Ouvrir dans le playground',
+          id: 'playground',
+          description:
+            row.status === 'ready' || row.kind === 'serverless'
+              ? 'Contexte modèle sélectionné'
+              : 'Service pas encore prêt',
+        },
+        ...(row.kind === 'dedicated'
+          ? [
+              { label: 'Actualiser / suivre le service', id: 'follow' },
+              { label: 'Historique des opérations', id: 'history' },
+              { label: 'Voir les détails du service', id: 'details' },
+            ]
+          : [{ label: 'Voir les détails du modèle', id: 'details' }]),
+      ],
+      {
+        title: row.label,
+        placeHolder:
+          row.kind === 'serverless'
+            ? 'Sélection de cet espace de travail, pas un déploiement cloud'
+            : `État : ${row.status ?? 'inconnu'}`,
+      },
+    );
+    if (
+      !choice ||
+      connection.project !== scope ||
+      !connection.connected ||
+      !vscode.workspace.isTrusted
+    )
+      return;
+    if (choice.id === 'follow') await connection.followDeployment(row.id);
+    if (choice.id === 'history')
+      await vscode.commands.executeCommand('scalewayAI.deploymentOperations');
+    if (choice.id === 'details') {
+      const document = await vscode.workspace.openTextDocument({
+        language: 'json',
+        content: JSON.stringify(row, null, 2),
+      });
+      if (connection.project === scope)
+        await vscode.window.showTextDocument(document, { preview: false });
+    }
+    if (choice.id === 'playground') await openServicePlayground(row);
+  };
+  const openServicePlayground = async (row: ListedModel) => {
+    if (
+      !connection.connected ||
+      !vscode.workspace.isTrusted ||
+      !connection.project
+    )
+      return;
+    const scope = await connection.modelInferenceScope(row);
+    const snapshot = structuredClone(row);
+    const binding = JSON.stringify(snapshot);
+    const current = () =>
+      scope.current() &&
+      (snapshot.kind !== 'dedicated' ||
+        connection.dedicated.some(
+          (candidate) =>
+            candidate.id === snapshot.id &&
+            JSON.stringify(candidate) === binding,
+        ));
+    let approval:
+      | import('./dedicatedInvocationPolicy').DedicatedEndpointApproval
+      | undefined;
+    try {
+      if (!current()) {
+        scope.dispose();
+        return;
+      }
+      if (snapshot.kind === 'dedicated') {
+        approval = await dedicatedConsent(snapshot, scope.project, current);
+        if (
+          !approval ||
+          !current() ||
+          !dedicatedInvocationPolicy(snapshot, scope.project, approval).allowed
+        ) {
+          scope.dispose();
+          return;
+        }
+      }
+    } catch {
+      scope.dispose();
+      return;
+    }
+    const servicePanel = vscode.window.createWebviewPanel(
+      'scalewayAI.servicePlayground',
+      'Playground · ' + row.label,
+      vscode.ViewColumn.One,
+      {
+        enableScripts: true,
+        localResourceRoots: [
+          vscode.Uri.joinPath(context.extensionUri, 'media'),
+        ],
+      },
+    );
+    const controller = new ServicePlayground(
+      snapshot,
+      { ...scope, current },
+      (state) => {
+        void servicePanel.webview.postMessage(state);
+      },
+      undefined,
+      approval ? { approval } : undefined,
+    );
+    const messages = servicePanel.webview.onDidReceiveMessage((value) => {
+      void controller.receive(value);
+    });
+    liveServicePanels.add(servicePanel);
+    servicePanel.onDidDispose(() => {
+      liveServicePanels.delete(servicePanel);
+      try {
+        messages.dispose();
+      } finally {
+        controller.dispose();
+      }
+    });
+    servicePanel.webview.html = servicePlaygroundHtml(
+      servicePanel.webview,
+      context.extensionUri,
+      snapshot,
+      scope.project,
+      !!serverlessInvocation(snapshot),
+      approval,
+    );
+  };
+  register('scalewayAI.useServerless', async (id: unknown) => {
+    if (typeof id !== 'string') return;
+    const row = await connection.useServerless(id);
+    if (row) {
+      updateCatalog();
+      await vscode.window.showInformationMessage(
+        'Accès LLM configuré · clé IAM vérifiée et modèle disponible. Cet accès est proposé aux agents ; aucune inférence lancée, aucun déploiement dédié créé.',
+      );
+    }
+  });
+  register('scalewayAI.openServerlessResource', async (id: unknown) => {
+    if (
+      typeof id !== 'string' ||
+      !connection.connected ||
+      !vscode.workspace.isTrusted
+    )
+      return;
+    const row = connection.serverlessResources.find(
+      (resource) => resource.id === id,
+    );
+    if (row) await showService(row);
+  });
+  register('scalewayAI.deployModel', async (id: unknown) => {
+    if (typeof id !== 'string') return;
+    const row = await connection.deployModel(id);
+    if (row) await showService(row);
+  });
+  register('scalewayAI.openService', async (id: unknown) => {
+    if (typeof id !== 'string') return;
+    const row = await connection.deploymentDetails(id);
+    if (row) await showService(row);
+  });
   register('scalewayAI.deploymentDetails', async (id: unknown) => {
     if (typeof id !== 'string') return;
     const row = await connection.deploymentDetails(id);
-    if (!row) return;
-    const document = await vscode.workspace.openTextDocument({
-      language: 'json',
-      content: JSON.stringify(
-        {
-          mode: 'read-only-deployment-details',
-          resource: row,
-          notes: [
-            'Données retournées par le contrôle Scaleway ; endpoints non sondés.',
-            'Un déploiement existant n’est pas nécessairement ready ou joignable.',
-            'Aucune requête vers les endpoints, aucune inférence ni création.',
-            'authentication disabled signifie endpoint sans protection IAM ; ne pas supposer protégé.',
-          ],
-        },
-        null,
-        2,
-      ),
-    });
-    await vscode.window.showTextDocument(document, { preview: false });
+    if (row) await showService(row);
   });
   register('scalewayAI.disconnect', () => connection.disconnect());
+  register('scalewayAI.revokeAPIKey', () => connection.revokeAPIKey());
   register('scalewayAI.modelInfo', (kind: unknown, id: unknown) => {
     const row = (
       kind === 'serverless'
@@ -711,7 +1062,7 @@ export function activate(context: vscode.ExtensionContext): void {
             : kind === 'dedicated-catalog'
               ? 'Modèle à déployer, pas un déploiement existant.'
               : 'Déploiement existant du projet en fr-par.') +
-          ' Inférence réelle non implémentée dans ce VSIX.',
+          ' Playground chat Serverless : modèle sélectionné configurable, selon le type d’opération.',
       );
   });
   register('scalewayAI.open', async () => {
@@ -809,18 +1160,14 @@ export function activate(context: vscode.ExtensionContext): void {
       vscode.Uri.parse('https://www.scaleway.com/en/docs/generative-apis/'),
     ),
   );
-  const status = vscode.window.createStatusBarItem(
-    vscode.StatusBarAlignment.Left,
-    20,
-  );
-  status.text = '$(beaker) Scaleway AI: Offline';
-  status.command = 'scalewayAI.open';
+  updateStatus();
   status.show();
   context.subscriptions.push(status, changed, {
     dispose: () => {
       if (active) active.cancelled = true;
       panel?.dispose();
       catalogPanel?.dispose();
+      modelsPanel?.dispose();
       last = undefined;
     },
   });

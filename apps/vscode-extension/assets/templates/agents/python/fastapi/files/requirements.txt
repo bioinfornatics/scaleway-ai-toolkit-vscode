@@ -1,0 +1,3 @@
+# Starter constraints, not a production lock.
+fastapi>=0.115,<1
+uvicorn>=0.30,<1

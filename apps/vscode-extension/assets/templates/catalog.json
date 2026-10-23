@@ -1,0 +1,31 @@
+{
+  "format_version": 1,
+  "templates": [
+    "agents/python/strands/template.json",
+    "agents/python/langchain/template.json",
+    "agents/typescript/langchain/template.json",
+    "agents/typescript/strands/template.json",
+    "agents/typescript/mastra/template.json",
+    "agents/python/fastapi/template.json",
+    "agents/python/django/template.json",
+    "agents/typescript/nestjs/template.json",
+    "agents/typescript/elysia/template.json",
+    "agents/rust/axum/template.json",
+    "agents/rust/actix/template.json",
+    "agents/python/none/template.json",
+    "agents/typescript/none/template.json",
+    "agents/rust/none/template.json",
+    "agents/python/strands/builtin/template.json",
+    "tools/python/fastapi/template.json",
+    "tools/python/django/template.json",
+    "tools/typescript/nestjs/template.json",
+    "tools/typescript/elysia/template.json",
+    "tools/rust/axum/template.json",
+    "tools/rust/actix/template.json",
+    "tools/python/none/template.json",
+    "tools/typescript/none/template.json",
+    "tools/rust/none/template.json",
+    "tools/python/none/builtin/template.json",
+    "tools/python/mcp/builtin/template.json"
+  ]
+}

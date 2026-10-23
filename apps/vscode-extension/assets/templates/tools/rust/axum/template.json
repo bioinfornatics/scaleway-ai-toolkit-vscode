@@ -1,0 +1,17 @@
+{
+  "format_version": 1,
+  "id": "tools-rust-axum",
+  "label": "Axum · rust",
+  "kind": "tools",
+  "language": "rust",
+  "framework": "axum",
+  "category": "backend",
+  "usage": "stack",
+  "description": "Base backend · transport outil/MCP à intégrer.",
+  "files": [
+    "Cargo.toml",
+    "README.md",
+    "src/lib.rs",
+    "tool.authoring.json"
+  ]
+}

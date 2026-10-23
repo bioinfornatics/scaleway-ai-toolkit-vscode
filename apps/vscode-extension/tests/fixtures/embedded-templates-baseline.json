@@ -1,0 +1,509 @@
+[
+  {
+    "usage": "stack",
+    "language": "python",
+    "framework": "strands",
+    "category": "agent",
+    "template": {
+      "version": 1,
+      "id": "agents-python-strands",
+      "label": "Strands · python",
+      "kind": "agents",
+      "description": "Base SDK agent · modèle et runtime à configurer.",
+      "files": {
+        ".env.example": "SCW_INFERENCE_BASE_URL=${SCW_INFERENCE_BASE_URL}\nSCW_INFERENCE_MODEL_ID=${SCW_INFERENCE_MODEL_ID}\nSCW_API_KEY=${SCW_API_KEY}\n",
+        ".gitignore": ".env\n.env.*\n!.env.example\n__pycache__/\n.venv/\n",
+        "README.md": "# Strands · python\nBase SDK agent · modèle et runtime à configurer.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "agent.authoring.json": "{\n  \"status\": \"incomplete-not-a-portable-spec\",\n  \"target_contract\": \"1.0.0\",\n  \"agent_id\": \"example-agent\",\n  \"name\": \"example-agent\",\n  \"instructions\": \"Describe reviewed agent instructions here.\",\n  \"selected_model_id\": \"SELECTED_MODEL_REQUIRED\",\n  \"required_before_portable_spec\": [\n    \"model.scope\",\n    \"model.endpoint_ref\",\n    \"model.capability_revision\"\n  ]\n}\n",
+        "agent.py": "\"\"\"Authoring example only; no dispatch entry point or runtime authority.\"\"\"\nimport json\nimport os\nfrom pathlib import Path\nfrom urllib.parse import urlsplit\n\ndef build_agent():\n    endpoint = os.environ[\"SCW_INFERENCE_BASE_URL\"]\n    model_id = os.environ[\"SCW_INFERENCE_MODEL_ID\"]\n    api_key = os.environ[\"SCW_API_KEY\"]\n    if not all(value.strip() for value in (endpoint, model_id, api_key)):\n        raise ValueError(\"missing external configuration\")\n    url = urlsplit(endpoint)\n    if (url.scheme != \"https\" or not url.hostname or url.username or\n            url.password or url.query or url.fragment):\n        raise ValueError(\"invalid endpoint\")\n    # Trusted host must resolve endpoint_ref, attest provenance/capabilities\n    # and install an all-dispatch budget guard. Environment is NOT authority.\n    raise RuntimeError(\"trusted endpoint resolution and dispatch guard required\")\n\n    # Mapping sketch deliberately unreachable until runtime integration review.\n    from strands import Agent\n    from strands.models.openai import OpenAIModel\n    config = json.loads(Path(__file__).with_name(\"agent.json\").read_text())\n    selected = config[\"model\"].get(\"model_id\", config[\"model\"].get(\"inference_model_id\"))\n    if selected != model_id:\n        raise ValueError(\"model selection mismatch\")\n    model = OpenAIModel(\n        model_id=model_id,\n        client_args={\"base_url\": endpoint, \"api_key\": os.environ[\"SCW_API_KEY\"],\n                     \"max_retries\": 0},\n        params={\"max_tokens\": config[\"parameters\"][\"max_output_tokens\"]},\n    )\n    return Agent(model=model, system_prompt=config[\"instructions\"], tools=[])\n",
+        "requirements.txt": "# ADR0004 / specifications/references/compatibility/runtime-contract-profile-v1.json\n# Validation-profile direct pins only; NOT a production lock or runtime approval.\nstrands-agents[openai]==1.61.1\nopenai==2.54.0\nhttpx==0.28.1\n"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "python",
+    "framework": "langchain",
+    "category": "agent",
+    "template": {
+      "version": 1,
+      "id": "agents-python-langchain",
+      "label": "LangChain · python",
+      "kind": "agents",
+      "description": "Base SDK agent · modèle et runtime à configurer.",
+      "files": {
+        "README.md": "# LangChain · python\nBase SDK agent · modèle et runtime à configurer.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "agent.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"agents\",\n  \"language\": \"python\",\n  \"framework\": \"langchain\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}",
+        "agent.py": "from langchain.agents import create_agent\n\ndef build_agent():\n    # Resolve a reviewed Scaleway adapter and budgets before SDK construction.\n    raise RuntimeError(\"Trusted model mapping and dispatch guard required\")\n",
+        "requirements.txt": "# Starter constraints, not a lock or compatibility proof.\nlangchain>=1,<2\n"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "typescript",
+    "framework": "langchain",
+    "category": "agent",
+    "template": {
+      "version": 1,
+      "id": "agents-typescript-langchain",
+      "label": "LangChain · typescript",
+      "kind": "agents",
+      "description": "Base SDK agent · modèle et runtime à configurer.",
+      "files": {
+        "README.md": "# LangChain · typescript\nBase SDK agent · modèle et runtime à configurer.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "agent.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"agents\",\n  \"language\": \"typescript\",\n  \"framework\": \"langchain\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}",
+        "package.json": "{\n  \"name\": \"local-agent\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"build\": \"tsc -p .\"\n  },\n  \"dependencies\": {\n    \"langchain\": \"^1.0.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5.9.0\",\n    \"@types/node\": \"^22.0.0\"\n  }\n}",
+        "src/agent.ts": "import { createAgent } from \"langchain\";\n\nexport function buildAgent(): never {\n  // Resolve a reviewed Scaleway model adapter and budgets before SDK construction.\n  throw new Error(\"Trusted model mapping and dispatch guard required\");\n}\n",
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"NodeNext\",\n    \"moduleResolution\": \"NodeNext\",\n    \"strict\": true,\n    \"outDir\": \"dist\",\n    \"experimentalDecorators\": true,\n    \"emitDecoratorMetadata\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\"\n  ]\n}"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "typescript",
+    "framework": "strands",
+    "category": "agent",
+    "template": {
+      "version": 1,
+      "id": "agents-typescript-strands",
+      "label": "Strands · typescript",
+      "kind": "agents",
+      "description": "Base SDK agent · modèle et runtime à configurer.",
+      "files": {
+        "README.md": "# Strands · typescript\nBase SDK agent · modèle et runtime à configurer.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "agent.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"agents\",\n  \"language\": \"typescript\",\n  \"framework\": \"strands\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}",
+        "package.json": "{\n  \"name\": \"local-agent\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"build\": \"tsc -p .\"\n  },\n  \"dependencies\": {\n    \"@strands-agents/sdk\": \"^0.1.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5.9.0\",\n    \"@types/node\": \"^22.0.0\"\n  }\n}",
+        "src/agent.ts": "import { Agent } from \"@strands-agents/sdk\";\n\nexport function buildAgent(): never {\n  // Resolve a reviewed Scaleway model adapter and budgets before SDK construction.\n  throw new Error(\"Trusted model mapping and dispatch guard required\");\n}\n",
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"NodeNext\",\n    \"moduleResolution\": \"NodeNext\",\n    \"strict\": true,\n    \"outDir\": \"dist\",\n    \"experimentalDecorators\": true,\n    \"emitDecoratorMetadata\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\"\n  ]\n}"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "typescript",
+    "framework": "mastra",
+    "category": "agent",
+    "template": {
+      "version": 1,
+      "id": "agents-typescript-mastra",
+      "label": "Mastra · typescript",
+      "kind": "agents",
+      "description": "Base SDK agent · modèle et runtime à configurer.",
+      "files": {
+        "README.md": "# Mastra · typescript\nBase SDK agent · modèle et runtime à configurer.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "agent.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"agents\",\n  \"language\": \"typescript\",\n  \"framework\": \"mastra\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}",
+        "package.json": "{\n  \"name\": \"local-agent\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"build\": \"tsc -p .\"\n  },\n  \"dependencies\": {\n    \"@mastra/core\": \"^1.0.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5.9.0\",\n    \"@types/node\": \"^22.0.0\"\n  }\n}",
+        "src/agent.ts": "import { Agent } from \"@mastra/core/agent\";\n\nexport function buildAgent(): never {\n  // Resolve a reviewed Scaleway model adapter and budgets before SDK construction.\n  throw new Error(\"Trusted model mapping and dispatch guard required\");\n}\n",
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"NodeNext\",\n    \"moduleResolution\": \"NodeNext\",\n    \"strict\": true,\n    \"outDir\": \"dist\",\n    \"experimentalDecorators\": true,\n    \"emitDecoratorMetadata\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\"\n  ]\n}"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "python",
+    "framework": "fastapi",
+    "category": "backend",
+    "template": {
+      "version": 1,
+      "id": "agents-python-fastapi",
+      "label": "FastAPI · python",
+      "kind": "agents",
+      "description": "Base backend · SDK agent à intégrer.",
+      "files": {
+        "README.md": "# FastAPI · python\nBase backend · SDK agent à intégrer.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "agent.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"agents\",\n  \"language\": \"python\",\n  \"framework\": \"fastapi\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}",
+        "agent.py": "from fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get(\"/health\")\ndef health():\n    return {\"status\": \"ok\"}\n\n# No launch on import. Manual local example: uvicorn agent:app --host 127.0.0.1\n",
+        "requirements.txt": "# Starter constraints, not a production lock.\nfastapi>=0.115,<1\nuvicorn>=0.30,<1\n"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "python",
+    "framework": "django",
+    "category": "backend",
+    "template": {
+      "version": 1,
+      "id": "agents-python-django",
+      "label": "Django · python",
+      "kind": "agents",
+      "description": "Base backend · SDK agent à intégrer.",
+      "files": {
+        "README.md": "# Django · python\nBase backend · SDK agent à intégrer.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "agent.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"agents\",\n  \"language\": \"python\",\n  \"framework\": \"django\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}",
+        "agent.py": "# Django entry point; no server launch on import.\nfrom django.core.wsgi import get_wsgi_application\n\ndef build_application():\n    import os\n    os.environ.setdefault(\"DJANGO_SETTINGS_MODULE\", \"settings\")\n    return get_wsgi_application()\n",
+        "requirements.txt": "# Starter constraints, not a production lock.\nDjango>=5.2,<6\n",
+        "settings.py": "import os\n\nSECRET_KEY = os.environ[\"DJANGO_SECRET_KEY\"]\nDEBUG = False\nALLOWED_HOSTS = [\"127.0.0.1\", \"localhost\"]\nROOT_URLCONF = \"urls\"\nINSTALLED_APPS = []\nMIDDLEWARE = []\n",
+        "urls.py": "from django.http import JsonResponse\nfrom django.urls import path\n\ndef health(request):\n    return JsonResponse({\"status\": \"ok\"})\n\nurlpatterns = [path(\"health\", health)]\n"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "typescript",
+    "framework": "nestjs",
+    "category": "backend",
+    "template": {
+      "version": 1,
+      "id": "agents-typescript-nestjs",
+      "label": "NestJS · typescript",
+      "kind": "agents",
+      "description": "Base backend · SDK agent à intégrer.",
+      "files": {
+        "README.md": "# NestJS · typescript\nBase backend · SDK agent à intégrer.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "agent.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"agents\",\n  \"language\": \"typescript\",\n  \"framework\": \"nestjs\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}",
+        "package.json": "{\n  \"name\": \"local-agent\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"build\": \"tsc -p .\"\n  },\n  \"dependencies\": {\n    \"@nestjs/common\": \"^11.0.0\",\n    \"@nestjs/core\": \"^11.0.0\",\n    \"@nestjs/platform-express\": \"^11.0.0\",\n    \"reflect-metadata\": \"^0.2.0\",\n    \"rxjs\": \"^7.8.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5.9.0\",\n    \"@types/node\": \"^22.0.0\"\n  }\n}",
+        "src/agent.ts": "import \"reflect-metadata\";\nimport { Controller, Get, Module } from \"@nestjs/common\";\nimport { NestFactory } from \"@nestjs/core\";\n\n@Controller()\nclass HealthController {\n  @Get(\"health\")\n  health() { return { status: \"ok\" }; }\n}\n@Module({ controllers: [HealthController] })\nclass AppModule {}\n\nexport async function buildApplication() {\n  return NestFactory.create(AppModule);\n}\n// Manual only: await (await buildApplication()).listen(3000, \"127.0.0.1\");\n",
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"NodeNext\",\n    \"moduleResolution\": \"NodeNext\",\n    \"strict\": true,\n    \"outDir\": \"dist\",\n    \"experimentalDecorators\": true,\n    \"emitDecoratorMetadata\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\"\n  ]\n}"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "typescript",
+    "framework": "elysia",
+    "category": "backend",
+    "template": {
+      "version": 1,
+      "id": "agents-typescript-elysia",
+      "label": "ElysiaJS · typescript",
+      "kind": "agents",
+      "description": "Base backend · SDK agent à intégrer.",
+      "files": {
+        "README.md": "# ElysiaJS · typescript\nBase backend · SDK agent à intégrer.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n\nElysia targets Bun. Install/review Bun separately; the extension does not install it.\n",
+        "agent.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"agents\",\n  \"language\": \"typescript\",\n  \"framework\": \"elysia\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}",
+        "package.json": "{\n  \"name\": \"local-agent\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"build\": \"tsc -p .\"\n  },\n  \"dependencies\": {\n    \"elysia\": \"^1.0.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5.9.0\",\n    \"@types/node\": \"^22.0.0\"\n  }\n}",
+        "src/agent.ts": "import { Elysia } from \"elysia\";\n\nexport const app = new Elysia().get(\"/health\", () => ({ status: \"ok\" }));\n// Bun runtime; no automatic listen. Review authentication before exposure.\n",
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"NodeNext\",\n    \"moduleResolution\": \"NodeNext\",\n    \"strict\": true,\n    \"outDir\": \"dist\",\n    \"experimentalDecorators\": true,\n    \"emitDecoratorMetadata\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\"\n  ]\n}"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "rust",
+    "framework": "axum",
+    "category": "backend",
+    "template": {
+      "version": 1,
+      "id": "agents-rust-axum",
+      "label": "Axum · rust",
+      "kind": "agents",
+      "description": "Base backend · SDK agent à intégrer.",
+      "files": {
+        "Cargo.toml": "[package]\nname = \"local-agent\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[dependencies]\naxum = \"0.8\"\ntokio = { version = \"1\", features = [\"full\"] }\n",
+        "README.md": "# Axum · rust\nBase backend · SDK agent à intégrer.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "agent.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"agents\",\n  \"language\": \"rust\",\n  \"framework\": \"axum\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}",
+        "src/lib.rs": "use axum::{routing::get, Router};\n\npub fn application() -> Router {\n    Router::new().route(\"/health\", get(|| async { \"ok\" }))\n}\n// No listener. Bind loopback explicitly during reviewed manual integration.\n"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "rust",
+    "framework": "actix",
+    "category": "backend",
+    "template": {
+      "version": 1,
+      "id": "agents-rust-actix",
+      "label": "Actix Web · rust",
+      "kind": "agents",
+      "description": "Base backend · SDK agent à intégrer.",
+      "files": {
+        "Cargo.toml": "[package]\nname = \"local-agent\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[dependencies]\nactix-web = \"4\"\n",
+        "README.md": "# Actix Web · rust\nBase backend · SDK agent à intégrer.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "agent.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"agents\",\n  \"language\": \"rust\",\n  \"framework\": \"actix\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}",
+        "src/lib.rs": "use actix_web::{web, HttpResponse};\n\npub fn configure(cfg: &mut web::ServiceConfig) {\n    cfg.route(\"/health\", web::get().to(|| async { HttpResponse::Ok().body(\"ok\") }));\n}\n// No listener. Bind loopback explicitly during reviewed manual integration.\n"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "python",
+    "framework": "none",
+    "category": "basic",
+    "template": {
+      "version": 1,
+      "id": "agents-python-none",
+      "label": "Sans framework · python",
+      "kind": "agents",
+      "description": "Base langage · SDK agent à choisir.",
+      "files": {
+        "README.md": "# Sans framework · python\nBase langage · SDK agent à choisir.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "agent.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"agents\",\n  \"language\": \"python\",\n  \"framework\": \"none\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}",
+        "agent.py": "def build_agent():\n    raise RuntimeError(\"Choose and integrate a reviewed agent SDK first\")\n"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "typescript",
+    "framework": "none",
+    "category": "basic",
+    "template": {
+      "version": 1,
+      "id": "agents-typescript-none",
+      "label": "Sans framework · typescript",
+      "kind": "agents",
+      "description": "Base langage · SDK agent à choisir.",
+      "files": {
+        "README.md": "# Sans framework · typescript\nBase langage · SDK agent à choisir.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "agent.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"agents\",\n  \"language\": \"typescript\",\n  \"framework\": \"none\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}",
+        "package.json": "{\n  \"name\": \"local-agent\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"build\": \"tsc -p .\"\n  },\n  \"dependencies\": {},\n  \"devDependencies\": {\n    \"typescript\": \"^5.9.0\",\n    \"@types/node\": \"^22.0.0\"\n  }\n}",
+        "src/agent.ts": "export function buildAgent(): never {\n  throw new Error(\"Choose and integrate a reviewed agent SDK first\");\n}\n",
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"NodeNext\",\n    \"moduleResolution\": \"NodeNext\",\n    \"strict\": true,\n    \"outDir\": \"dist\",\n    \"experimentalDecorators\": true,\n    \"emitDecoratorMetadata\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\"\n  ]\n}"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "rust",
+    "framework": "none",
+    "category": "basic",
+    "template": {
+      "version": 1,
+      "id": "agents-rust-none",
+      "label": "Sans framework · rust",
+      "kind": "agents",
+      "description": "Base langage · SDK agent à choisir.",
+      "files": {
+        "Cargo.toml": "[package]\nname = \"local-agent\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[dependencies]\n",
+        "README.md": "# Sans framework · rust\nBase langage · SDK agent à choisir.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "agent.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"agents\",\n  \"language\": \"rust\",\n  \"framework\": \"none\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}",
+        "src/lib.rs": "pub fn build_agent() -> Result<(), &'static str> {\n    Err(\"Choose and integrate a reviewed Rust agent SDK first\")\n}\n"
+      }
+    }
+  },
+  {
+    "usage": "builtin",
+    "language": "python",
+    "framework": "strands",
+    "category": "agent",
+    "template": {
+      "version": 1,
+      "id": "strands-python-agent",
+      "label": "example-agent",
+      "kind": "agents",
+      "description": "Offline Strands Python authoring scaffold; runtime integration required.",
+      "files": {
+        ".env.example": "SCW_INFERENCE_BASE_URL=${SCW_INFERENCE_BASE_URL}\nSCW_INFERENCE_MODEL_ID=${SCW_INFERENCE_MODEL_ID}\nSCW_API_KEY=${SCW_API_KEY}\n",
+        ".gitignore": ".env\n.env.*\n!.env.example\n__pycache__/\n.venv/\n",
+        "README.md": "# Editable Scaleway Strands Python authoring scaffold\n\nGeneration only writes files: never installs, imports Python, invokes a model,\nexecutes tools, launches MCP or deploys. No runnable Agent entry point.\nagent.py is an inspectable mapping sketch, failing closed before SDK construction.\n\nExternal names: SCW_INFERENCE_BASE_URL, SCW_INFERENCE_MODEL_ID, SCW_API_KEY.\n.env.example documents references, not values; do not source it as configuration\nor commit credentials. Never pass secrets through this API or model target.\nNo implicit OpenAI/Bedrock fallback, native structured output or automatic tools.\n\nPortable saved specs use contracts/agent-spec/v1/schema.json, version 1.0.0,\nNOT template-library version 1. References resolve only through trusted host\nregistries; workspace URLs/environment values are NOT execution authority.\nVerify endpoint provenance, scope, capability_revision, chat/token capability\nrequirements and all-effect budgets before dispatch. Text output only.\n\nrequirements.txt pins ADR0004 discovery evidence, not a transitive lock.\nOnly CPython 3.14.8 Linux amd64 was tested in repository discovery evidence.\nNo runtime/local/hosted/packaging/platform compatibility is claimed.\nDisable telemetry exports and guard nested egress before future execution.\n\nWithout a complete model target agent.authoring.json is deliberately incomplete\nand NOT a portable spec. Add reviewed scope/endpoint/capability refs, then\nregenerate in a new directory; never fabricate provenance to pass a schema.\nWith a target agent.json has stable agent_id and generated-content revision.\nManual edits need explicit validation/revision review; reruns never overwrite.\nRequested budget is an authoring request, never an execution grant.\n",
+        "agent.authoring.json": "{\n  \"status\": \"incomplete-not-a-portable-spec\",\n  \"target_contract\": \"1.0.0\",\n  \"agent_id\": \"example-agent\",\n  \"name\": \"example-agent\",\n  \"instructions\": \"Describe reviewed agent instructions here.\",\n  \"selected_model_id\": \"SELECTED_MODEL_REQUIRED\",\n  \"required_before_portable_spec\": [\n    \"model.scope\",\n    \"model.endpoint_ref\",\n    \"model.capability_revision\"\n  ]\n}\n",
+        "agent.py": "\"\"\"Authoring example only; no dispatch entry point or runtime authority.\"\"\"\nimport json\nimport os\nfrom pathlib import Path\nfrom urllib.parse import urlsplit\n\ndef build_agent():\n    endpoint = os.environ[\"SCW_INFERENCE_BASE_URL\"]\n    model_id = os.environ[\"SCW_INFERENCE_MODEL_ID\"]\n    api_key = os.environ[\"SCW_API_KEY\"]\n    if not all(value.strip() for value in (endpoint, model_id, api_key)):\n        raise ValueError(\"missing external configuration\")\n    url = urlsplit(endpoint)\n    if (url.scheme != \"https\" or not url.hostname or url.username or\n            url.password or url.query or url.fragment):\n        raise ValueError(\"invalid endpoint\")\n    # Trusted host must resolve endpoint_ref, attest provenance/capabilities\n    # and install an all-dispatch budget guard. Environment is NOT authority.\n    raise RuntimeError(\"trusted endpoint resolution and dispatch guard required\")\n\n    # Mapping sketch deliberately unreachable until runtime integration review.\n    from strands import Agent\n    from strands.models.openai import OpenAIModel\n    config = json.loads(Path(__file__).with_name(\"agent.json\").read_text())\n    selected = config[\"model\"].get(\"model_id\", config[\"model\"].get(\"inference_model_id\"))\n    if selected != model_id:\n        raise ValueError(\"model selection mismatch\")\n    model = OpenAIModel(\n        model_id=model_id,\n        client_args={\"base_url\": endpoint, \"api_key\": os.environ[\"SCW_API_KEY\"],\n                     \"max_retries\": 0},\n        params={\"max_tokens\": config[\"parameters\"][\"max_output_tokens\"]},\n    )\n    return Agent(model=model, system_prompt=config[\"instructions\"], tools=[])\n",
+        "requirements.txt": "# ADR0004 / specifications/references/compatibility/runtime-contract-profile-v1.json\n# Validation-profile direct pins only; NOT a production lock or runtime approval.\nstrands-agents[openai]==1.61.1\nopenai==2.54.0\nhttpx==0.28.1\n"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "python",
+    "framework": "fastapi",
+    "category": "backend",
+    "template": {
+      "version": 1,
+      "id": "tools-python-fastapi",
+      "label": "FastAPI · python",
+      "kind": "tools",
+      "description": "Base backend · transport outil/MCP à intégrer.",
+      "files": {
+        "README.md": "# FastAPI · python\nBase backend · transport outil/MCP à intégrer.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "requirements.txt": "# Starter constraints, not a production lock.\nfastapi>=0.115,<1\nuvicorn>=0.30,<1\n",
+        "tool.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"tools\",\n  \"language\": \"python\",\n  \"framework\": \"fastapi\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}",
+        "tool.py": "from fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get(\"/health\")\ndef health():\n    return {\"status\": \"ok\"}\n\n# No launch on import. Manual local example: uvicorn tool:app --host 127.0.0.1\n"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "python",
+    "framework": "django",
+    "category": "backend",
+    "template": {
+      "version": 1,
+      "id": "tools-python-django",
+      "label": "Django · python",
+      "kind": "tools",
+      "description": "Base backend · transport outil/MCP à intégrer.",
+      "files": {
+        "README.md": "# Django · python\nBase backend · transport outil/MCP à intégrer.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "requirements.txt": "# Starter constraints, not a production lock.\nDjango>=5.2,<6\n",
+        "settings.py": "import os\n\nSECRET_KEY = os.environ[\"DJANGO_SECRET_KEY\"]\nDEBUG = False\nALLOWED_HOSTS = [\"127.0.0.1\", \"localhost\"]\nROOT_URLCONF = \"urls\"\nINSTALLED_APPS = []\nMIDDLEWARE = []\n",
+        "tool.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"tools\",\n  \"language\": \"python\",\n  \"framework\": \"django\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}",
+        "tool.py": "# Django entry point; no server launch on import.\nfrom django.core.wsgi import get_wsgi_application\n\ndef build_application():\n    import os\n    os.environ.setdefault(\"DJANGO_SETTINGS_MODULE\", \"settings\")\n    return get_wsgi_application()\n",
+        "urls.py": "from django.http import JsonResponse\nfrom django.urls import path\n\ndef health(request):\n    return JsonResponse({\"status\": \"ok\"})\n\nurlpatterns = [path(\"health\", health)]\n"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "typescript",
+    "framework": "nestjs",
+    "category": "backend",
+    "template": {
+      "version": 1,
+      "id": "tools-typescript-nestjs",
+      "label": "NestJS · typescript",
+      "kind": "tools",
+      "description": "Base backend · transport outil/MCP à intégrer.",
+      "files": {
+        "README.md": "# NestJS · typescript\nBase backend · transport outil/MCP à intégrer.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "package.json": "{\n  \"name\": \"local-tool\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"build\": \"tsc -p .\"\n  },\n  \"dependencies\": {\n    \"@nestjs/common\": \"^11.0.0\",\n    \"@nestjs/core\": \"^11.0.0\",\n    \"@nestjs/platform-express\": \"^11.0.0\",\n    \"reflect-metadata\": \"^0.2.0\",\n    \"rxjs\": \"^7.8.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5.9.0\",\n    \"@types/node\": \"^22.0.0\"\n  }\n}",
+        "src/tool.ts": "import \"reflect-metadata\";\nimport { Controller, Get, Module } from \"@nestjs/common\";\nimport { NestFactory } from \"@nestjs/core\";\n\n@Controller()\nclass HealthController {\n  @Get(\"health\")\n  health() { return { status: \"ok\" }; }\n}\n@Module({ controllers: [HealthController] })\nclass AppModule {}\n\nexport async function buildApplication() {\n  return NestFactory.create(AppModule);\n}\n// Manual only: await (await buildApplication()).listen(3000, \"127.0.0.1\");\n",
+        "tool.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"tools\",\n  \"language\": \"typescript\",\n  \"framework\": \"nestjs\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}",
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"NodeNext\",\n    \"moduleResolution\": \"NodeNext\",\n    \"strict\": true,\n    \"outDir\": \"dist\",\n    \"experimentalDecorators\": true,\n    \"emitDecoratorMetadata\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\"\n  ]\n}"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "typescript",
+    "framework": "elysia",
+    "category": "backend",
+    "template": {
+      "version": 1,
+      "id": "tools-typescript-elysia",
+      "label": "ElysiaJS · typescript",
+      "kind": "tools",
+      "description": "Base backend · transport outil/MCP à intégrer.",
+      "files": {
+        "README.md": "# ElysiaJS · typescript\nBase backend · transport outil/MCP à intégrer.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n\nElysia targets Bun. Install/review Bun separately; the extension does not install it.\n",
+        "package.json": "{\n  \"name\": \"local-tool\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"build\": \"tsc -p .\"\n  },\n  \"dependencies\": {\n    \"elysia\": \"^1.0.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5.9.0\",\n    \"@types/node\": \"^22.0.0\"\n  }\n}",
+        "src/tool.ts": "import { Elysia } from \"elysia\";\n\nexport const app = new Elysia().get(\"/health\", () => ({ status: \"ok\" }));\n// Bun runtime; no automatic listen. Review authentication before exposure.\n",
+        "tool.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"tools\",\n  \"language\": \"typescript\",\n  \"framework\": \"elysia\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}",
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"NodeNext\",\n    \"moduleResolution\": \"NodeNext\",\n    \"strict\": true,\n    \"outDir\": \"dist\",\n    \"experimentalDecorators\": true,\n    \"emitDecoratorMetadata\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\"\n  ]\n}"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "rust",
+    "framework": "axum",
+    "category": "backend",
+    "template": {
+      "version": 1,
+      "id": "tools-rust-axum",
+      "label": "Axum · rust",
+      "kind": "tools",
+      "description": "Base backend · transport outil/MCP à intégrer.",
+      "files": {
+        "Cargo.toml": "[package]\nname = \"local-tool\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[dependencies]\naxum = \"0.8\"\ntokio = { version = \"1\", features = [\"full\"] }\n",
+        "README.md": "# Axum · rust\nBase backend · transport outil/MCP à intégrer.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "src/lib.rs": "use axum::{routing::get, Router};\n\npub fn application() -> Router {\n    Router::new().route(\"/health\", get(|| async { \"ok\" }))\n}\n// No listener. Bind loopback explicitly during reviewed manual integration.\n",
+        "tool.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"tools\",\n  \"language\": \"rust\",\n  \"framework\": \"axum\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "rust",
+    "framework": "actix",
+    "category": "backend",
+    "template": {
+      "version": 1,
+      "id": "tools-rust-actix",
+      "label": "Actix Web · rust",
+      "kind": "tools",
+      "description": "Base backend · transport outil/MCP à intégrer.",
+      "files": {
+        "Cargo.toml": "[package]\nname = \"local-tool\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[dependencies]\nactix-web = \"4\"\n",
+        "README.md": "# Actix Web · rust\nBase backend · transport outil/MCP à intégrer.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "src/lib.rs": "use actix_web::{web, HttpResponse};\n\npub fn configure(cfg: &mut web::ServiceConfig) {\n    cfg.route(\"/health\", web::get().to(|| async { HttpResponse::Ok().body(\"ok\") }));\n}\n// No listener. Bind loopback explicitly during reviewed manual integration.\n",
+        "tool.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"tools\",\n  \"language\": \"rust\",\n  \"framework\": \"actix\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "python",
+    "framework": "none",
+    "category": "basic",
+    "template": {
+      "version": 1,
+      "id": "tools-python-none",
+      "label": "Sans framework · python",
+      "kind": "tools",
+      "description": "Fonction locale · sans serveur.",
+      "files": {
+        "README.md": "# Sans framework · python\nFonction locale · sans serveur.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "tool.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"tools\",\n  \"language\": \"python\",\n  \"framework\": \"none\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}",
+        "tool.py": "def add(left: int, right: int) -> int:\n    return left + right\n"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "typescript",
+    "framework": "none",
+    "category": "basic",
+    "template": {
+      "version": 1,
+      "id": "tools-typescript-none",
+      "label": "Sans framework · typescript",
+      "kind": "tools",
+      "description": "Fonction locale · sans serveur.",
+      "files": {
+        "README.md": "# Sans framework · typescript\nFonction locale · sans serveur.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "package.json": "{\n  \"name\": \"local-tool\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"build\": \"tsc -p .\"\n  },\n  \"dependencies\": {},\n  \"devDependencies\": {\n    \"typescript\": \"^5.9.0\",\n    \"@types/node\": \"^22.0.0\"\n  }\n}",
+        "src/tool.ts": "export function add(left: number, right: number): number {\n  return left + right;\n}\n",
+        "tool.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"tools\",\n  \"language\": \"typescript\",\n  \"framework\": \"none\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}",
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"NodeNext\",\n    \"moduleResolution\": \"NodeNext\",\n    \"strict\": true,\n    \"outDir\": \"dist\",\n    \"experimentalDecorators\": true,\n    \"emitDecoratorMetadata\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\"\n  ]\n}"
+      }
+    }
+  },
+  {
+    "usage": "stack",
+    "language": "rust",
+    "framework": "none",
+    "category": "basic",
+    "template": {
+      "version": 1,
+      "id": "tools-rust-none",
+      "label": "Sans framework · rust",
+      "kind": "tools",
+      "description": "Fonction locale · sans serveur.",
+      "files": {
+        "Cargo.toml": "[package]\nname = \"local-tool\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[dependencies]\n",
+        "README.md": "# Sans framework · rust\nFonction locale · sans serveur.\n\nLocal authoring scaffold. No dependencies installed or code executed during generation.\nReview dependency constraints and APIs; no lockfile or installed-framework compatibility certification is supplied.\nBackend shells do not implement an agent loop or MCP protocol. Agent SDK mapping to Scaleway, trusted budgets and tool policy remain to integrate; no default provider or fallback.\n",
+        "src/lib.rs": "pub fn add(left: i64, right: i64) -> Option<i64> {\n    left.checked_add(right)\n}\n",
+        "tool.authoring.json": "{\n  \"authoring_version\": 1,\n  \"kind\": \"tools\",\n  \"language\": \"rust\",\n  \"framework\": \"none\",\n  \"incomplete\": true,\n  \"note\": \"Authoring metadata only; not AgentSpec or runtime authority.\"\n}"
+      }
+    }
+  },
+  {
+    "usage": "builtin",
+    "language": "python",
+    "framework": "none",
+    "category": "basic",
+    "template": {
+      "version": 1,
+      "id": "python-tool",
+      "label": "Python tool",
+      "kind": "tools",
+      "description": "Pure local function scaffold; no automatic execution.",
+      "files": {
+        "README.md": "# Python tool\nPure example only. Register schema/config revisions and grants in a trusted registry before Agent use. Nothing runs during generation.\n",
+        "test_tool.py": "from tool import add\n\ndef test_add():\n    assert add(2, 3) == 5\n",
+        "tool.py": "def add(left: int, right: int) -> int:\n    \"\"\"Add two integers; no external effects.\"\"\"\n    return left + right\n"
+      }
+    }
+  },
+  {
+    "usage": "builtin",
+    "language": "python",
+    "framework": "mcp",
+    "category": "backend",
+    "template": {
+      "version": 1,
+      "id": "python-mcp-tool",
+      "label": "Python MCP tool",
+      "kind": "tools",
+      "description": "Inspectable MCP tool registration; no server launch.",
+      "files": {
+        "README.md": "# MCP Python scaffold\nNo server is launched/registered by generation. Review dependencies, transport/authentication, schemas, arguments/results and grants before manual launch. Pin from specifications/references/compatibility/runtime-contract-profile-v1.json; not a production lock.\n",
+        "requirements.txt": "# Repository inventory only; launch compatibility unverified.\nmcp==2.1.1\n",
+        "server.py": "from mcp.server.fastmcp import FastMCP\n\nmcp = FastMCP(\"reviewed-example\")\n\n@mcp.tool()\ndef add(left: int, right: int) -> int:\n    \"\"\"Add two integers without external effects.\"\"\"\n    return left + right\n\n# No launch entry point: transport and authentication require review.\n"
+      }
+    }
+  }
+]

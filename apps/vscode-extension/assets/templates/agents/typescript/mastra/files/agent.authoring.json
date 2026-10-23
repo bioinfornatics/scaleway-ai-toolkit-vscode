@@ -1,0 +1,7 @@
+{
+  "authoring_version": 1,
+  "kind": "agents",
+  "language": "typescript",
+  "ai_framework": "mastra",
+  "incomplete": false
+}

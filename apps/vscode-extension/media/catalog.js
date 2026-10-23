@@ -4,11 +4,51 @@
   let state = {
     serverless: [],
     dedicated: [],
+    deployments: [],
+    selectedServerless: [],
     publicStatus: 'Chargement…',
     dedicatedStatus: 'Sélectionnez un projet',
     scope: 'Catalogue public',
   };
   let detailTrigger;
+  let serviceKind = 'serverless';
+  function selectService(kind) {
+    serviceKind = kind;
+    document
+      .getElementById('service-serverless')
+      .setAttribute('aria-pressed', String(kind === 'serverless'));
+    document
+      .getElementById('service-dedicated')
+      .setAttribute('aria-pressed', String(kind === 'dedicated'));
+    document.getElementById('serverless-section').hidden =
+      kind !== 'serverless';
+    document.getElementById('dedicated-section').hidden = kind !== 'dedicated';
+    document.getElementById('model-details').hidden = true;
+    render();
+  }
+  document
+    .getElementById('service-serverless')
+    .addEventListener('click', () => selectService('serverless'));
+  document
+    .getElementById('service-dedicated')
+    .addEventListener('click', () => selectService('dedicated'));
+  function formatPrice(price) {
+    const type =
+      {
+        input_token: 'Entrée',
+        output_token: 'Sortie',
+        cached_input_token: 'Entrée en cache',
+      }[price.tokenType] || price.tokenType;
+    const unit = price.unit === 'token' ? 'tokens' : price.unit;
+    return [
+      type,
+      ':',
+      price.amountEUR.replace('.', ','),
+      '€ /',
+      price.size,
+      unit,
+    ].join(' ');
+  }
   function renderRows(id, rows, kind) {
     const root = document.getElementById(id);
     root.replaceChildren();
@@ -24,12 +64,7 @@
       const status = document.createElement('p');
       status.textContent = row.status || 'Statut inconnu';
       card.append(status);
-      const note = document.createElement('p');
-      note.textContent =
-        kind === 'public'
-          ? 'Serverless · offre disponible, pas un déploiement dédié'
-          : 'Dédié · modèle à déployer, pas une ressource déployée';
-      card.append(note);
+
       if (kind === 'public') {
         const prices = (row.serverlessPrices || []).filter(
           (price) => price.consumptionMode === 'realtime',
@@ -37,32 +72,57 @@
         const pricing = document.createElement('p');
         pricing.className = 'model-prices';
         pricing.textContent = prices.length
-          ? prices
-              .map((price) => {
-                const type =
-                  {
-                    input_token: 'Entrée',
-                    output_token: 'Sortie',
-                    cached_input_token: 'Entrée en cache',
-                  }[price.tokenType] || price.tokenType;
-                const unit = price.unit === 'token' ? 'tokens' : price.unit;
-                return [
-                  type,
-                  ':',
-                  price.amountEUR.replace('.', ','),
-                  '€ /',
-                  price.size,
-                  unit,
-                ].join(' ');
-              })
-              .join(' · ')
-          : 'Tarif temps réel non disponible dans les données retournées';
+          ? prices.map(formatPrice).join(' · ')
+          : 'Tarif temps réel non disponible';
         card.append(pricing);
       }
+      const deployment =
+        kind === 'dedicated'
+          ? (state.deployments || []).find(
+              (item) => item.deploymentInfo?.modelId === row.id,
+            )
+          : undefined;
+      const ready = row.dedicatedInfo?.status === 'ready';
+      const action = document.createElement('button');
+      action.type = 'button';
+      action.className = 'primary-action';
+      action.textContent =
+        kind === 'public'
+          ? (state.selectedServerless || []).includes(row.id)
+            ? 'Configurer à nouveau'
+            : 'Utiliser'
+          : deployment
+            ? 'Ouvrir le déploiement'
+            : 'Déployer';
+      action.disabled = kind === 'public' ? false : !deployment && !ready;
+      action.setAttribute(
+        'aria-label',
+        [action.textContent, row.label].join(' · '),
+      );
+      action.addEventListener('click', () => {
+        if (action.disabled) return;
+        vscode.postMessage({
+          type:
+            kind === 'public'
+              ? 'use'
+              : deployment
+                ? 'open-deployment'
+                : 'deploy',
+          id: deployment ? deployment.id : row.id,
+        });
+      });
+      card.append(action);
       const details = document.createElement('button');
       details.type = 'button';
-      details.textContent = 'Voir les détails';
-      details.setAttribute('aria-label', `Voir les détails de ${row.label}`);
+      details.textContent =
+        kind === 'dedicated' && !deployment && !ready
+          ? 'Voir pourquoi'
+          : 'Voir les détails';
+      details.className = 'secondary-action';
+      details.setAttribute(
+        'aria-label',
+        [details.textContent, 'de', row.label].join(' '),
+      );
       details.addEventListener('click', () => {
         detailTrigger = details;
         vscode.postMessage({
@@ -86,17 +146,6 @@
           );
           card.append(eula);
         }
-        const prepare = document.createElement('button');
-        prepare.type = 'button';
-        prepare.textContent = 'Préparer le déploiement';
-        prepare.setAttribute(
-          'aria-label',
-          `Préparer le déploiement de ${row.label}`,
-        );
-        prepare.addEventListener('click', () =>
-          vscode.postMessage({ type: 'prepare', id: row.id }),
-        );
-        card.append(prepare);
       }
 
       root.append(card);
@@ -116,11 +165,11 @@
     renderRows('public-list', state.serverless, 'public');
     renderRows('dedicated-list', state.dedicated, 'dedicated');
     document.getElementById('search-results').textContent =
-      document.getElementById('public-list').querySelectorAll('article')
-        .length +
-      document.getElementById('dedicated-list').querySelectorAll('article')
-        .length +
-      ' résultat(s) affiché(s)';
+      document
+        .getElementById(
+          serviceKind === 'serverless' ? 'public-list' : 'dedicated-list',
+        )
+        .querySelectorAll('article').length + ' résultat(s) affiché(s)';
   }
   window.addEventListener('message', (event) => {
     if (
@@ -133,6 +182,26 @@
       document.getElementById('detail-title').textContent = unavailable
         ? 'Modèle indisponible'
         : data.label;
+      const pricing = document.getElementById('detail-prices');
+      pricing.replaceChildren();
+      if (!unavailable) {
+        for (const price of data.prices || []) {
+          const line = document.createElement('p');
+          line.textContent = formatPrice(price);
+          pricing.append(line);
+        }
+        if (
+          !data.prices?.length &&
+          data.pricingNote === 'Tarifs publics · temps réel'
+        ) {
+          const missing = document.createElement('p');
+          missing.textContent = 'Tarif temps réel non disponible';
+          pricing.append(missing);
+        }
+      }
+      document.getElementById('detail-pricing-note').textContent = unavailable
+        ? ''
+        : data.pricingNote || '';
       for (const field of ['status', 'source', 'scope', 'limits'])
         document.getElementById(`detail-${field}`).textContent = unavailable
           ? ''

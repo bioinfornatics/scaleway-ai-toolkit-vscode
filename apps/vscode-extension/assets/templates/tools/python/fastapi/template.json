@@ -1,0 +1,17 @@
+{
+  "format_version": 1,
+  "id": "tools-python-fastapi",
+  "label": "FastAPI · python",
+  "kind": "tools",
+  "language": "python",
+  "framework": "fastapi",
+  "category": "backend",
+  "usage": "stack",
+  "description": "Base backend · transport outil/MCP à intégrer.",
+  "files": [
+    "README.md",
+    "requirements.txt",
+    "tool.authoring.json",
+    "tool.py"
+  ]
+}

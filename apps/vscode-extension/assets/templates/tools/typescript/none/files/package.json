@@ -1,0 +1,13 @@
+{
+  "name": "local-tool",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p ."
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.9.0",
+    "@types/node": "^22.0.0"
+  }
+}

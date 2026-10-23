@@ -1,0 +1,246 @@
+body {
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
+  font-family: var(--vscode-font-family);
+  padding: 20px;
+}
+main {
+  max-width: 960px;
+  margin: auto;
+}
+h1 {
+  font-size: 1.6rem;
+}
+h2 {
+  font-size: 1.15rem;
+}
+p {
+  line-height: 1.5;
+}
+ul {
+  display: grid;
+  gap: 16px;
+  padding: 0;
+  list-style: none;
+}
+li,
+section {
+  border: 1px solid var(--vscode-panel-border);
+  padding: 16px;
+  border-radius: 4px;
+}
+button {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: 1px solid var(--vscode-contrastBorder, transparent);
+  padding: 8px 12px;
+  margin: 4px 8px 4px 0;
+  cursor: pointer;
+  font: inherit;
+}
+button:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+button:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--vscode-focusBorder);
+  outline-offset: 3px;
+}
+summary {
+  cursor: pointer;
+  padding: 8px;
+}
+pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--vscode-editor-font-family);
+}
+[role="status"] {
+  font-weight: 600;
+}
+.build-page {
+  max-width: 1100px;
+}
+.stack-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.stack-fields label {
+  display: grid;
+  gap: 10px;
+  font-weight: 600;
+}
+select {
+  font: inherit;
+  color: var(--vscode-dropdown-foreground);
+  background: var(--vscode-dropdown-background);
+  border: 1px solid var(--vscode-dropdown-border, var(--vscode-panel-border));
+  border-radius: 3px;
+  padding: 10px;
+  width: 100%;
+}
+select:focus-visible {
+  outline: 2px solid var(--vscode-focusBorder);
+}
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+}
+.template-card {
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 4px;
+  padding: 16px;
+}
+.template-card h3 {
+  margin-top: 0;
+}
+.origin,
+.scope-note {
+  color: var(--vscode-descriptionForeground);
+}
+.creation-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0;
+}
+.creation-bar span {
+  color: var(--vscode-descriptionForeground);
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.file-preview,
+.library-actions {
+  margin: 16px 0;
+}
+@media (max-width: 640px) {
+  .stack-fields {
+    grid-template-columns: 1fr;
+  }
+}
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.table-scroll {
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th,
+td {
+  text-align: left;
+  padding: 12px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+}
+footer {
+  margin-top: 24px;
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.9em;
+}
+.template-notice {
+  border-left: 3px solid var(--vscode-focusBorder);
+  padding: 12px;
+}
+
+.agent-fields {
+  margin-top: 24px;
+}
+input[type="text"] {
+  font: inherit;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px;
+  color: var(--vscode-input-foreground);
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-input-border, var(--vscode-panel-border));
+  border-radius: 3px;
+}
+input:focus-visible {
+  outline: 2px solid var(--vscode-focusBorder);
+}
+
+/* Two alternative starting points; common project configuration stays below. */
+.creation-choice [hidden] {
+  display: none;
+}
+.creation-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--vscode-panel-border);
+  margin: -16px -16px 16px;
+  padding: 0 12px;
+}
+.creation-tabs button {
+  flex: 1;
+  margin: 0;
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+  border: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
+  border-bottom: 3px solid transparent;
+  padding: 12px 8px;
+}
+.creation-tabs button[aria-selected="true"] {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border-bottom-color: var(--vscode-button-foreground);
+  font-weight: 700;
+}
+.creation-tabs button:hover {
+  background: var(--vscode-button-secondaryHoverBackground);
+}
+.creation-tabs button[aria-selected="true"]:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+.creation-tabs button:focus-visible {
+  outline-offset: -3px;
+}
+.template-card:has([data-selected-template="true"]) {
+  border-color: var(--vscode-focusBorder);
+}
+.agent-common {
+  margin-top: 16px;
+}
+
+.project-path-preview {
+  overflow-wrap: anywhere;
+}
+.project-path-preview output {
+  display: block;
+  margin-top: 8px;
+  padding: 10px 12px;
+  font-family: var(--vscode-editor-font-family);
+  color: var(--vscode-input-foreground);
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-input-border, var(--vscode-panel-border));
+  border-radius: 3px;
+}
+
+.destination-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.destination-controls input {
+  flex: 1;
+  min-width: 0;
+}
+.destination-controls button {
+  flex-shrink: 0;
+  margin: 0;
+}
+@media (max-width: 480px) {
+  .destination-controls {
+    flex-wrap: wrap;
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "format_version": 1,
+  "id": "python-mcp-tool",
+  "label": "Python MCP tool",
+  "kind": "tools",
+  "language": "python",
+  "framework": "mcp",
+  "category": "backend",
+  "usage": "builtin",
+  "description": "Inspectable MCP tool registration; no server launch.",
+  "files": [
+    "README.md",
+    "requirements.txt",
+    "server.py"
+  ]
+}

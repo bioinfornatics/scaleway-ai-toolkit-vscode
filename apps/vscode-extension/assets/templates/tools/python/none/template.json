@@ -1,0 +1,16 @@
+{
+  "format_version": 1,
+  "id": "tools-python-none",
+  "label": "Sans framework · python",
+  "kind": "tools",
+  "language": "python",
+  "framework": "none",
+  "category": "basic",
+  "usage": "stack",
+  "description": "Fonction locale · sans serveur.",
+  "files": [
+    "README.md",
+    "tool.authoring.json",
+    "tool.py"
+  ]
+}

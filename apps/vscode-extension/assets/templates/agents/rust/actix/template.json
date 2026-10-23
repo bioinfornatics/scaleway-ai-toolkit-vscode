@@ -1,0 +1,17 @@
+{
+  "format_version": 1,
+  "id": "agents-rust-actix",
+  "label": "Actix Web · rust",
+  "kind": "agents",
+  "language": "rust",
+  "framework": "actix",
+  "category": "backend",
+  "usage": "stack",
+  "description": "Base backend · SDK agent à intégrer.",
+  "files": [
+    "Cargo.toml",
+    "README.md",
+    "agent.authoring.json",
+    "src/lib.rs"
+  ]
+}

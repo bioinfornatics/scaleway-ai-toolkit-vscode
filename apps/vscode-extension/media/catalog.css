@@ -31,7 +31,7 @@ button {
   padding: 9px 14px;
   cursor: pointer;
 }
-button:hover {
+button:not(:disabled):hover {
   background: var(--vscode-button-hoverBackground);
 }
 label {
@@ -62,6 +62,23 @@ article {
   padding: 16px;
   min-width: 0;
   overflow-wrap: anywhere;
+}
+article button {
+  margin: 4px 6px 0 0;
+}
+.secondary-action {
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+}
+.secondary-action:not(:disabled):hover {
+  background: var(--vscode-button-secondaryHoverBackground);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+article .model-prices {
+  color: var(--vscode-foreground);
 }
 article h3 {
   margin: 0;
@@ -103,5 +120,48 @@ article p:last-child {
   }
   :focus-visible {
     outline-color: Highlight;
+  }
+}
+
+#detail-prices p {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 8px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.service-toggle {
+  display: inline-flex;
+  margin: 8px 0 4px;
+  border: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
+  border-radius: 4px;
+}
+.service-toggle button {
+  padding: 6px 12px;
+  border: 0;
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+}
+.service-toggle button:first-child {
+  border-radius: 3px 0 0 3px;
+}
+.service-toggle button:last-child {
+  border-radius: 0 3px 3px 0;
+}
+.service-toggle button[aria-pressed="true"] {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  font-weight: 600;
+}
+.service-toggle button:not(:disabled):hover {
+  background: var(--vscode-button-secondaryHoverBackground);
+}
+.service-toggle button[aria-pressed="true"]:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+@media (forced-colors: active) {
+  .service-toggle button[aria-pressed="true"] {
+    outline: 2px solid Highlight;
+    outline-offset: -3px;
   }
 }

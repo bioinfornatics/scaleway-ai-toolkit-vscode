@@ -3,7 +3,8 @@ import * as vscode from 'vscode';
 import { text, uuid } from './provider';
 export type CatalogInput =
   | { type: 'ready' | 'refresh' | 'project' }
-  | { type: 'prepare' | 'eula'; id: string }
+  | { type: 'prepare' | 'eula' | 'deploy' | 'open-deployment'; id: string }
+  | { type: 'use'; id: string }
   | {
       type: 'rendered';
       revision: number;
@@ -40,11 +41,20 @@ export function parseCatalogInput(value: unknown): CatalogInput | undefined {
       dedicatedCards: Number(message.dedicatedCards),
     };
   if (
-    (message.type === 'prepare' || message.type === 'eula') &&
+    (message.type === 'prepare' ||
+      message.type === 'eula' ||
+      message.type === 'deploy' ||
+      message.type === 'open-deployment') &&
     Object.keys(message).length === 2 &&
     uuid(message.id)
   )
     return { type: message.type, id: message.id };
+  if (
+    message.type === 'use' &&
+    Object.keys(message).length === 2 &&
+    text(message.id)
+  )
+    return { type: 'use', id: message.id };
   if (
     message.type === 'details' &&
     Object.keys(message).length === 3 &&
@@ -71,14 +81,14 @@ export function catalogHtml(webview: vscode.Webview, root: vscode.Uri): string {
     '<link rel="stylesheet" href="' +
     css +
     '"></head><body><main><h1>Catalogue de modèles Scaleway</h1>' +
-    '<p>Découvrir les offres Serverless et les modèles dédiés à déployer. Ce catalogue ne lance aucune inférence et ne crée aucune ressource.</p>' +
+    '<p>Serverless : Utiliser choisit ou génère une clé utilisateur/application IAM, vérifie l’accès et prépare le modèle pour vos agents, sans envoyer de prompt. Dédié : Déployer crée une infrastructure après confirmation.</p>' +
     '<div class="actions"><button id="refresh">Actualiser</button><button id="project">Choisir le projet Scaleway</button></div>' +
     '<p id="scope" role="status">Catalogue public disponible sans connexion. Projet dédié non sélectionné.</p>' +
     '<label for="search">Rechercher un modèle</label><input id="search" type="search" placeholder="Nom du modèle ou statut" aria-describedby="search-results"><p id="search-results" role="status" aria-live="polite" aria-atomic="true"></p>' +
-    '<section id="model-details" hidden aria-labelledby="detail-title"><h2 id="detail-title" tabindex="-1"></h2><p id="detail-status"></p><p id="detail-source"></p><p id="detail-scope"></p><p id="detail-limits"></p><button id="close-details">Fermer les détails</button></section>' +
-    '<h2>Serverless · offres publiques</h2><p>Prix publics HT par unité indiquée sur chaque carte (entrée/sortie en temps réel). Ce ne sont pas des prix de GPU dédié ; remises et free tier du compte non déduits.</p><p id="public-status" role="status">Chargement du catalogue public…</p><div id="public-list" class="grid"></div>' +
-    '<h2>Modèles dédiés à déployer · fr-par</h2><p id="dedicated-status" role="status">Sélectionnez un projet pour le catalogue dédié.</p><div id="dedicated-list" class="grid"></div>' +
-    '<p class="note">Source Serverless : catalogue commercial public Scaleway, variantes regroupées par produit. Le statut catalogue ne garantit pas l’accès à l’inférence. Les offres retirées (retired / end_of_life) sont masquées par défaut. Les déploiements existants sont dans Mes ressources.</p>' +
+    '<section id="model-details" hidden aria-labelledby="detail-title"><h2 id="detail-title" tabindex="-1"></h2><div id="detail-prices" aria-label="Tarifs"></div><p id="detail-pricing-note" class="note"></p><p id="detail-status"></p><p id="detail-scope" class="note"></p><p id="detail-limits" class="note"></p><p id="detail-source" class="note"></p><button id="close-details">Fermer les détails</button></section>' +
+    '<div class="service-toggle" role="group" aria-label="Type de service IA"><button type="button" id="service-serverless" aria-pressed="true" aria-controls="serverless-section">Serverless</button><button type="button" id="service-dedicated" aria-pressed="false" aria-controls="dedicated-section">Dédié</button></div><section id="serverless-section"><h2>Serverless · offres publiques</h2><p>Prix publics HT par unité indiquée sur chaque carte (entrée/sortie en temps réel). Ce ne sont pas des prix de GPU dédié ; remises et free tier du compte non déduits.</p><p id="public-status" role="status">Chargement du catalogue public…</p><div id="public-list" class="grid"></div>' +
+    '</section><section id="dedicated-section" hidden><h2>Modèles dédiés à déployer · fr-par</h2><p id="dedicated-status" role="status">Sélectionnez un projet pour le catalogue dédié.</p><div id="dedicated-list" class="grid"></div>' +
+    '</section><p class="note">Source Serverless : catalogue commercial public Scaleway, variantes regroupées par produit. Le statut catalogue ne garantit pas l’accès à l’inférence. Les offres retirées (retired / end_of_life) sont masquées par défaut. Les déploiements existants sont dans Mes ressources.</p>' +
     '</main><script nonce="' +
     nonce +
     '" src="' +

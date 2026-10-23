@@ -1,0 +1,16 @@
+{
+  "format_version": 1,
+  "id": "python-tool",
+  "label": "Python tool",
+  "kind": "tools",
+  "language": "python",
+  "framework": "none",
+  "category": "basic",
+  "usage": "builtin",
+  "description": "Pure local function scaffold; no automatic execution.",
+  "files": [
+    "README.md",
+    "test_tool.py",
+    "tool.py"
+  ]
+}

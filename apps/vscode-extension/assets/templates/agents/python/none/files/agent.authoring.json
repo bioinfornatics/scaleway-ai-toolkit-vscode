@@ -1,0 +1,8 @@
+{
+  "authoring_version": 1,
+  "kind": "agents",
+  "language": "python",
+  "framework": "none",
+  "incomplete": true,
+  "note": "Authoring metadata only; not AgentSpec or runtime authority."
+}

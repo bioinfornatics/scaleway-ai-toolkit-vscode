@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer';
 /** Fixed-origin read-only provider adapter. No inference, retries or redirects. */
 import * as https from 'node:https';
+import { readDedicatedJSON } from './scalewaySdk';
 export class ReadError extends Error {
   constructor(public code: string) {
     super(code);
@@ -44,6 +45,7 @@ export interface DeploymentInfo {
   projectId: string;
   region: 'fr-par';
   fetchedAt: string;
+  createdAt?: string;
   modelId?: string;
   modelName?: string;
   nodeTypeName?: string;
@@ -57,12 +59,25 @@ export interface ServerlessPrice {
   tokenType: string;
   consumptionMode: string;
 }
+export interface ServerlessCapabilities {
+  tasks: string[];
+  supportedApis: string[];
+  textChat: 'supported' | 'unsupported' | 'unknown';
+  source: 'public-catalog';
+}
 export interface ListedModel {
   id: string;
   label: string;
   kind: 'serverless' | 'dedicated' | 'dedicated-catalog';
   status?: string;
+  llmAccess?: { id: string; projectId: string; bearerType: 'user' | 'application'; expiresAt: number; verifiedAt: string };
+  serverlessCreatedAt?: string;
+  serverlessAvailability?:
+    | 'Disponible'
+    | 'Absent de la liste'
+    | 'Erreur de vérification';
   serverlessPrices?: ServerlessPrice[];
+  serverlessCapabilities?: ServerlessCapabilities;
   dedicatedInfo?: DedicatedModelInfo;
   deploymentInfo?: DeploymentInfo;
 }
@@ -85,6 +100,7 @@ export function validateJWT(v: unknown): v is string {
   );
 }
 export function sessionHeaders(token: string): Record<string, string> {
+  if (uuid(token)) return { 'X-Auth-Token': token, Accept: 'application/json' };
   if (!validateJWT(token)) throw new ReadError('invalid_request');
   return { 'X-Session-Token': token, Accept: 'application/json' };
 }
@@ -195,83 +211,98 @@ export const getJSON: GetJSON = (origin, path, key, signal) => {
         !url.username &&
         !url.password;
   }
-  if ((!publicRoute && !validateJWT(key)) || !allowed)
+  if (origin === 'models') {
+    allowed = path === '/v1/models' && uuid(key);
+  }
+  if ((!publicRoute && !validateJWT(key) && !uuid(key)) || !allowed)
     return Promise.reject(new ReadError('invalid_request'));
-  return new Promise((resolve, reject) => {
-    let done = false;
-    let bytes = 0;
-    const chunks: Buffer[] = [];
-    const end = (error?: ReadError, data?: unknown) => {
-      if (done) return;
-      done = true;
-      clearTimeout(timer);
-      signal.removeEventListener('abort', cancel);
-      req.destroy();
-      error ? reject(error) : resolve(data);
-    };
-    const cancel = () => end(new ReadError('cancelled'));
-    const req = https.request(
-      {
-        hostname: origin === 'control' ? 'api.scaleway.com' : 'api.scaleway.ai',
-        path,
-        method: 'GET',
-        agent: false,
-        headers: publicRoute
-          ? { Accept: 'application/json' }
-          : sessionHeaders(key),
-      },
-      (res) => {
-        if (res.statusCode !== 200) {
-          res.destroy();
-          return end(
-            new ReadError(
-              res.statusCode === 401 || res.statusCode === 403
-                ? 'access_denied'
-                : res.statusCode === 429
-                  ? 'rate_limited'
-                  : res.statusCode &&
-                      res.statusCode >= 300 &&
-                      res.statusCode < 400
-                    ? 'redirect_rejected'
-                    : 'http_error',
-            ),
-          );
-        }
-        if (!res.headers['content-type']?.includes('application/json')) {
-          res.destroy();
-          return end(new ReadError('invalid_response'));
-        }
-        res.on('data', (chunk: Buffer) => {
-          bytes += chunk.length;
-          if (bytes > 2 * 1024 * 1024) {
+  const send = (actualPath: string): Promise<unknown> =>
+    new Promise((resolve, reject) => {
+      let done = false;
+      let bytes = 0;
+      const chunks: Buffer[] = [];
+      const end = (error?: ReadError, data?: unknown) => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        signal.removeEventListener('abort', cancel);
+        req.destroy();
+        error ? reject(error) : resolve(data);
+      };
+      const cancel = () => end(new ReadError('cancelled'));
+      const req = https.request(
+        {
+          hostname:
+            origin === 'control' ? 'api.scaleway.com' : 'api.scaleway.ai',
+          path: actualPath,
+          method: 'GET',
+          agent: false,
+          headers: publicRoute
+            ? { Accept: 'application/json' }
+            : origin === 'models'
+              ? { Authorization: 'Bearer ' + key, Accept: 'application/json' }
+              : sessionHeaders(key),
+        },
+        (res) => {
+          if (res.statusCode !== 200) {
             res.destroy();
-            end(new ReadError('response_limit'));
-          } else chunks.push(chunk);
-        });
-        res.on('error', () => end(new ReadError('transport_error')));
-        res.on('aborted', () => end(new ReadError('truncated_response')));
-        res.on('end', () => {
-          try {
-            end(
-              undefined,
-              JSON.parse(
-                new TextDecoder('utf-8', { fatal: true }).decode(
-                  Buffer.concat(chunks),
-                ),
+            return end(
+              new ReadError(
+                res.statusCode === 401 || res.statusCode === 403
+                  ? 'access_denied'
+                  : res.statusCode === 429
+                    ? 'rate_limited'
+                    : res.statusCode &&
+                        res.statusCode >= 300 &&
+                        res.statusCode < 400
+                      ? 'redirect_rejected'
+                      : 'http_error',
               ),
             );
-          } catch {
-            end(new ReadError('invalid_response'));
           }
-        });
-      },
-    );
-    const timer = setTimeout(() => end(new ReadError('timeout')), 10000);
-    req.on('error', () => end(new ReadError('transport_error')));
-    signal.addEventListener('abort', cancel, { once: true });
-    if (signal.aborted) return cancel();
-    req.end();
-  });
+          if (!res.headers['content-type']?.includes('application/json')) {
+            res.destroy();
+            return end(new ReadError('invalid_response'));
+          }
+          res.on('data', (chunk: Buffer) => {
+            bytes += chunk.length;
+            if (bytes > 2 * 1024 * 1024) {
+              res.destroy();
+              end(new ReadError('response_limit'));
+            } else chunks.push(chunk);
+          });
+          res.on('error', () => end(new ReadError('transport_error')));
+          res.on('aborted', () => end(new ReadError('truncated_response')));
+          res.on('end', () => {
+            try {
+              end(
+                undefined,
+                JSON.parse(
+                  new TextDecoder('utf-8', { fatal: true }).decode(
+                    Buffer.concat(chunks),
+                  ),
+                ),
+              );
+            } catch {
+              end(new ReadError('invalid_response'));
+            }
+          });
+        },
+      );
+      const timer = setTimeout(() => end(new ReadError('timeout')), 10000);
+      req.on('error', () => end(new ReadError('transport_error')));
+      signal.addEventListener('abort', cancel, { once: true });
+      if (signal.aborted) return cancel();
+      req.end();
+    });
+  if (
+    new URL(path, 'https://api.scaleway.com').pathname.startsWith(
+      '/inference/v1/regions/fr-par/',
+    ) &&
+    !new URL(path, 'https://api.scaleway.com').pathname.endsWith('/eula')
+  )
+    return readDedicatedJSON(path, signal, send);
+  return send(path);
 };
 function record(v: unknown): Record<string, unknown> {
   if (!v || typeof v !== 'object' || Array.isArray(v))
@@ -383,6 +414,7 @@ export async function listServerless(
   const models = new Map<string, Set<string>>();
   const prices = new Map<string, ServerlessPrice[]>();
   const skus = new Set<string>();
+  const capabilities = new Map<string, ServerlessCapabilities[]>();
   for (const value of rows) {
     const row = record(value);
     const properties = record(row.properties);
@@ -399,6 +431,10 @@ export async function listServerless(
     const statuses = models.get(row.product) ?? new Set<string>();
     statuses.add(row.status);
     models.set(row.product, statuses);
+    const capability = parseServerlessCapabilities(apiProperties);
+    const declarations = capabilities.get(row.product) ?? [];
+    declarations.push(capability);
+    capabilities.set(row.product, declarations);
     // Price fields may be absent in legacy projections. Never invent a zero price.
     if (
       row.price &&
@@ -442,13 +478,19 @@ export async function listServerless(
     }
   }
   return [...models]
-    .map(([id, statuses]) => ({
-      id,
-      label: id,
-      kind: 'serverless' as const,
-      ...(prices.has(id) ? { serverlessPrices: prices.get(id) } : {}),
-      status: [...statuses].sort().join(' / '),
-    }))
+    .map(([id, statuses]) => {
+      const serverlessCapabilities = mergeServerlessCapabilities(
+        capabilities.get(id) ?? [],
+      );
+      return {
+        id,
+        label: id,
+        kind: 'serverless' as const,
+        ...(prices.has(id) ? { serverlessPrices: prices.get(id) } : {}),
+        ...(serverlessCapabilities ? { serverlessCapabilities } : {}),
+        status: [...statuses].sort().join(' / '),
+      };
+    })
     .sort((a, b) => a.label.localeCompare(b.label));
 }
 export async function listDedicatedCatalog(
@@ -709,6 +751,11 @@ export function parseDeployment(
       projectId: project.id,
       region: 'fr-par',
       fetchedAt: now.toISOString(),
+      ...(typeof row.created_at === 'string' &&
+      row.created_at.length <= 64 &&
+      Number.isFinite(Date.parse(row.created_at))
+        ? { createdAt: new Date(row.created_at).toISOString() }
+        : {}),
       ...(row.model_id !== undefined
         ? { modelId: row.model_id as string }
         : {}),
@@ -743,4 +790,116 @@ export async function getDeployment(
   );
   if (row.id !== deploymentId) throw new ReadError('foreign_or_invalid_scope');
   return row;
+}
+
+/** Model identity is configurable. No per-model live-validation allowlist. */
+export function serverlessInvocation(model: ListedModel) {
+  if (
+    model.kind !== 'serverless' ||
+    !text(model.id) ||
+    !/^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}$/.test(model.id)
+  )
+    return undefined;
+  const statuses = (model.status ?? '')
+    .split(' / ')
+    .map((value) => value.trim().toLowerCase());
+  if (
+    statuses.length &&
+    statuses.every((value) => ['retired', 'end_of_life', 'eol'].includes(value))
+  )
+    return undefined;
+  if (model.serverlessCapabilities?.textChat === 'unsupported')
+    return undefined;
+  return {
+    modelId: model.id,
+    maxOutputTokens: 2048,
+    capability: model.serverlessCapabilities?.textChat ?? 'unknown',
+    source: 'specifications/references/documentation/serverless-source-chat.txt',
+    protocol: 'chat-completions-sse' as const,
+  };
+}
+/** The catalogue declares operation families, not current IAM access or live proof. */
+function parseServerlessCapabilities(
+  value: Record<string, unknown>,
+): ServerlessCapabilities {
+  const strings = (v: unknown): string[] =>
+    Array.isArray(v) && v.length <= 32 && v.every(text)
+      ? [...new Set(v as string[])].sort()
+      : [];
+  const tasks = strings(value.tasks);
+  const supportedApis = strings(value.supported_apis);
+  const chat = tasks.some((task) => task === 'chat' || task === 'code');
+  const otherOnly =
+    !chat &&
+    tasks.length > 0 &&
+    tasks.every((task) =>
+      ['embeddings', 'audio_transcription', 'ocr'].includes(task),
+    );
+  const noChatRoute =
+    supportedApis.length > 0 && !supportedApis.includes('/v1/chat/completions');
+  const textChat =
+    otherOnly || noChatRoute
+      ? 'unsupported'
+      : chat || supportedApis.includes('/v1/chat/completions')
+        ? 'supported'
+        : 'unknown';
+  return { tasks, supportedApis, textChat, source: 'public-catalog' };
+}
+function mergeServerlessCapabilities(
+  rows: ServerlessCapabilities[],
+): ServerlessCapabilities | undefined {
+  if (!rows.some((row) => row.tasks.length || row.supportedApis.length))
+    return undefined;
+  const first = rows[0]?.textChat ?? 'unknown';
+  return {
+    tasks: [...new Set(rows.flatMap((row) => row.tasks))].sort(),
+    supportedApis: [
+      ...new Set(rows.flatMap((row) => row.supportedApis)),
+    ].sort(),
+    textChat: rows.every((row) => row.textChat === first) ? first : 'unknown',
+    source: 'public-catalog',
+  };
+}
+
+/** Available-model listing only. A valid HTTP 200 is not inference readiness. */
+export async function listServerlessAvailability(
+  secret: string,
+  signal: AbortSignal,
+  get: GetJSON = getJSON,
+): Promise<Array<{ id: string; createdAt?: string }>> {
+  if (!uuid(secret)) throw new ReadError('invalid_request');
+  if (signal.aborted) throw new ReadError('cancelled');
+  const body = record(await get('models', '/v1/models', secret, signal));
+  if (signal.aborted) throw new ReadError('cancelled');
+  // Do not conclude absence from a paginated or truncated listing.
+  if (
+    body.object !== 'list' ||
+    !Array.isArray(body.data) ||
+    body.data.length > 1000 ||
+    (body.has_more !== undefined && body.has_more !== false) ||
+    (body.next !== undefined && body.next !== null) ||
+    (body.next_page !== undefined && body.next_page !== null)
+  )
+    throw new ReadError('invalid_response');
+  const ids = body.data.map((value) => {
+    const row = record(value);
+    if (!text(row.id) || row.object !== 'model')
+      throw new ReadError('invalid_response');
+    const milliseconds =
+      typeof row.created === 'number' &&
+      Number.isSafeInteger(row.created) &&
+      row.created > 0
+        ? row.created * 1000
+        : NaN;
+    const date = new Date(milliseconds);
+    return {
+      id: row.id,
+      ...(Number.isFinite(date.getTime())
+        ? { createdAt: date.toISOString() }
+        : {}),
+    };
+  });
+  if (new Set(ids.map((row) => row.id)).size !== ids.length)
+    throw new ReadError('duplicate_id');
+  return ids;
 }

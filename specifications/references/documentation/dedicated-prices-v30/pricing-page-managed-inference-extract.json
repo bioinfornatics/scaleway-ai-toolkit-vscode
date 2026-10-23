@@ -1,0 +1,838 @@
+{
+  "customModelStorage": {
+    "regions": [
+      {
+        "price": {
+          "gigabyteHour": {
+            "isApproximation": false,
+            "sku": "/ai/inference_dedicated/custom_model_storage/fr-par",
+            "value": {
+              "currencyCode": "EUR",
+              "nanos": 26000,
+              "units": 0
+            }
+          },
+          "gigabyteMonth": {
+            "isApproximation": true,
+            "sku": "",
+            "value": {
+              "currencyCode": "EUR",
+              "nanos": 18980000,
+              "units": 0
+            }
+          }
+        },
+        "region": "fr-par"
+      }
+    ]
+  },
+  "nodeTypes": [
+    {
+      "apiId": "H100",
+      "hardware": {
+        "bootTypes": [
+          "normal",
+          "rescue"
+        ],
+        "cpu": {
+          "arch": "x64",
+          "sharedCpu": false,
+          "type": "AMD EPYC 9334 (2.7 GHz)",
+          "virtual": {
+            "count": 24
+          }
+        },
+        "gpu": {
+          "count": 1,
+          "type": "H100-PCIe",
+          "useNvlink": false
+        },
+        "gpuRam": {
+          "size": 85899345920,
+          "type": "GPU"
+        },
+        "network": {
+          "internalBandwidth": 10000000000,
+          "ipv6Supported": true,
+          "maxPublicBandwidth": 10000000000,
+          "publicBandwidth": 10000000000,
+          "type": ""
+        },
+        "ram": {
+          "eccType": "standard",
+          "size": 257698037760,
+          "type": ""
+        },
+        "storages": [
+          {
+            "block": {},
+            "count": 1
+          },
+          {
+            "count": 1,
+            "scratch": {
+              "maxSize": 3000000000000
+            }
+          }
+        ]
+      },
+      "instanceGpuName": "H100-1-80G",
+      "modelBenchmarks": [
+        {
+          "concurrentConnections": 32,
+          "modelId": "bge-multilingual-gemma2"
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "gemma-3-27b-it",
+          "outputTokenPerSecond": 33.5
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "gemma-4-26b-a4b-it",
+          "outputTokenPerSecond": 50
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "gpt-oss-120b",
+          "outputTokenPerSecond": 64.7
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "llama-3.1-70b-instruct",
+          "outputTokenPerSecond": 11.5
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "llama-3.1-8b-instruct",
+          "outputTokenPerSecond": 85.8
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "mistral-nemo-instruct-2407",
+          "outputTokenPerSecond": 64
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "mistral-small-3.2-24b-instruct-2506",
+          "outputTokenPerSecond": 56.1
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "pixtral-12b-2409",
+          "outputTokenPerSecond": 30
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "qwen2.5-coder-32b-instruct",
+          "outputTokenPerSecond": 25.5
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "qwen3-coder-30b-a3b-instruct",
+          "outputTokenPerSecond": 75.5
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "voxtral-small-24b-2507",
+          "outputTokenPerSecond": 55
+        }
+      ],
+      "regions": [
+        {
+          "price": {
+            "hourly": {
+              "isApproximation": true,
+              "sku": "",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 399600000,
+                "units": 3
+              }
+            },
+            "monthly": {
+              "isApproximation": true,
+              "sku": "",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 708000000,
+                "units": 2481
+              }
+            },
+            "perMinute": {
+              "isApproximation": false,
+              "sku": "/ai/inference_dedicated/deployment/h100-1/fr-par",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 56660000,
+                "units": 0
+              }
+            }
+          },
+          "region": "fr-par"
+        }
+      ]
+    },
+    {
+      "apiId": "H100-2",
+      "hardware": {
+        "bootTypes": [
+          "normal",
+          "rescue"
+        ],
+        "cpu": {
+          "arch": "x64",
+          "sharedCpu": false,
+          "type": "AMD EPYC 9334 (2.7 GHz)",
+          "virtual": {
+            "count": 48
+          }
+        },
+        "gpu": {
+          "count": 2,
+          "type": "H100-PCIe",
+          "useNvlink": false
+        },
+        "gpuRam": {
+          "size": 85899345920,
+          "type": "GPU"
+        },
+        "network": {
+          "internalBandwidth": 20000000000,
+          "ipv6Supported": true,
+          "maxPublicBandwidth": 20000000000,
+          "publicBandwidth": 20000000000,
+          "type": ""
+        },
+        "ram": {
+          "eccType": "standard",
+          "size": 515396075520,
+          "type": ""
+        },
+        "storages": [
+          {
+            "block": {},
+            "count": 1
+          },
+          {
+            "count": 1,
+            "scratch": {
+              "maxSize": 6000000000000
+            }
+          }
+        ]
+      },
+      "instanceGpuName": "H100-2-80G",
+      "modelBenchmarks": [
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "llama-3.1-70b-instruct",
+          "outputTokenPerSecond": 18.1
+        },
+        {
+          "concurrentConnections": 32,
+          "inputOutputRatio": 10,
+          "modelId": "llama-3.1-8b-instruct",
+          "outputTokenPerSecond": 61
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "llama-3.3-70b-instruct",
+          "outputTokenPerSecond": 19.3
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "mistral-nemo-instruct-2407",
+          "outputTokenPerSecond": 66
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "pixtral-12b-2409",
+          "outputTokenPerSecond": 35.7
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "qwen2.5-coder-32b-instruct",
+          "outputTokenPerSecond": 53.7
+        }
+      ],
+      "regions": [
+        {
+          "price": {
+            "hourly": {
+              "isApproximation": true,
+              "sku": "",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 679800000,
+                "units": 6
+              }
+            },
+            "monthly": {
+              "isApproximation": true,
+              "sku": "",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 254000000,
+                "units": 4876
+              }
+            },
+            "perMinute": {
+              "isApproximation": false,
+              "sku": "/ai/inference_dedicated/deployment/h100-2/fr-par",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 111330000,
+                "units": 0
+              }
+            }
+          },
+          "region": "fr-par"
+        }
+      ]
+    },
+    {
+      "apiId": "H100-SXM-2",
+      "hardware": {
+        "bootTypes": [
+          "normal",
+          "rescue"
+        ],
+        "cpu": {
+          "arch": "x64",
+          "sharedCpu": false,
+          "type": "Intel Xeon Platinum 8452Y (2.0 GHz)",
+          "virtual": {
+            "count": 32
+          }
+        },
+        "gpu": {
+          "count": 2,
+          "type": "H100-SXM",
+          "useNvlink": true
+        },
+        "gpuRam": {
+          "size": 85899345920,
+          "type": "GPU"
+        },
+        "network": {
+          "internalBandwidth": 20000000000,
+          "ipv6Supported": true,
+          "maxPublicBandwidth": 20000000000,
+          "publicBandwidth": 20000000000,
+          "type": ""
+        },
+        "ram": {
+          "eccType": "standard",
+          "size": 257698037760,
+          "type": ""
+        },
+        "storages": [
+          {
+            "block": {},
+            "count": 1
+          },
+          {
+            "count": 1,
+            "scratch": {
+              "maxSize": 3200000000000
+            }
+          }
+        ]
+      },
+      "instanceGpuName": "H100-SXM-2-80G",
+      "modelBenchmarks": [
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "devstral-2-123b-instruct-2512",
+          "outputTokenPerSecond": 28.4
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "gemma-4-26b-a4b-it",
+          "outputTokenPerSecond": 101
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "gpt-oss-120b",
+          "outputTokenPerSecond": 111
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "mistral-small-3.2-24b-instruct-2506",
+          "outputTokenPerSecond": 113
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "qwen3-235b-a22b-instruct-2507",
+          "outputTokenPerSecond": 46
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "qwen3.6-35b-a3b",
+          "outputTokenPerSecond": 149
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "voxtral-small-24b-2507",
+          "outputTokenPerSecond": 77.9
+        }
+      ],
+      "regions": [
+        {
+          "price": {
+            "hourly": {
+              "isApproximation": true,
+              "sku": "",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 950000000,
+                "units": 7
+              }
+            },
+            "monthly": {
+              "isApproximation": true,
+              "sku": "",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 500000000,
+                "units": 5803
+              }
+            },
+            "perMinute": {
+              "isApproximation": false,
+              "sku": "/ai/inference_dedicated/deployment/h100-sxm-2/fr-par",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 132500000,
+                "units": 0
+              }
+            }
+          },
+          "region": "fr-par"
+        }
+      ]
+    },
+    {
+      "apiId": "H100-SXM-4",
+      "hardware": {
+        "bootTypes": [
+          "normal",
+          "rescue"
+        ],
+        "cpu": {
+          "arch": "x64",
+          "sharedCpu": false,
+          "type": "Intel Xeon Platinum 8452Y (2.0 GHz)",
+          "virtual": {
+            "count": 64
+          }
+        },
+        "gpu": {
+          "count": 4,
+          "type": "H100-SXM",
+          "useNvlink": true
+        },
+        "gpuRam": {
+          "size": 85899345920,
+          "type": "GPU"
+        },
+        "network": {
+          "internalBandwidth": 20000000000,
+          "ipv6Supported": true,
+          "maxPublicBandwidth": 20000000000,
+          "publicBandwidth": 20000000000,
+          "type": ""
+        },
+        "ram": {
+          "eccType": "standard",
+          "size": 515396075520,
+          "type": ""
+        },
+        "storages": [
+          {
+            "block": {},
+            "count": 1
+          },
+          {
+            "count": 1,
+            "scratch": {
+              "maxSize": 6400000000000
+            }
+          }
+        ]
+      },
+      "instanceGpuName": "H100-SXM-4-80G",
+      "modelBenchmarks": [
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "devstral-2-123b-instruct-2512",
+          "outputTokenPerSecond": 45.9
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "mistral-medium-3.5-128b",
+          "outputTokenPerSecond": 49
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "qwen3-235b-a22b-instruct-2507",
+          "outputTokenPerSecond": 57.2
+        }
+      ],
+      "regions": [
+        {
+          "price": {
+            "hourly": {
+              "isApproximation": true,
+              "sku": "",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 219960000,
+                "units": 15
+              }
+            },
+            "monthly": {
+              "isApproximation": true,
+              "sku": "",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 570800000,
+                "units": 11110
+              }
+            },
+            "perMinute": {
+              "isApproximation": false,
+              "sku": "/ai/inference_dedicated/deployment/h100-sxm-4/fr-par",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 253666000,
+                "units": 0
+              }
+            }
+          },
+          "region": "fr-par"
+        }
+      ]
+    },
+    {
+      "apiId": "H100-SXM-8",
+      "hardware": {
+        "bootTypes": [
+          "normal",
+          "rescue"
+        ],
+        "cpu": {
+          "arch": "x64",
+          "sharedCpu": false,
+          "type": "Intel Xeon Platinum 8452Y (2.0 GHz)",
+          "virtual": {
+            "count": 128
+          }
+        },
+        "gpu": {
+          "count": 8,
+          "type": "H100-SXM",
+          "useNvlink": true
+        },
+        "gpuRam": {
+          "size": 85899345920,
+          "type": "GPU"
+        },
+        "network": {
+          "internalBandwidth": 20000000000,
+          "ipv6Supported": true,
+          "maxPublicBandwidth": 20000000000,
+          "publicBandwidth": 20000000000,
+          "type": ""
+        },
+        "ram": {
+          "eccType": "standard",
+          "size": 1030792151040,
+          "type": ""
+        },
+        "storages": [
+          {
+            "block": {},
+            "count": 1
+          },
+          {
+            "count": 1,
+            "scratch": {
+              "maxSize": 12800000000000
+            }
+          }
+        ]
+      },
+      "instanceGpuName": "H100-SXM-8-80G",
+      "modelBenchmarks": [
+        {
+          "concurrentConnections": 8,
+          "inputOutputRatio": 10,
+          "modelId": "mistral-small-3.2-24b-instruct-2506",
+          "outputTokenPerSecond": 118
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "qwen3.5-397b-a17b",
+          "outputTokenPerSecond": 53
+        }
+      ],
+      "regions": [
+        {
+          "price": {
+            "hourly": {
+              "isApproximation": true,
+              "sku": "",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 60000000,
+                "units": 30
+              }
+            },
+            "monthly": {
+              "isApproximation": true,
+              "sku": "",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 800000000,
+                "units": 21943
+              }
+            },
+            "perMinute": {
+              "isApproximation": false,
+              "sku": "/ai/inference_dedicated/deployment/h100-sxm-8/fr-par",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 501000000,
+                "units": 0
+              }
+            }
+          },
+          "region": "fr-par"
+        }
+      ]
+    },
+    {
+      "apiId": "L4",
+      "hardware": {
+        "bootTypes": [
+          "normal",
+          "rescue"
+        ],
+        "cpu": {
+          "arch": "x64",
+          "sharedCpu": false,
+          "type": "AMD EPYC 7413 (2.65 GHz)",
+          "virtual": {
+            "count": 8
+          }
+        },
+        "gpu": {
+          "count": 1,
+          "type": "L4",
+          "useNvlink": false
+        },
+        "gpuRam": {
+          "size": 25769803776,
+          "type": "GPU"
+        },
+        "network": {
+          "internalBandwidth": 2500000000,
+          "ipv6Supported": true,
+          "maxPublicBandwidth": 2500000000,
+          "publicBandwidth": 2500000000,
+          "type": ""
+        },
+        "ram": {
+          "eccType": "standard",
+          "size": 51539607552,
+          "type": ""
+        },
+        "storages": [
+          {
+            "block": {},
+            "count": 1
+          }
+        ]
+      },
+      "instanceGpuName": "L4-1-24G",
+      "modelBenchmarks": [
+        {
+          "concurrentConnections": 64,
+          "modelId": "bge-multilingual-gemma2"
+        },
+        {
+          "concurrentConnections": 32,
+          "inputOutputRatio": 10,
+          "modelId": "llama-3.1-8b-instruct",
+          "outputTokenPerSecond": 9
+        }
+      ],
+      "regions": [
+        {
+          "price": {
+            "hourly": {
+              "isApproximation": true,
+              "sku": "",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 930000000,
+                "units": 0
+              }
+            },
+            "monthly": {
+              "isApproximation": true,
+              "sku": "",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 900000000,
+                "units": 678
+              }
+            },
+            "perMinute": {
+              "isApproximation": false,
+              "sku": "/ai/inference_dedicated/deployment/l4/fr-par",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 15500000,
+                "units": 0
+              }
+            }
+          },
+          "region": "fr-par"
+        }
+      ]
+    },
+    {
+      "apiId": "L40S",
+      "hardware": {
+        "bootTypes": [
+          "normal",
+          "rescue"
+        ],
+        "cpu": {
+          "arch": "x64",
+          "sharedCpu": false,
+          "type": "AMD EPYC 7413 (2.65 GHz)",
+          "virtual": {
+            "count": 8
+          }
+        },
+        "gpu": {
+          "count": 1,
+          "type": "L40S",
+          "useNvlink": false
+        },
+        "gpuRam": {
+          "size": 51539607552,
+          "type": "GPU"
+        },
+        "network": {
+          "internalBandwidth": 2500000000,
+          "ipv6Supported": true,
+          "maxPublicBandwidth": 2500000000,
+          "publicBandwidth": 2500000000,
+          "type": ""
+        },
+        "ram": {
+          "eccType": "standard",
+          "size": 103079215104,
+          "type": ""
+        },
+        "storages": [
+          {
+            "block": {},
+            "count": 1
+          },
+          {
+            "count": 1,
+            "scratch": {
+              "maxSize": 1600000000000
+            }
+          }
+        ]
+      },
+      "instanceGpuName": "L40S-1-48G",
+      "modelBenchmarks": [
+        {
+          "concurrentConnections": 32,
+          "modelId": "bge-multilingual-gemma2"
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "mistral-nemo-instruct-2407",
+          "outputTokenPerSecond": 21.1
+        },
+        {
+          "concurrentConnections": 16,
+          "inputOutputRatio": 10,
+          "modelId": "pixtral-12b-2409",
+          "outputTokenPerSecond": 13
+        }
+      ],
+      "regions": [
+        {
+          "price": {
+            "hourly": {
+              "isApproximation": true,
+              "sku": "",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 719600000,
+                "units": 1
+              }
+            },
+            "monthly": {
+              "isApproximation": true,
+              "sku": "",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 308000000,
+                "units": 1255
+              }
+            },
+            "perMinute": {
+              "isApproximation": false,
+              "sku": "/ai/inference_dedicated/deployment/l40s/fr-par",
+              "value": {
+                "currencyCode": "EUR",
+                "nanos": 28660000,
+                "units": 0
+              }
+            }
+          },
+          "region": "fr-par"
+        }
+      ]
+    }
+  ]
+}

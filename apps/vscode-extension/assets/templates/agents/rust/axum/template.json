@@ -1,0 +1,17 @@
+{
+  "format_version": 1,
+  "id": "agents-rust-axum",
+  "label": "Axum · rust",
+  "kind": "agents",
+  "language": "rust",
+  "framework": "axum",
+  "category": "backend",
+  "usage": "stack",
+  "description": "Base backend · SDK agent à intégrer.",
+  "files": [
+    "Cargo.toml",
+    "README.md",
+    "agent.authoring.json",
+    "src/lib.rs"
+  ]
+}

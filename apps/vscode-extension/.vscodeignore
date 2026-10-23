@@ -1,7 +1,12 @@
 src/**
-test/**
+tests/**
 node_modules/**
 tsconfig.json
 package-lock.json
 **/*.vsix
 biome.json
+build.mjs
+verifyAssets.mjs
+verifyVsix.py
+package.mjs
+__pycache__/**

@@ -1,0 +1,17 @@
+{
+  "format_version": 1,
+  "id": "tools-rust-none",
+  "label": "Sans framework · rust",
+  "kind": "tools",
+  "language": "rust",
+  "framework": "none",
+  "category": "basic",
+  "usage": "stack",
+  "description": "Fonction locale · sans serveur.",
+  "files": [
+    "Cargo.toml",
+    "README.md",
+    "src/lib.rs",
+    "tool.authoring.json"
+  ]
+}
