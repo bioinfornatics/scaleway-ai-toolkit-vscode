@@ -177,3 +177,27 @@ test('workflow semantics isolate Rust network bootstrap from offline canonical p
   );
   assert.equal(result.status, 0, result.stderr);
 });
+
+// Registry-confirmed 0.0.8 is the published repair for read@1.0.7's ~0.0.4.
+test('read locks a published mute-stream version within its dependency range', () => {
+  const lock = JSON.parse(
+    fs.readFileSync(path.join(app, 'package-lock.json'), 'utf8'),
+  );
+  const reader = lock.packages['node_modules/read'];
+  const mute = lock.packages['node_modules/mute-stream'];
+  assert.equal(reader.version, '1.0.7');
+  assert.equal(reader.dependencies['mute-stream'], '~0.0.4');
+  assert.equal(mute.version, '0.0.8');
+  const [major, minor, patch] = mute.version.split('.').map(Number);
+  assert.equal(major, 0);
+  assert.equal(minor, 0);
+  assert.ok(patch >= 4 && patch <= 8);
+  assert.equal(
+    mute.resolved,
+    'https://registry.npmjs.org/mute-stream/-/mute-stream-0.0.8.tgz',
+  );
+  assert.equal(
+    mute.integrity,
+    'sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==',
+  );
+});
