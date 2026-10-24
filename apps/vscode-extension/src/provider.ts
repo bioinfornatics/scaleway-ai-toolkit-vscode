@@ -70,7 +70,13 @@ export interface ListedModel {
   label: string;
   kind: 'serverless' | 'dedicated' | 'dedicated-catalog';
   status?: string;
-  llmAccess?: { id: string; projectId: string; bearerType: 'user' | 'application'; expiresAt: number; verifiedAt: string };
+  llmAccess?: {
+    id: string;
+    projectId: string;
+    bearerType: 'user' | 'application';
+    expiresAt: number;
+    verifiedAt: string;
+  };
   serverlessCreatedAt?: string;
   serverlessAvailability?:
     | 'Disponible'
@@ -814,7 +820,8 @@ export function serverlessInvocation(model: ListedModel) {
     modelId: model.id,
     maxOutputTokens: 2048,
     capability: model.serverlessCapabilities?.textChat ?? 'unknown',
-    source: 'specifications/references/documentation/serverless-source-chat.txt',
+    source:
+      'specifications/references/documentation/serverless-source-chat.txt',
     protocol: 'chat-completions-sse' as const,
   };
 }

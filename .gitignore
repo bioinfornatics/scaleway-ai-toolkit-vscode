@@ -17,3 +17,12 @@ apps/vscode-extension/dist/
 artifacts/*.vsix
 # Local validation reports are build artifacts, not source
 artifacts/validation/
+
+# Local secrets and isolated build tooling (tracked templates remain tracked)
+.env
+.env.*
+!.env.example
+.venv/
+.uv-cache/
+.pytest_cache/
+target/

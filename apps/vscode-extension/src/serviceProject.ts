@@ -1,7 +1,7 @@
 import * as TOML from '@iarna/toml';
-import { interactiveAgent } from './interactiveAgent';
 import { a2aApi, a2aExecutor, a2aReadme } from './a2aService';
 import { composeAgentProject } from './agentProject';
+import { interactiveAgent } from './interactiveAgent';
 import {
   prepareEmbeddedProject,
   renderProjectTemplate,

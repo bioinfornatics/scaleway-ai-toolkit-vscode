@@ -12,6 +12,7 @@ import stat
 import subprocess
 import tempfile
 import zipfile
+import xml.etree.ElementTree as ET
 
 MAX_ARCHIVE = 64 * 1024 * 1024
 MAX_FILE = 32 * 1024 * 1024
@@ -46,6 +47,19 @@ def expected_tree(root):
                     if len(expected) > 4096 or sum(map(len, expected.values())) > MAX_TOTAL:
                         raise ValueError('Expected tree budget exceeded')
     expected['extension/package.json'] = (root / 'package.json').read_bytes()
+    license_file = root / 'LICENSE'
+    if license_file.is_symlink() or not license_file.is_file() or license_file.stat().st_size > MAX_FILE:
+        raise ValueError('Missing/unsafe LICENSE')
+    # vsce canonicalizes these two source filenames; compare their exact bytes.
+    expected['extension/LICENSE.txt'] = license_file.read_bytes()
+    if not expected['extension/LICENSE.txt']:
+        raise ValueError('Empty LICENSE')
+    for source, shipped in (('README.md', 'readme.md'),
+                            ('THIRD_PARTY_NOTICES.md', 'THIRD_PARTY_NOTICES.md')):
+        source_file = root / source
+        if source_file.is_symlink() or not source_file.is_file() or source_file.stat().st_size > MAX_FILE:
+            raise ValueError('Missing/unsafe ' + source)
+        expected['extension/' + shipped] = source_file.read_bytes()
     return expected
 
 
@@ -127,18 +141,24 @@ def verify(archive, root):
                 rel = name.split('/')[1:]
                 if 'node_modules' in rel or rel[0] in ('src','tests') or name.endswith(('.vsix','.ts','.map','.mjs')) and rel[0] != 'assets':
                     raise ValueError('Source/dependency/build tooling shipped')
-                if rel[0] not in ('dist','media','assets') and '/'.join(rel) not in ('package.json','README.md','readme.md','LICENSE','CHANGELOG.md','THIRD_PARTY_NOTICES.md'):
+                if rel[0] not in ('dist','media','assets') and '/'.join(rel) not in ('package.json','readme.md','LICENSE.txt','THIRD_PARTY_NOTICES.md'):
                     raise ValueError('Unexpected extension payload: ' + name)
             payload[name] = z.read(entry)  # CRC validated, prebounded sizes.
         for name, content in expected.items():
             if payload.get(name) != content:
                 raise ValueError('Missing or mutated payload: ' + name)
         for name in payload:
-            if name.startswith(('extension/dist/','extension/media/','extension/assets/')) and name not in expected:
+            if name.startswith('extension/') and name not in expected:
                 raise ValueError('Unexpected generated/media/asset payload')
         if not payload.get('extension.vsixmanifest') or not payload.get('[Content_Types].xml'):
             raise ValueError('Missing VSIX manifest/content types')
         manifest = json.loads(payload['extension/package.json'])
+        if manifest.get('license') != 'CeCILL-2.1':
+            raise ValueError('Expected CeCILL-2.1 license metadata')
+        identity = ET.fromstring(payload['extension.vsixmanifest']).find('.//{*}Identity')
+        if identity is None or any(identity.get(xml) != manifest.get(key) for xml, key in
+                                   (('Id', 'name'), ('Version', 'version'), ('Publisher', 'publisher'))):
+            raise ValueError('VSIX identity/version/publisher mismatch')
         main = manifest.get('main', '')
         main = main[2:] if main.startswith('./') else main
         if not main.startswith('dist/') or safe_name(main) != main or 'extension/' + main not in payload:
@@ -161,6 +181,8 @@ def verify(archive, root):
     return {'verification': 'PASS', 'entries': len(entries), 'bytes': total,
             'sha256': hashlib.sha256(archive.read_bytes()).hexdigest(),
             'activation': 'NOT RUN', 'minimumHostValidation': 'UNKNOWN',
+            'license': manifest['license'], 'version': manifest.get('version'),
+            'publisher': manifest.get('publisher'),
             'declaredEngines': manifest.get('engines')}
 
 
@@ -171,7 +193,7 @@ def main():
     args = parser.parse_args()
     try:
         print(json.dumps(verify(args.archive.absolute(), args.root.absolute())))
-    except (ValueError, OSError, zipfile.BadZipFile, subprocess.TimeoutExpired) as error:
+    except (ValueError, OSError, zipfile.BadZipFile, ET.ParseError, subprocess.TimeoutExpired) as error:
         parser.exit(1, 'VSIX verification FAILED: ' + str(error) + '\n')
 
 

@@ -86,13 +86,13 @@ for (const entry of entries)
           constructor(value) {
             options.push(value);
           }
-          async invoke(value) {
+          async invoke(_value) {
             invoked++;
             return entry.framework === 'langchain'
               ? { messages: [{ content: 'mock-result' }] }
               : 'mock-result';
           }
-          async generate(value) {
+          async generate(_value) {
             invoked++;
             return { text: 'mock-result' };
           }

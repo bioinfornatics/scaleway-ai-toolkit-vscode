@@ -5,7 +5,7 @@
   "version": "0.0.37",
   "publisher": "scaleway-ai-community-preview",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "CeCILL-2.1",
   "engines": {
     "vscode": "^1.96.0",
     "node": ">=22.6.0"
@@ -285,5 +285,10 @@
   },
   "overrides": {
     "@scaleway/random-name": "5.1.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bioinfornatics/scaleway-ai-toolkit-vscode.git",
+    "directory": "apps/vscode-extension"
   }
 }

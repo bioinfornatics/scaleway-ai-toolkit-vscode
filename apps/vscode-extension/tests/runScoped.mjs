@@ -56,6 +56,7 @@ export const addedSuites = [
   'serviceProject.test.cjs',
   'serviceCompatibility.test.cjs',
   'buildPackaging.test.cjs',
+  'releasePrep.test.cjs',
   'endpointAgent.test.cjs',
   'frameworkAgents.test.cjs',
   'localAgentRunner.test.cjs',

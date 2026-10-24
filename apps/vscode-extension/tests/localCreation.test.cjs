@@ -3383,7 +3383,7 @@ test('single selector change drives host API/CLI transitions with common key pre
   );
 });
 
-for (const [remembered, current, a2a] of [
+for (const [remembered, current, _a2a] of [
   ['LangChain', 'Strands', false],
   ['Strands', 'LangChain', true],
 ])

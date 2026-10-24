@@ -54,6 +54,26 @@ Les appels de modèle et les déploiements peuvent être facturés. Vérifiez le
 - `artifacts/` : VSIX et rapports de validation locaux, exclus des nouveaux ajouts Git.
 
 Pour vérifier l’extension : `cd apps/vscode-extension && npm test`.
+
+## Build CI et livraison communautaire
+
+Le code est sous [CeCILL-2.1](LICENSE) ; la copie embarquée dans le VSIX est vérifiée octet par octet. Cette licence ne donne pas de droits sur les marques. **La publication publique reste bloquée : la permission concernant les anciennes icônes Scaleway dans l’historique n’est pas résolue.** Ni un remplacement local des icônes ni une CI verte ne lèvent ce blocage. Aucune réécriture d’historique ou publication sans décision explicite.
+
+Commande canonique locale (dépendances déjà installées) :
+
+```bash
+cd apps/vscode-extension
+npm run package -- --out /tmp/scaleway-preview-unique.vsix
+```
+
+Elle refuse un fichier existant et exécute typecheck, build, sélection explicite des tests, packaging et vérification des octets du VSIX, licence et identité/version/publisher compris. Les suites historiques arrêtées restent exclues ; `--full` est uniquement un opt-in explicite. Le chargement CommonJS isolé n’active pas l’extension : compatibilité effective VS Code minimum, inférence, SDK/backend réels et production ne sont pas certifiés.
+
+`buildCI` utilise Ubuntu 24.04, Node 22, Python 3.12, uv 0.12.24, Bun 1.3.3 et Rust stable. Les dépendances npm verrouillées sont installées avec `npm ci --ignore-scripts`. Seuls Hatchling >=1.27,<2 et pytest >=8,<10 sont préchauffés avec leurs dépendances d’outillage dans une venv et un cache uv temporaires ; aucune installation Python globale. La preuve wheel (`SCW_PYTHON_WHEEL_PROOF=1`) reste strictement hors ligne, sans dépendances runtime ni inférence. Les versions résolues et limites sont journalisées. La CI préchauffe explicitement les dépendances Rust déclarées clap/axum/tokio dans une fixture temporaire : téléchargement dans une étape réseau dédiée, puis compilation hors ligne. Le cache est une optimisation, pas un prérequis ; les programmes générés ne sont pas exécutés pendant ce préchauffage, mais Cargo peut exécuter les build scripts et macros de ses dépendances. Deux preuves Actix peuvent rester explicitement non vérifiées si leur cache est incomplet. Les actions utilisent des tags de version publics, pas des SHA supposés ; leur épinglage vérifié et un premier run GitHub restent à effectuer.
+
+Après résolution documentée des droits, revue des secrets/historique et autorisation de push explicite, la livraison future est **manuelle seulement** : pousser uniquement main et un tag `v0.0.37` pointant sur le même commit, définir la variable de dépôt `PUBLIC_RELEASE_APPROVED=true`, puis lancer le workflow `Gated GitHub VSIX prerelease` depuis main avec ce tag. Le gate contrôle version actuelle/verrou, publisher communautaire, dépôt bioinfornatics, licence et tag existant ; les étapes d’upload sont également bloquées sans cette variable. Protéger les tags de release contre toute modification avant publication : le contrôle distant réduit la fenêtre de course, sans rendre atomiques contrôle du tag et création de release. Remettre la variable à false ensuite. Le seul job doté de `contents: write` crée une prerelease GitHub avec VSIX + SHA-256, sans écraser une livraison existante. Pas de Marketplace, npm publish, PAT ou secret Scaleway ; seul le jeton GitHub éphémère du job de livraison est utilisé.
+
+Avant toute publication, exclure credentials, données clients et transcriptions privées ; `.env`, venv/caches et rapports locaux sont ignorés sans supprimer les templates `.env.example` déjà suivis. Les refs Beads/Entire ne font pas partie d’un push de code/release. Les logs CI contiennent uniquement des fixtures synthétiques et des preuves de build ; vérifier leur contenu avant de lever le gate.
+
 La création de projets n’exécute pas ces tests et ne réalise aucun appel cloud.
 Les anciens tests documentaires/discovery ont été retirés. Les sources publiques épinglées et leurs rapports historiques restent sous `specifications/references/`.
 

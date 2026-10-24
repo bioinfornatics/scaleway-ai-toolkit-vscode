@@ -63,11 +63,18 @@ test('VSIX verifier rejects mutated/missing/traversal/duplicate/symlink/bomb ZIP
     'exports.activate=()=>{throw new Error("must not activate")};',
   );
   put(root, 'media/icon.svg', '<svg/>');
+  put(root, 'LICENSE', fs.readFileSync(path.join(app, 'LICENSE')));
+  put(root, 'README.md', '# Fixture README\n');
+  put(root, 'THIRD_PARTY_NOTICES.md', '# Fixture notices\n');
   put(root, 'assets/templates/example.txt', 'payload');
   put(
     root,
     'package.json',
     JSON.stringify({
+      name: 'fixture',
+      version: '0.0.37',
+      publisher: 'fixture-publisher',
+      license: 'CeCILL-2.1',
       main: './dist/extension.js',
       engines: { vscode: '^1.96.0' },
     }),
@@ -78,12 +85,21 @@ test('VSIX verifier rejects mutated/missing/traversal/duplicate/symlink/bomb ZIP
       'import pathlib,zipfile,stat,sys',
       'root=pathlib.Path(sys.argv[1]);archive=sys.argv[2];mode=sys.argv[3]',
       "with zipfile.ZipFile(archive,'w',compression=zipfile.ZIP_DEFLATED) as z:",
-      " z.writestr('[Content_Types].xml','<Types/>');z.writestr('extension.vsixmanifest','<PackageManifest/>')",
+      " z.writestr('[Content_Types].xml','<Types/>');z.writestr('extension.vsixmanifest','<PackageManifest><Metadata><Identity Id=\"fixture\" Version=\"'+('0.0.36' if mode=='version-mismatch' else '0.0.37')+'\" Publisher=\"fixture-publisher\"/></Metadata></PackageManifest>')",
       " for p in root.rglob('*'):",
       "  if not p.is_file() or p.suffix=='.vsix':continue",
-      "  name='extension/'+p.relative_to(root).as_posix()",
+      "  rel=p.relative_to(root).as_posix();name='extension/'+{'LICENSE':'LICENSE.txt','README.md':'readme.md'}.get(rel,rel)",
       "  if mode=='missing' and name=='extension/media/icon.svg':continue",
+      "  if mode=='license-missing' and name=='extension/LICENSE.txt':continue",
+      "  if mode=='license-mutated' and name=='extension/LICENSE.txt':z.writestr(name,b'bad-license');continue",
+      "  if mode=='readme-missing' and name=='extension/readme.md':continue",
+      "  if mode=='readme-mutated' and name=='extension/readme.md':z.writestr(name,b'bad-readme');continue",
+      "  if mode=='license-original-name' and rel=='LICENSE':name='extension/LICENSE'",
+      "  if mode=='readme-original-name' and rel=='README.md':name='extension/README.md'",
+      "  if mode=='notices-wrong-case' and rel=='THIRD_PARTY_NOTICES.md':name='extension/third_party_notices.md'",
       "  z.writestr(name,b'mutated' if mode=='mutated' and name=='extension/media/icon.svg' else p.read_bytes())",
+      " if mode=='extra-tool':z.writestr('extension/scripts/ci/tool.py','bad')",
+      " if mode=='extra-root':z.writestr('extension/CHANGELOG.md','bad')",
       " if mode=='traversal':z.writestr('../escape','bad')",
       " if mode=='duplicate':z.writestr('extension/media/icon.svg','duplicate')",
       " if mode=='symlink':",
@@ -105,6 +121,16 @@ test('VSIX verifier rejects mutated/missing/traversal/duplicate/symlink/bomb ZIP
   assert.equal(JSON.parse(valid.stdout).minimumHostValidation, 'UNKNOWN');
   for (const mode of [
     'missing',
+    'license-missing',
+    'license-mutated',
+    'readme-missing',
+    'readme-mutated',
+    'license-original-name',
+    'readme-original-name',
+    'notices-wrong-case',
+    'extra-tool',
+    'extra-root',
+    'version-mismatch',
     'mutated',
     'traversal',
     'duplicate',

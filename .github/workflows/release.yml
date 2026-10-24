@@ -1,0 +1,61 @@
+name: Gated GitHub VSIX prerelease
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing approved tag matching the extension version (v0.0.37)
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  validate:
+    if: github.repository == 'bioinfornatics/scaleway-ai-toolkit-vscode' && github.ref == 'refs/heads/main' && vars.PUBLIC_RELEASE_APPROVED == 'true'
+    runs-on: ubuntu-24.04
+    outputs:
+      tag: ${{ steps.gate.outputs.tag }}
+      sha: ${{ steps.gate.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - id: gate
+        name: Validate tag against current extension metadata
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          python3 apps/vscode-extension/tests/releaseGate.py "$RELEASE_TAG"
+          sha="$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")"
+          test "$sha" = "$(git rev-parse HEAD)"
+          echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+  package:
+    needs: validate
+    uses: ./.github/workflows/package.yml
+  prerelease:
+    needs: [validate, package]
+    if: github.repository == 'bioinfornatics/scaleway-ai-toolkit-vscode' && github.ref == 'refs/heads/main' && vars.PUBLIC_RELEASE_APPROVED == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: vsix-proof-${{ github.run_id }}-${{ github.run_attempt }}
+          path: candidate
+      - name: Create prerelease only (never marketplace/npm)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ needs.validate.outputs.tag }}
+          RELEASE_SHA: ${{ needs.validate.outputs.sha }}
+        run: |
+          set -euo pipefail
+          cd candidate
+          sha256sum --check scaleway-ai-toolkit-preview.vsix.sha256
+          actual="$(gh api "repos/$GH_REPO/commits/$RELEASE_TAG" --jq .sha)"
+          test "$actual" = "$RELEASE_SHA"
+          # No implicit tags or overwrite of an existing release.
+          gh release create "$RELEASE_TAG" --verify-tag --prerelease --title "Community preview $RELEASE_TAG" --notes 'Community preview; CeCILL-2.1. Scoped offline proof only; no minimum-host, live inference or production certification.' scaleway-ai-toolkit-preview.vsix scaleway-ai-toolkit-preview.vsix.sha256
