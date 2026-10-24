@@ -11,15 +11,15 @@ test('release gate accepts only current preview tag and matching LICENSE', () =>
     spawnSync('python3', [path.join(__dirname, 'releaseGate.py'), tag], {
       encoding: 'utf8',
     });
-  const result = run('v0.0.37');
+  const result = run('v0.0.38');
   assert.equal(result.status, 0, result.stderr);
   for (const tag of [
-    '0.0.37',
+    '0.0.38',
     'v0.0.36',
     'v1.0.0',
-    'v0.0.37-rc1',
-    'v0.0.37' + String.fromCharCode(10),
-    'v0.0.37;echo bad',
+    'v0.0.38-rc1',
+    'v0.0.38' + String.fromCharCode(10),
+    'v0.0.38;echo bad',
   ])
     assert.notEqual(run(tag).status, 0, tag);
   assert.deepEqual(
@@ -40,11 +40,11 @@ test('metadata gate rejects mutated publisher/version/license/repository/private
     ' (root.parents[1]/"LICENSE").write_bytes(b"fixture"); (root/"LICENSE").write_bytes(b"fixture")',
     ' for key,value in [("publisher","other"),("version","0.0.36"),("license","UNLICENSED"),("repository",{"url":"https://example.invalid"}),("private",False)]:',
     '  mutated=dict(original); mutated[key]=value; (root/"package.json").write_text(json.dumps(mutated)); (root/"package-lock.json").write_text(json.dumps(lock))',
-    '  try: gate.validate("v0.0.37",root)',
+    '  try: gate.validate("v0.0.38",root)',
     '  except ValueError: pass',
     '  else: raise AssertionError(key)',
     ' (root/"package.json").write_text(json.dumps(original)); lock["version"]="0.0.36"; (root/"package-lock.json").write_text(json.dumps(lock))',
-    ' try: gate.validate("v0.0.37",root)',
+    ' try: gate.validate("v0.0.38",root)',
     ' except ValueError: pass',
     ' else: raise AssertionError("lock")',
   ].join(String.fromCharCode(10));
@@ -112,7 +112,7 @@ test('release uses original neutral icons and excludes former branded assets', (
     assert.ok(!fs.existsSync(path.join(app, 'media', old)));
   const provenance = JSON.parse(
     read(
-      'specifications/references/documentation/community-neutral-icons-v1.json',
+      'specifications/references/documentation/agent-logo-v38/provenance.json',
     ),
   );
   for (const [file, digest] of Object.entries(provenance.files))
@@ -125,7 +125,9 @@ test('release uses original neutral icons and excludes former branded assets', (
     );
   const icon = read('apps/vscode-extension/media/toolkit.svg');
   assert.ok(icon.includes('currentColor'));
-  assert.equal((icon.match(/<circle /g) || []).length, 3);
+  assert.ok(icon.includes('<mask'));
+  assert.ok(icon.includes('AI agent assistant'));
+  assert.ok(!icon.includes('<filter'));
   assert.ok(!icon.includes('M8.37'));
 });
 test('CI provisions real fixture helpers before offline proofs', () => {

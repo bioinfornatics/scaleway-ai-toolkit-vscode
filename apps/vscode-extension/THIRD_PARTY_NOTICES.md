@@ -1,6 +1,6 @@
 # Bundled third-party software notices
 
-The package icon and activity-bar icon are original geometric artwork created for this community project and licensed under CeCILL-2.1. No Scaleway logo is bundled. Scaleway trademarks remain the property of their owner; this extension is unofficial and not endorsed by Scaleway.
+The package icon and activity-bar icon are original assistant/action artwork reconstructed for this community project from an image-mcp generated concept and licensed under CeCILL-2.1. No Scaleway logo is bundled. Scaleway trademarks remain the property of their owner; this extension is unofficial and not endorsed by Scaleway.
 
 Scaleway SDK packages: Apache-2.0. Scaleway random-name helper: MIT.
 

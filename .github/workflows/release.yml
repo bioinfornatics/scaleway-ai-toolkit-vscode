@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing approved tag matching the extension version (v0.0.37)
+        description: Existing approved tag matching the extension version (v0.0.38)
         required: true
         type: string
 permissions:

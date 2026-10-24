@@ -1,0 +1,28 @@
+{
+  "approved_direction": "User 2026-10-24 12:18: assistant + action",
+  "source": "image-mcp generated assistant/action concept 2026-10-24; SHA256 7062c5e6c1de26d7bae2a94adda1863a7836adc90df098f9c8b877f556d1769d",
+  "generation": "image-mcp Azure gpt-image-2",
+  "finalization": "Manual SVG reconstruction of approved direction. Removed model glow; simplified eyes and antenna. PNG exports rendered from SVG using installed Inkscape; no new dependencies.",
+  "palette": [
+    "#4F238A",
+    "#BF95F9"
+  ],
+  "official_brand_palette_certified": false,
+  "scope": "User12:21 approves integration, focused commit/push and GitHub prerelease0.0.38; preserve previous release.",
+  "exports": {
+    "agent-logo.svg": "ae3abdce52dbd42001e68496cd510636a6b5f0df9236e1c986a340d323bbf74e",
+    "agent-activity.svg": "13885a5426284308f6710703f72fe2937fe629cdfc00a8f9004a035e32e7eff1",
+    "agent-logo-1024.png": "dd116fd1775d16e7bbf4054a901e5d25e7725e34b062e77f6352fcc756f8d796",
+    "agent-logo-256.png": "c911d9e77a5776071df90ee2e932d1a3b4ff859ace48995411be80402d88a502",
+    "agent-logo-128.png": "24b13ed0a137c2ed2db8cbb685249e58cf82dfdce0b3d19f82e5381b5b4cd613",
+    "agent-logo-32.png": "3ca678aef6ace3fe6ab3799d7249880a859c1edc79a89e6d3e78571f721a7a05",
+    "agent-activity-24.png": "210e90907157e14d636410a9e6835c92be041fc0a9e5ae6b9cffef412a8d6256",
+    "preview-light-dark.png": "b05f7d61d6f59a7dfb3aa954e3e853130b72dbaab00c2aa540b9724260188917"
+  },
+  "issue": "scaleway_ai_vscode-99u",
+  "license": "CeCILL-2.1",
+  "files": {
+    "toolkit-icon.png": "c911d9e77a5776071df90ee2e932d1a3b4ff859ace48995411be80402d88a502",
+    "toolkit.svg": "13885a5426284308f6710703f72fe2937fe629cdfc00a8f9004a035e32e7eff1"
+  }
+}

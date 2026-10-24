@@ -26,7 +26,7 @@ def validate(tag, root):
 if __name__ == '__main__':
     try:
         if len(sys.argv) != 2:
-            raise ValueError('Usage: releaseGate.py v0.0.37')
+            raise ValueError('Usage: releaseGate.py v0.0.38')
         print(json.dumps(validate(sys.argv[1], Path(__file__).resolve().parents[1])))
     except (ValueError, OSError, KeyError) as error:
         sys.exit('Release gate FAILED: ' + str(error))

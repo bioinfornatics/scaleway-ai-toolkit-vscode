@@ -2,7 +2,7 @@
   "name": "scaleway-ai-toolkit-preview",
   "displayName": "Scaleway AI Toolkit — Preview",
   "description": "Scaleway browser login with SDK API-key bootstrap, read-only resources and offline playground.",
-  "version": "0.0.37",
+  "version": "0.0.38",
   "publisher": "scaleway-ai-community-preview",
   "private": true,
   "license": "CeCILL-2.1",
