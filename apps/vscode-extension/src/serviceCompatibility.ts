@@ -59,3 +59,10 @@ export function compatibleServiceSdk(
 ): boolean {
   return framework !== 'agentos' || sdk === undefined;
 }
+
+export function supportsInteractive(
+  language: string | undefined,
+  sdk: string | undefined,
+): boolean {
+  return language === 'python' && sdk === 'strands';
+}

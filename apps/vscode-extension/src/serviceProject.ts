@@ -1,4 +1,5 @@
 import * as TOML from '@iarna/toml';
+import { interactiveAgent } from './interactiveAgent';
 import { a2aApi, a2aExecutor, a2aReadme } from './a2aService';
 import { composeAgentProject } from './agentProject';
 import {
@@ -11,13 +12,14 @@ import {
   compatibleServiceSdk,
   supportsCli,
   supportsIntegrated,
+  supportsInteractive,
 } from './serviceCompatibility';
 import type { StackChoice } from './stackScaffold';
 import { parseTemplate, type TemplateDefinition } from './templateLibrary';
 
 export interface ServiceOptions {
   projectType: 'agent' | 'webapp';
-  exposure: 'cli' | 'api';
+  exposure: 'none' | 'cli' | 'api';
   frontend: 'nextjs' | 'vite';
   architecture: 'integrated' | 'separate';
 }
@@ -386,13 +388,66 @@ export function composeServiceProject(
   };
   if (
     !['agent', 'webapp'].includes(opts.projectType) ||
-    !['cli', 'api'].includes(opts.exposure) ||
+    !['none', 'cli', 'api'].includes(opts.exposure) ||
     !['nextjs', 'vite'].includes(opts.frontend) ||
     !['integrated', 'separate'].includes(opts.architecture)
   )
     throw new Error('invalid_service_options');
   if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/.test(name))
     throw new Error('invalid_project_name');
+  if (opts.exposure === 'none') {
+    if (
+      opts.projectType !== 'agent' ||
+      personal ||
+      !supportsInteractive(ai?.language, ai?.framework) ||
+      (backend &&
+        (backend.category !== 'basic' || backend.language !== 'python'))
+    )
+      throw new Error('unsupported_interactive_agent');
+    const composed = composeAgentProject(
+      undefined,
+      ai,
+      name,
+      model,
+      undefined,
+      projectId,
+    );
+    const base = renderProjectTemplate(
+      composed.version === 1
+        ? prepareEmbeddedProject(composed, 'python')
+        : composed,
+      { name },
+    );
+    const files: Record<string, string> = {
+      ...base.files,
+      'src/agent_app/interactive.py': interactiveAgent,
+    };
+    const pkg = TOML.parse(files['pyproject.toml']) as unknown as {
+      project: { scripts: Record<string, string> };
+    };
+    pkg.project.scripts ??= {};
+    pkg.project.scripts['scaleway-agent'] = 'agent_app.interactive:main';
+    files['pyproject.toml'] = TOML.stringify(pkg);
+    files['.vscode/scaleway-agent-run.json'] = json({
+      version: 1,
+      ready: false,
+      runtime: 'python',
+      entry: 'src/agent_app/interactive.py',
+      args: ['--help'],
+    });
+    files['service.authoring.json'] = json({
+      version: 1,
+      ...opts,
+      transport: 'strands-interactive',
+      main_source: 'src/agent_app/agent.py',
+      install_verified: false,
+      build_verified: false,
+      local_only: true,
+    });
+    files['README.md'] +=
+      '\n\n## Agent interface: None\nPython + Strands only. Explicit foreground conversation: scaleway-agent --interactive. Default/--help show help; --check reads project-root .env without inference. One Agent built at first valid message and reused for history. No API, daemon, tasks or background inference. Blank messages ignored; exit, EOF/Ctrl+C stop. Maximum 8000 characters, fixed errors, no retries. agent.py stays one-shot. Native/live verification not run.\n';
+    return parseTemplate({ ...base, files });
+  }
   const agentos = backend?.framework === 'agentos';
   if (
     agentos &&

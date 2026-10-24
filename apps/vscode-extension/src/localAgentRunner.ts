@@ -588,7 +588,10 @@ export async function openLocalAgentEntry(
             'src/agent_app/service_api.py',
             'src/service-api.ts',
           ].includes(note.main_source) ||
-          (note.transport === 'a2a-strands' &&
+          ((note.transport === 'a2a-strands' ||
+            (note.transport === 'strands-interactive' &&
+              note.projectType === 'agent' &&
+              note.exposure === 'none')) &&
             note.main_source === 'src/agent_app/agent.py')
         )
       )

@@ -460,6 +460,18 @@ pouvoir exécuter le binaire ; l’aide ne constitue pas une preuve de compatibi
 
 ### Composition de services web (générateur local)
 
+Le formulaire **Service agent** présente un seul sélecteur **Interface de l’agent** :
+**CLI uniquement — sans serveur** (Python, TypeScript ou Rust), ou une API compatible
+avec le langage. L’exposition est dérivée de ce choix, sans toggle CLI/API ni frontend.
+Les choix IA/API sont mémorisés temporairement par mode ; nom, chemin, modèle et clé
+restent communs. Un changement de langage revient au CLI sans serveur et demande un
+nouveau choix compatible. AgentOS exige de retirer explicitement tout SDK indépendant.
+Les libellés API annoncent le framework qui sera effectivement restauré, avec
+« choix API mémorisé » lorsqu’il diffère du choix CLI affiché. AgentOS est
+indisponible tant qu’un SDK incompatible est sélectionné ou mémorisé.
+FastAPI n’affiche A2A que pour Strands ; les autres routes FastAPI/Litestar/Elysia sont
+étiquetées chat modèle sans orchestration SDK. Les contrôles webapp restent inchangés.
+
 Le générateur composeServiceProject distingue l’agent CLI d’une API/webapp.
 L’agent CLI ignore le backend et conserve une base langage ou SDK IA. Les APIs
 compatibles sont Python/FastAPI, Litestar, AgentOS et TypeScript/Elysia (Bun). Django, NestJS et les
@@ -536,3 +548,7 @@ Depuis la racine du projet généré : `uv run python -m agent_app.service_cli -
 Réponse immédiate `result.message` uniquement : ni streaming, outils, fichiers, métadonnées, tâches durables, reprise, annulation ou push. Seul le protocole 1.0 est pris en charge : en-tête A2A-Version absent, dupliqué ou non pris en charge rejeté avant parsing/exécution. Chaque requête immédiate utilise un handler SDK V2 isolé, drainé via son API publique aclose() dans un finally (erreurs/annulation incluses), sans transformer une erreur en succès. Les méthodes non prises en charge sont rejetées avant exécution. Loopback numérique uniquement, sans Origin ni forwarding ; ce n’est pas une authentification de production. Limites : 4 requêtes concurrentes, corps 32768 octets/10 s, entrée 8000 caractères, réponse 32000 caractères, appel modèle 30 s/1024 tokens/65536 octets. URL upstream exacte, sans retries/proxies/redirections. Secrets et erreurs upstream ne sont pas renvoyés.
 
 Preuve locale : génération, mocks de structs/parsing SDK et méthodes de teardown extraites du tag public (pas une preuve SDK installé), transport HTTPX réel avec upstream simulé, build/tests et VSIX. Inspection du cache Strands `1.61.1` et des sources A2A `1.2.3` ; pas d’installation complète du SDK, d’inférence réelle, d’exposition externe ou de validation d’interface installée. La relecture indépendante reste requise.
+
+
+### Agent interface: None (Aucun)
+CLI remains one-shot argparse. Aucun requires explicit Python + Strands (1.61.1). The separate AI selector is Interface IA. Run scaleway-agent --interactive or python src/agent_app/interactive.py --interactive after reviewing/installing the generated project. Foreground conversation, not REST, daemon or tasks. Default/--help do not infer; --check validates project-root .env only. One Agent constructed at first valid message retains session history. Blank input ignored; max 8000 characters; exit/EOF/Ctrl+C stop. Fixed errors terminate without retries or provider payload. No tools/websearch. Native/live/installed-extension/visual verification not run.

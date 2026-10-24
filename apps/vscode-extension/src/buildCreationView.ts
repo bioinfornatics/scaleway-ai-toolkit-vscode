@@ -1,4 +1,9 @@
-import { apiCapability, supportsIntegrated } from './serviceCompatibility';
+import {
+  apiCapability,
+  compatibleServiceSdk,
+  supportsIntegrated,
+  supportsInteractive,
+} from './serviceCompatibility';
 import type { Language, StackChoice } from './stackScaffold';
 import type {
   TemplateDefinition,
@@ -14,7 +19,7 @@ interface ViewRow {
 }
 interface BuildView {
   projectType?: 'agent' | 'webapp';
-  exposure?: 'cli' | 'api';
+  exposure?: 'none' | 'cli' | 'api';
   frontend?: 'nextjs' | 'vite';
   architecture?: 'integrated' | 'separate';
   agentForm?: boolean;
@@ -26,6 +31,8 @@ interface BuildView {
   pathEdited?: boolean;
   backend?: string;
   ai?: string;
+  prospectiveApiAi?: string;
+  prospectiveNoneAi?: string;
   models?: { index: string; label: string }[];
   modelIndex?: string;
   keys?: { index: string; label: string }[];
@@ -226,8 +233,16 @@ export function buildCreationView(v: BuildView): string {
     supportsIntegrated(v.frontend, v.language) &&
     v.architecture === 'integrated';
   const cli = v.projectType === 'agent' && v.exposure === 'cli';
+  const none = v.projectType === 'agent' && v.exposure === 'none';
+  const local = cli || none;
+  const backendStack = v.rows.find((r) => r.index === v.backend)?.stack;
+  const supportedBackend =
+    !!backendStack &&
+    backendStack.language === v.language &&
+    backendStack.category === 'backend' &&
+    !!apiCapability(backendStack.language, backendStack.framework);
   const agentos =
-    !cli &&
+    !local &&
     !integrated &&
     v.rows.find((r) => r.index === v.backend)?.stack?.framework === 'agentos';
   const radios = (
@@ -266,17 +281,49 @@ export function buildCreationView(v: BuildView): string {
     '>' +
     options +
     '</select></label>';
+  const apiAi = local ? v.prospectiveApiAi : v.ai;
+  const apiSdk = v.rows.find((r) => r.index === apiAi)?.stack;
+  const currentSdk = v.rows.find((r) => r.index === v.ai)?.stack;
+  const apiSdkLabel = apiSdk?.category === 'agent' ? apiSdk.label : 'Aucun';
+  const restoration =
+    local && apiAi !== v.ai
+      ? ' · Interface IA API mémorisée : ' + apiSdkLabel
+      : '';
+  const noneSdk = v.rows.find((r) => r.index === v.prospectiveNoneAi)?.stack;
+  const noneSupported =
+    supportsInteractive(v.language, currentSdk?.framework) &&
+    supportsInteractive(v.language, (noneSdk ?? currentSdk)?.framework);
+  const blockedAgentos = (framework?: string) =>
+    framework === 'agentos' &&
+    (!compatibleServiceSdk(framework, apiSdk?.framework) ||
+      !compatibleServiceSdk(framework, currentSdk?.framework));
   const stackOptions = (ai: boolean) =>
-    '<option value="">' +
-    (ai ? 'Sélectionner un framework IA' : 'Sélectionner un framework API') +
+    '<option value=""' +
+    (!ai && cli ? ' selected' : '') +
+    '>' +
+    (ai
+      ? 'Interface IA'
+      : v.projectType === 'agent'
+        ? 'CLI'
+        : 'Sélectionner un framework API') +
     '</option>' +
+    (!ai && v.projectType === 'agent' && v.language === 'python'
+      ? '<option value="' +
+        v.token.slice(0, 32) +
+        '" data-interface="none"' +
+        (none ? ' selected' : '') +
+        (!noneSupported ? ' disabled' : '') +
+        '>Aucun</option>'
+      : '') +
     v.rows
       .filter(
         (r) =>
           v.trusted &&
           r.stack?.language === v.language &&
           (ai
-            ? ['agent', 'basic'].includes(r.stack.category)
+            ? ['agent', 'basic'].includes(r.stack.category) &&
+              (!none ||
+                supportsInteractive(r.stack.language, r.stack.framework))
             : r.stack.category === 'backend' &&
               !!apiCapability(r.stack.language, r.stack.framework)),
       )
@@ -286,11 +333,18 @@ export function buildCreationView(v: BuildView): string {
           r.index +
           '"' +
           ((ai ? v.ai : v.backend) === r.index ? ' selected' : '') +
+          (!ai &&
+          v.projectType === 'agent' &&
+          blockedAgentos(r.stack?.framework)
+            ? ' disabled'
+            : '') +
           '>' +
           escapeHtml(
             ai && r.stack?.category === 'basic'
-              ? 'Sans framework IA'
-              : (r.stack?.label ?? ''),
+              ? 'Aucun'
+              : !ai && r.stack?.framework === 'litestar'
+                ? 'LiteStar'
+                : (r.stack?.label ?? ''),
           ) +
           '</option>',
       )
@@ -337,31 +391,52 @@ export function buildCreationView(v: BuildView): string {
             ])
           : '') +
         '</section>'
-      : radios('Exposition', [
-          { action: 'cliExposure', label: 'CLI', checked: cli },
-          { action: 'apiExposure', label: 'API', checked: !cli },
-        ])) +
+      : '') +
     '<section class="service-section"><h2>' +
-    (integrated ? 'Serveur Next.js' : cli ? 'Agent' : 'API') +
+    (integrated ? 'Serveur Next.js' : local ? 'Agent' : 'API') +
     '</h2><div class="stack-fields service-stack">' +
     (integrated
       ? '<span>TypeScript · Next.js</span>'
       : selectField(
-          cli ? 'Langage' : 'Langage backend',
+          local ? 'Langage' : 'Langage backend',
           'language',
           languageOptions,
         )) +
-    (!cli && !integrated
-      ? selectField('Framework API', 'backend', stackOptions(false))
+    (!integrated
+      ? selectField(
+          v.projectType === 'agent' ? 'Interface de l’agent' : 'Framework API',
+          'backend',
+          stackOptions(false),
+        )
       : '') +
     (agentos
-      ? '<span data-runtime-lock=agno>Framework IA : Agno (intégré à AgentOS)</span>'
-      : selectField('Framework IA', 'ai', stackOptions(true))) +
+      ? '<span data-runtime-lock=agno>Interface IA : Agno</span>'
+      : selectField('Interface IA', 'ai', stackOptions(true))) +
     '</div>' +
-    (!cli
+    (!local
       ? agentos
         ? '<span>Agno orchestre les requêtes ; AgentOS sert /api/chat sur loopback. Routes natives fermées.</span>'
-        : '<span class="scope-note">Agent API FastAPI + Strands : A2A texte immédiat. Webapp : chat modèle côté serveur ; autres piles : client endpoint.</span>'
+        : v.projectType === 'webapp'
+          ? '<span class="scope-note">Webapp : chat modèle côté serveur ; autres piles : client endpoint.</span>'
+          : v.rows.find((r) => r.index === v.backend)?.stack?.framework ===
+                'fastapi' &&
+              v.rows.find((r) => r.index === v.ai)?.stack?.framework ===
+                'strands'
+            ? '<span class="scope-note">FastAPI + Strands : A2A texte immédiat, orchestration de l’agent Strands.</span>'
+            : '<span class="scope-note">API chat modèle uniquement : le SDK IA sélectionné n’orchestre pas cette route.</span>'
+      : none
+        ? '<span class="scope-note">Aucun : Python + Strands, conversation terminal au premier message ; sans API ni daemon.</span>'
+        : '') +
+    (v.projectType === 'agent'
+      ? '<span class="scope-note">' +
+        (v.language === 'python' && !noneSupported
+          ? 'Aucun nécessite Python + Strands. '
+          : '') +
+        (blockedAgentos('agentos')
+          ? 'AgentOS indisponible : retirez le SDK IA actuel et mémorisé. '
+          : '') +
+        escapeHtml(restoration) +
+        '</span>'
       : '') +
     '</section>';
   const ready =
@@ -369,8 +444,9 @@ export function buildCreationView(v: BuildView): string {
     (!adaptive ||
       activeTab === 'template' ||
       cli ||
+      (none && noneSupported) ||
       integrated ||
-      !!v.backend) &&
+      supportedBackend) &&
     (!v.agentForm ||
       v.templateMode ||
       (!!v.modelIndex &&
@@ -381,7 +457,7 @@ export function buildCreationView(v: BuildView): string {
       row.index +
       '"' +
       (v.agentForm
-        ? ` data-agent-create="true" data-stack-ready="${!adaptive || activeTab === 'template' || cli || integrated || !!v.backend}" data-ready="${ready}" data-key-ready="${v.keys === undefined || !!v.keyIndex}" data-destination-ready="${v.templateMode || !!v.destination}"`
+        ? ` data-agent-create="true" data-stack-ready="${!adaptive || activeTab === 'template' || cli || (none && noneSupported) || integrated || supportedBackend}" data-ready="${ready}" data-key-ready="${v.keys === undefined || !!v.keyIndex}" data-destination-ready="${v.templateMode || !!v.destination}"`
         : '') +
       (!ready || (v.agentForm && !validAgentName) ? ' disabled' : '') +
       '>' +
@@ -468,7 +544,7 @@ export function buildCreationView(v: BuildView): string {
                   '</option>',
               )
               .join('') +
-            '</select></label><label>Framework IA<select data-action="ai"' +
+            '</select></label><label>Interface IA<select data-action="ai"' +
             (!v.trusted ? ' disabled' : '') +
             '><option value="">Sélectionner un framework IA</option>' +
             v.rows
@@ -476,7 +552,9 @@ export function buildCreationView(v: BuildView): string {
                 (r) =>
                   v.trusted &&
                   r.stack?.language === v.language &&
-                  ['agent', 'basic'].includes(r.stack.category),
+                  ['agent', 'basic'].includes(r.stack.category) &&
+                  (!none ||
+                    supportsInteractive(r.stack.language, r.stack.framework)),
               )
               .map(
                 (r) =>
@@ -487,7 +565,7 @@ export function buildCreationView(v: BuildView): string {
                   '>' +
                   escapeHtml(
                     r.stack?.category === 'basic'
-                      ? 'Sans framework IA'
+                      ? 'Aucun'
                       : (r.stack?.label ?? ''),
                   ) +
                   '</option>',

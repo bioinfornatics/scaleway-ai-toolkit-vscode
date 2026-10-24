@@ -190,8 +190,6 @@ test('AgentOS renderer locks Agno while retaining modes and common fields; CLI r
     'key',
     'name',
     'projectPath',
-    'cliExposure',
-    'apiExposure',
     'webapp',
     'agentService',
   ])

@@ -41,53 +41,41 @@ const options = {
 const pick = (language, framework) =>
   choices.find((c) => c.language === language && c.framework === framework);
 test('single matrix matches renderer advertised frameworks and generator support', () => {
-  for (const language of ['python', 'typescript', 'rust']) {
-    const rows = choices.map((stack, i) => ({
-      index: i.toString(16).padStart(32, '0'),
-      stack,
-      template: stack.template,
-    }));
-    const html = buildCreationView({
-      title: 'Test',
-      kind: 'agents',
-      agentForm: true,
-      templateMode: false,
-      projectType: 'agent',
-      exposure: 'api',
-      language,
-      languages: new Map(),
-      rows,
-      trusted: true,
-      status: '',
-      draft: false,
-      token: 'a'.repeat(48),
-      css: '',
-      js: '',
-      csp: '',
-    });
-    const api = html.match(
-      /<select data-action="backend"[^>]*>(.*?)<\/select>/s,
-    )[1];
-    for (const row of rows.filter(
-      (r) => r.stack.category === 'backend' && r.stack.language === language,
-    )) {
-      const supported = !!apiCapability(language, row.stack.framework);
-      assert.equal(api.includes('value="' + row.index + '"'), supported);
-      if (supported)
-        assert.ok(
-          composeServiceProject(
-            row.stack,
-            undefined,
-            'matrix-service',
-            undefined,
-            undefined,
-            undefined,
-            options,
-          ).files['service.authoring.json'],
-        );
-      else
-        assert.throws(
-          () =>
+  for (const exposure of ['cli', 'api'])
+    for (const language of ['python', 'typescript', 'rust']) {
+      const rows = choices.map((stack, i) => ({
+        index: i.toString(16).padStart(32, '0'),
+        stack,
+        template: stack.template,
+      }));
+      const html = buildCreationView({
+        title: 'Test',
+        kind: 'agents',
+        agentForm: true,
+        templateMode: false,
+        projectType: 'agent',
+        exposure,
+        language,
+        languages: new Map(),
+        rows,
+        trusted: true,
+        status: '',
+        draft: false,
+        token: 'a'.repeat(48),
+        css: '',
+        js: '',
+        csp: '',
+      });
+      const api = html.match(
+        /<select data-action="backend"[^>]*>(.*?)<\/select>/s,
+      )[1];
+      for (const row of rows.filter(
+        (r) => r.stack.category === 'backend' && r.stack.language === language,
+      )) {
+        const supported = !!apiCapability(language, row.stack.framework);
+        assert.equal(api.includes('value="' + row.index + '"'), supported);
+        if (supported)
+          assert.ok(
             composeServiceProject(
               row.stack,
               undefined,
@@ -96,11 +84,24 @@ test('single matrix matches renderer advertised frameworks and generator support
               undefined,
               undefined,
               options,
-            ),
-          /unsupported_api_backend/,
-        );
+            ).files['service.authoring.json'],
+          );
+        else
+          assert.throws(
+            () =>
+              composeServiceProject(
+                row.stack,
+                undefined,
+                'matrix-service',
+                undefined,
+                undefined,
+                undefined,
+                options,
+              ),
+            /unsupported_api_backend/,
+          );
+      }
     }
-  }
   assert.equal(SERVICE_CAPABILITIES.length, 4);
   assert.equal(Object.isFrozen(SERVICE_CAPABILITIES), true);
   assert.equal(apiCapability('typescript', 'litestar'), undefined);
@@ -210,4 +211,147 @@ test('Litestar route executes with mocks for validation, reply and safe upstream
     env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' },
   });
   assert.equal(result.status, 0, result.stderr);
+});
+
+test('API readiness requires a compatible backend; CLI needs no backend', () => {
+  const rows = choices.map((stack, i) => ({
+    index: i.toString(16).padStart(32, '0'),
+    stack,
+    template: stack.template,
+  }));
+  const basic = rows.find(
+    (r) => r.stack.language === 'python' && r.stack.category === 'basic',
+  );
+  const wrong = rows.find((r) => r.stack.framework === 'elysia');
+  const fastapi = rows.find((r) => r.stack.framework === 'fastapi');
+  const state = {
+    title: 'Readiness',
+    kind: 'agents',
+    agentForm: true,
+    templateMode: false,
+    projectType: 'agent',
+    exposure: 'api',
+    language: 'python',
+    languages: new Map(),
+    rows,
+    selected: basic.index,
+    modelIndex: 'e'.repeat(32),
+    destination: '/mock/project/service',
+    agentName: 'service',
+    trusted: true,
+    status: '',
+    draft: false,
+    token: 'a'.repeat(48),
+    css: '',
+    js: '',
+    csp: '',
+  };
+  for (const backend of [undefined, basic.index, wrong.index, 'f'.repeat(32)])
+    assert.match(
+      buildCreationView({ ...state, backend }),
+      /data-stack-ready="false" data-ready="false"/,
+    );
+  assert.match(
+    buildCreationView({ ...state, exposure: 'cli' }),
+    /data-stack-ready="true" data-ready="true"/,
+  );
+  assert.match(
+    buildCreationView({ ...state, backend: fastapi.index }),
+    /data-stack-ready="true" data-ready="true"/,
+  );
+});
+
+test('None transport validates the narrow matrix, safe launch, pinned source and mock interactive reuse', () => {
+  const opts = { ...options, exposure: 'none' };
+  const result = composeServiceProject(
+    undefined,
+    pick('python', 'strands'),
+    'none-agent',
+    undefined,
+    undefined,
+    undefined,
+    opts,
+  );
+  const run = JSON.parse(result.files['.vscode/scaleway-agent-run.json']);
+  assert.deepEqual(run.args, ['--help']);
+  assert.equal(run.ready, false);
+  assert.equal(
+    JSON.parse(result.files['service.authoring.json']).transport,
+    'strands-interactive',
+  );
+  assert.equal(
+    JSON.parse(result.files['service.authoring.json']).main_source,
+    'src/agent_app/agent.py',
+  );
+  assert.match(result.files['pyproject.toml'], /agent_app.interactive:main/);
+  assert.match(result.files['pyproject.toml'], /strands-agents.*==1.61.1/);
+  assert.equal(result.files['src/agent_app/service_api.py'], undefined);
+  assert.match(result.files['src/agent_app/agent.py'], /max_retries=0/);
+  for (const choice of choices.filter(
+    (c) => c.category === 'agent' && c.framework !== 'strands',
+  ))
+    assert.throws(
+      () =>
+        composeServiceProject(
+          undefined,
+          choice,
+          'none-agent',
+          undefined,
+          undefined,
+          undefined,
+          opts,
+        ),
+      /unsupported_interactive/,
+    );
+  for (const bad of [undefined, pick('typescript', 'strands')])
+    assert.throws(
+      () =>
+        composeServiceProject(
+          undefined,
+          bad,
+          'none-agent',
+          undefined,
+          undefined,
+          undefined,
+          opts,
+        ),
+      /unsupported_interactive/,
+    );
+  assert.throws(
+    () =>
+      composeServiceProject(
+        pick('python', 'fastapi'),
+        pick('python', 'strands'),
+        'none-agent',
+        undefined,
+        undefined,
+        undefined,
+        opts,
+      ),
+    /unsupported_interactive/,
+  );
+  assert.throws(
+    () =>
+      composeServiceProject(
+        undefined,
+        pick('python', 'strands'),
+        'none-agent',
+        undefined,
+        undefined,
+        undefined,
+        { ...opts, projectType: 'webapp' },
+      ),
+    /unsupported_interactive/,
+  );
+  const source = result.files['src/agent_app/interactive.py'];
+  assert.doesNotMatch(
+    source,
+    /Bedrock|websearch|logging|from strands|thread|asyncio/,
+  );
+  const probe = spawnSync(
+    'python3',
+    [path.join(__dirname, 'interactiveAgentMock.py')],
+    { input: JSON.stringify(source), encoding: 'utf8' },
+  );
+  assert.equal(probe.status, 0, probe.stderr);
 });

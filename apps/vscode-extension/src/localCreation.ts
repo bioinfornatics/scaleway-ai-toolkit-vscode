@@ -36,6 +36,7 @@ import {
   compatibleServiceSdk,
   supportsCli,
   supportsIntegrated,
+  supportsInteractive,
 } from './serviceCompatibility';
 import { composeServiceProject, type ServiceOptions } from './serviceProject';
 import { type Language, type StackChoice, stackChoices } from './stackScaffold';
@@ -53,8 +54,6 @@ type Mode = 'create' | 'templates' | 'template-create';
 type Action =
   | 'webapp'
   | 'agentService'
-  | 'cliExposure'
-  | 'apiExposure'
   | 'nextFrontend'
   | 'viteFrontend'
   | 'integratedBackend'
@@ -71,6 +70,7 @@ type Action =
   | 'clearKey'
   | 'addKey'
   | 'model'
+  | 'noneInterface'
   | 'clearBackend'
   | 'clearAi'
   | 'clearModel'
@@ -142,8 +142,6 @@ export function parseCreationInput(value: unknown): CreationInput | undefined {
     ![
       'webapp',
       'agentService',
-      'cliExposure',
-      'apiExposure',
       'nextFrontend',
       'viteFrontend',
       'integratedBackend',
@@ -153,6 +151,7 @@ export function parseCreationInput(value: unknown): CreationInput | undefined {
       'destination',
       'serverless',
       'dedicated',
+      'noneInterface',
       'clearBackend',
       'clearAi',
       'clearModel',
@@ -312,7 +311,7 @@ export class LocalCreation implements vscode.Disposable {
   private lastFocus?: string;
   private serviceOptions: ServiceOptions = {
     projectType: 'agent',
-    exposure: 'api',
+    exposure: 'cli',
     frontend: 'nextjs',
     architecture: 'separate',
   };
@@ -334,6 +333,30 @@ export class LocalCreation implements vscode.Disposable {
       ? 'agent-' + o.exposure
       : 'web-' + o.frontend + '-' + o.architecture;
   }
+  private rememberService(): void {
+    this.serviceMemory.set(this.serviceKey(), {
+      language: this.language,
+      backend: this.backend,
+      ai: this.ai,
+      selected: this.selected,
+    });
+  }
+  private selectCli(): void {
+    this.rememberService();
+    const saved = this.serviceMemory.get('agent-cli');
+    this.serviceOptions.exposure = 'cli';
+    this.backend = undefined;
+    if (saved?.language === this.language) this.ai = saved.ai;
+    this.selected = this.ai ?? this.basic()?.index;
+    this.stackSelected = this.selected;
+  }
+  private prospectiveApiAi(): string | undefined {
+    const apiMemory =
+      this.cliOnly() || this.noneOnly()
+        ? this.serviceMemory.get('agent-api')
+        : undefined;
+    return apiMemory?.language === this.language ? apiMemory.ai : this.ai;
+  }
   private integrated(): boolean {
     return (
       this.adaptive() &&
@@ -349,6 +372,13 @@ export class LocalCreation implements vscode.Disposable {
       this.serviceOptions.exposure === 'cli'
     );
   }
+  private noneOnly(): boolean {
+    return (
+      this.adaptive() &&
+      this.serviceOptions.projectType === 'agent' &&
+      this.serviceOptions.exposure === 'none'
+    );
+  }
   private basic(): Row | undefined {
     return this.rows.find(
       (r) =>
@@ -356,7 +386,8 @@ export class LocalCreation implements vscode.Disposable {
     );
   }
   private activeBackend(): StackChoice | undefined {
-    if (this.cliOnly() || this.integrated()) return this.basic()?.stack;
+    if (this.cliOnly() || this.noneOnly() || this.integrated())
+      return this.basic()?.stack;
     return this.rows.find((r) => r.index === this.backend)?.stack;
   }
   private compose(
@@ -487,7 +518,7 @@ export class LocalCreation implements vscode.Disposable {
     this.language = 'python';
     this.serviceOptions = {
       projectType: 'agent',
-      exposure: 'api',
+      exposure: 'cli',
       frontend: 'nextjs',
       architecture: 'separate',
     };
@@ -608,7 +639,11 @@ export class LocalCreation implements vscode.Disposable {
       if (!this.closed && this.panel && s.epoch !== this.epoch)
         void this.refresh();
     }
-    if (this.valid(s)) this.render();
+    if (this.valid(s)) {
+      if (this.cliOnly() || this.noneOnly() || this.integrated())
+        this.selected = this.basic()?.index;
+      this.render();
+    }
   }
   private syncModels(force = false): void {
     const context = this.modelSource?.current();
@@ -757,7 +792,13 @@ export class LocalCreation implements vscode.Disposable {
   }
   private render(focus?: string): void {
     if (!this.panel) return;
-    if (focus) this.lastFocus = focus;
+    if (focus)
+      this.lastFocus =
+        focus === 'clearBackend' || focus === 'noneInterface'
+          ? 'backend'
+          : focus === 'clearAi'
+            ? 'ai'
+            : focus;
     this.token = randomBytes(24).toString('hex');
     const webview = this.panel.webview;
     const media = vscode.Uri.joinPath(this.context.extensionUri, 'media');
@@ -842,6 +883,11 @@ export class LocalCreation implements vscode.Disposable {
       pathEdited: this.pathEdited,
       backend: this.backend,
       ai: this.ai,
+      prospectiveApiAi: this.prospectiveApiAi(),
+      prospectiveNoneAi:
+        this.serviceMemory.get('agent-none')?.language === this.language
+          ? this.serviceMemory.get('agent-none')?.ai
+          : this.ai,
       modelIndex: this.modelIndex,
       keys:
         this.modelSource?.current().apiKeys !== undefined
@@ -907,8 +953,6 @@ export class LocalCreation implements vscode.Disposable {
       [
         'webapp',
         'agentService',
-        'cliExposure',
-        'apiExposure',
         'nextFrontend',
         'viteFrontend',
         'integratedBackend',
@@ -917,11 +961,6 @@ export class LocalCreation implements vscode.Disposable {
     ) {
       if (!this.adaptive()) return;
       const o = this.serviceOptions;
-      if (
-        ['cliExposure', 'apiExposure'].includes(input.action) &&
-        o.projectType !== 'agent'
-      )
-        return;
       if (
         [
           'nextFrontend',
@@ -945,8 +984,6 @@ export class LocalCreation implements vscode.Disposable {
       });
       if (input.action === 'webapp') o.projectType = 'webapp';
       if (input.action === 'agentService') o.projectType = 'agent';
-      if (input.action === 'cliExposure') o.exposure = 'cli';
-      if (input.action === 'apiExposure') o.exposure = 'api';
       if (input.action === 'nextFrontend') {
         o.frontend = 'nextjs';
         o.architecture = this.nextArchitecture;
@@ -971,7 +1008,9 @@ export class LocalCreation implements vscode.Disposable {
       this.ai = saved?.ai;
       this.selected =
         saved?.selected ??
-        (this.cliOnly() || this.integrated() ? this.basic()?.index : undefined);
+        (this.cliOnly() || this.noneOnly() || this.integrated()
+          ? this.basic()?.index
+          : undefined);
       this.status = '';
       this.epoch++;
       this.render(input.action);
@@ -999,6 +1038,7 @@ export class LocalCreation implements vscode.Disposable {
         'language',
         'backend',
         'ai',
+        'noneInterface',
         'clearBackend',
         'clearAi',
         'clear',
@@ -1128,10 +1168,22 @@ export class LocalCreation implements vscode.Disposable {
       this.agentForm() &&
       this.mode !== 'templates'
     ) {
-      if (input.action === 'clearBackend') this.backend = undefined;
-      else this.ai = undefined;
+      if (input.action === 'clearBackend') {
+        if (this.integrated()) return;
+        if (this.adaptive() && this.serviceOptions.projectType === 'agent')
+          this.selectCli();
+        else this.backend = undefined;
+      } else {
+        if (this.activeBackend()?.framework === 'agentos' || this.noneOnly())
+          return;
+        this.ai = undefined;
+        if (this.cliOnly()) {
+          const api = this.serviceMemory.get('agent-api');
+          if (api?.language === this.language) api.ai = undefined;
+        }
+      }
       this.selected =
-        this.cliOnly() || this.integrated()
+        this.cliOnly() || this.noneOnly() || this.integrated()
           ? (this.ai ?? this.basic()?.index)
           : (this.backend ?? this.ai);
       this.epoch++;
@@ -1163,7 +1215,7 @@ export class LocalCreation implements vscode.Disposable {
       ? this.rows.find((r) => r.index === input.index)
       : undefined;
     if (input.action === 'clear') {
-      if (this.mode === 'templates') return;
+      if (this.mode === 'templates' || this.adaptive()) return;
       this.epoch++;
       this.selected = undefined;
       this.backend = this.ai = undefined;
@@ -1182,12 +1234,43 @@ export class LocalCreation implements vscode.Disposable {
       )
         return;
       this.epoch++;
+      this.rememberService();
       this.language = language;
+      if (this.adaptive() && this.serviceOptions.projectType === 'agent')
+        this.serviceOptions.exposure = 'cli';
       this.backend = this.ai = undefined;
       this.selected = undefined;
       this.status = 'Langage modifié : choisissez les frameworks compatibles.';
       if (this.cliOnly()) this.selected = this.basic()?.index;
       this.render(input.action);
+      return;
+    }
+    if (input.action === 'noneInterface') {
+      if (!this.adaptive() || this.serviceOptions.projectType !== 'agent')
+        return;
+      const saved = this.serviceMemory.get('agent-none');
+      const prospective =
+        saved?.language === this.language ? saved.ai : this.ai;
+      const sdk = this.rows.find((r) => r.index === prospective)?.stack;
+      const current = this.rows.find((r) => r.index === this.ai)?.stack;
+      if (
+        !supportsInteractive(this.language, sdk?.framework) ||
+        !supportsInteractive(this.language, current?.framework)
+      ) {
+        this.status =
+          'Aucun nécessite Python + Strands ; choisissez explicitement cette Interface IA.';
+        this.render('backend');
+        return;
+      }
+      this.rememberService();
+      this.serviceOptions.exposure = 'none';
+      this.backend = undefined;
+      this.ai = prospective;
+      this.selected = this.stackSelected = prospective;
+      this.status =
+        'Aucun : conversation terminal au premier message, sans API. Interface IA mémorisée : Strands.';
+      this.epoch++;
+      this.render('backend');
       return;
     }
     if (input.index && !row) return;
@@ -1212,35 +1295,72 @@ export class LocalCreation implements vscode.Disposable {
       if (
         input.action === 'backend' &&
         this.adaptive() &&
-        (this.cliOnly() ||
-          this.integrated() ||
+        (this.integrated() ||
           !apiCapability(row.stack.language, row.stack.framework))
       )
         return;
+      if (
+        input.action === 'ai' &&
+        this.noneOnly() &&
+        !supportsInteractive(row.stack.language, row.stack.framework)
+      ) {
+        this.status =
+          'Aucun nécessite Python + Strands ; changez d’abord l’interface de l’agent.';
+        this.render('ai');
+        return;
+      }
       const chosenBackend =
         input.action === 'backend'
           ? row.stack
           : this.rows.find((r) => r.index === this.backend)?.stack;
+      if (
+        input.action === 'ai' &&
+        this.activeBackend()?.framework === 'agentos'
+      )
+        return;
+      const restoredAi = this.prospectiveApiAi();
       const chosenSdk =
         input.action === 'ai'
           ? row.stack.category === 'basic'
             ? undefined
             : row.stack.framework
-          : this.rows.find((r) => r.index === this.ai)?.stack?.framework;
-      if (!compatibleServiceSdk(chosenBackend?.framework, chosenSdk)) {
+          : this.rows.find((r) => r.index === restoredAi)?.stack?.framework;
+      if (
+        !compatibleServiceSdk(chosenBackend?.framework, chosenSdk) ||
+        (input.action === 'backend' &&
+          !compatibleServiceSdk(
+            chosenBackend?.framework,
+            this.rows.find((r) => r.index === this.ai)?.stack?.framework,
+          ))
+      ) {
         this.status =
           'AgentOS inclut Agno : retirez le SDK IA sélectionné avant de choisir ce runtime.';
         this.render(input.action);
         return;
       }
-      if (input.action === 'backend') this.backend = row.index;
-      else this.ai = row.stack.category === 'basic' ? undefined : row.index;
+      if (input.action === 'backend') {
+        if (this.adaptive() && this.serviceOptions.projectType === 'agent') {
+          this.rememberService();
+          this.serviceOptions.exposure = 'api';
+          this.ai = restoredAi;
+        }
+        this.backend = row.index;
+      } else {
+        this.ai = row.stack.category === 'basic' ? undefined : row.index;
+        if (this.cliOnly() && row.stack.category === 'basic') {
+          const api = this.serviceMemory.get('agent-api');
+          if (api?.language === this.language) api.ai = undefined;
+        }
+      }
       this.selected =
-        this.cliOnly() || this.integrated()
+        this.cliOnly() || this.noneOnly() || this.integrated()
           ? (this.ai ?? this.basic()?.index)
           : (this.backend ?? this.ai);
       this.epoch++;
-      this.status = '';
+      this.status =
+        input.action === 'backend' && restoredAi
+          ? 'Interface IA API mémorisée restaurée ; sélection actuelle affichée ci-dessus.'
+          : '';
       this.render(input.action);
       return;
     }

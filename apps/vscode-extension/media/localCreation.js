@@ -4,8 +4,6 @@
   const focusActions = new Set([
     'webapp',
     'agentService',
-    'cliExposure',
-    'apiExposure',
     'nextFrontend',
     'viteFrontend',
     'integratedBackend',
@@ -43,8 +41,6 @@
   const actions = new Set([
     'webapp',
     'agentService',
-    'cliExposure',
-    'apiExposure',
     'nextFrontend',
     'viteFrontend',
     'integratedBackend',
@@ -305,6 +301,14 @@
       )
     )
       return;
+    if (
+      select.dataset.action === 'backend' &&
+      select.selectedOptions?.[0]?.dataset.interface === 'none' &&
+      select.value === token.slice(0, 32)
+    ) {
+      vscode.postMessage({ action: 'noneInterface', token });
+      return;
+    }
     if (
       ['backend', 'ai'].includes(select.dataset.action) &&
       select.value === ''
