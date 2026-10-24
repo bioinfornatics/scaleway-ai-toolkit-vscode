@@ -104,6 +104,30 @@ test('workflows are read-only by default; manual gate and no secrets on fork PRs
   for (const forbidden of ['--full', 'cargo fetch', 'uv sync', 'bun install'])
     assert.ok(!pkg.includes(forbidden));
 });
+test('release uses original neutral icons and excludes former branded assets', () => {
+  const crypto = require('node:crypto');
+  const manifest = JSON.parse(read('apps/vscode-extension/package.json'));
+  assert.equal(manifest.icon, 'media/toolkit-icon.png');
+  for (const old of ['scaleway-icon.png', 'scaleway-mark.svg'])
+    assert.ok(!fs.existsSync(path.join(app, 'media', old)));
+  const provenance = JSON.parse(
+    read(
+      'specifications/references/documentation/community-neutral-icons-v1.json',
+    ),
+  );
+  for (const [file, digest] of Object.entries(provenance.files))
+    assert.equal(
+      crypto
+        .createHash('sha256')
+        .update(fs.readFileSync(path.join(app, 'media', file)))
+        .digest('hex'),
+      digest,
+    );
+  const icon = read('apps/vscode-extension/media/toolkit.svg');
+  assert.ok(icon.includes('currentColor'));
+  assert.equal((icon.match(/<circle /g) || []).length, 3);
+  assert.ok(!icon.includes('M8.37'));
+});
 test('CI provisions real fixture helpers before offline proofs', () => {
   const workflow = read('.github/workflows/package.yml');
   for (const dependency of [

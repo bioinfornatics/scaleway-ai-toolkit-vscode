@@ -1,0 +1,11 @@
+{
+  "record_id": "community-neutral-icons-v1",
+  "issue": "scaleway_ai_vscode-d37",
+  "method": "Original geometric three-node graph drawn for this project; SVG authored directly, PNG rasterized with Python standard library. No downloaded geometry or image used.",
+  "license": "CeCILL-2.1",
+  "decision": "User approved 2026-10-24 11:35 replacing branded assets and publishing v0.0.37 prerelease while preserving already-public Git history. This is not a trademark license for historical assets.",
+  "files": {
+    "toolkit.svg": "2803e73291d762783230ba9b952d8d79d5e98876dc9dd1da7039b536a6c3920b",
+    "toolkit-icon.png": "fc46d0f697c2b9017f1de649feeb691a774b9e1df7ea9c3604bd35b288c26757"
+  }
+}
