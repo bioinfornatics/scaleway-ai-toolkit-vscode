@@ -14,10 +14,12 @@ jobs:
       SCW_PYTHON_WHEEL_PROOF: '1'
       UV_NO_CONFIG: '1'
       UV_PYTHON_DOWNLOADS: never
-      UV_CACHE_DIR: ${{ runner.temp }}/scw-uv-cache
       CARGO_NET_OFFLINE: 'true'
-      CARGO_TARGET_DIR: ${{ runner.temp }}/scw-cargo-target
     steps:
+      - name: Initialize isolated runner paths
+        run: |
+          echo "UV_CACHE_DIR=$RUNNER_TEMP/scw-uv-cache" >> "$GITHUB_ENV"
+          echo "CARGO_TARGET_DIR=$RUNNER_TEMP/scw-cargo-target" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
         with:
           persist-credentials: false

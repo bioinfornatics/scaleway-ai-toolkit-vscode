@@ -166,7 +166,9 @@ test('workflow semantics isolate Rust network bootstrap from offline canonical p
     'proof=next(s for s in steps if s.get("name","").startswith("Canonical")); assert steps.index(online[0])<steps.index(proof)',
     'assert proof["env"]["UV_OFFLINE"]=="1"; assert "npm run check" in proof["run"]',
     'assert all("cargo fetch" not in s.get("run","") for s in steps)',
-    'assert "CARGO_TARGET_DIR" in job["env"]; assert any(s.get("uses")=="actions/cache@v4" for s in steps)',
+    'assert not any("runner." in str(value) for value in job["env"].values())',
+    'init=steps[0]; assert init["name"]=="Initialize isolated runner paths"; assert "UV_CACHE_DIR=$RUNNER_TEMP/scw-uv-cache" in init["run"]; assert "CARGO_TARGET_DIR=$RUNNER_TEMP/scw-cargo-target" in init["run"]; assert init["run"].count("$GITHUB_ENV")==2',
+    'assert any(s.get("uses")=="actions/cache@v4" for s in steps)',
   ].join(String.fromCharCode(10));
   const result = spawnSync(
     'python3',
