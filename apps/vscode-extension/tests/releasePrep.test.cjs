@@ -104,6 +104,15 @@ test('workflows are read-only by default; manual gate and no secrets on fork PRs
   for (const forbidden of ['--full', 'cargo fetch', 'uv sync', 'bun install'])
     assert.ok(!pkg.includes(forbidden));
 });
+test('CI provisions real fixture helpers before offline proofs', () => {
+  const workflow = read('.github/workflows/package.yml');
+  for (const dependency of [
+    'httpx==0.28.1',
+    'protobuf==7.35.1',
+    'PyYAML==6.0.3',
+  ])
+    assert.ok(workflow.includes(dependency), dependency);
+});
 test('workflow YAML parses when local PyYAML is installed (no download)', (t) => {
   const probe = spawnSync('python3', ['-c', 'import yaml'], {
     encoding: 'utf8',
