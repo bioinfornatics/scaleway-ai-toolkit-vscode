@@ -1,4 +1,5 @@
 import * as TOML from '@iarna/toml';
+import { a2aApi, a2aExecutor, a2aReadme } from './a2aService';
 import { composeAgentProject } from './agentProject';
 import {
   prepareEmbeddedProject,
@@ -449,6 +450,12 @@ export function composeServiceProject(
     base.version === 1 ? prepareEmbeddedProject(base, language) : base,
     { name },
   );
+  const a2a =
+    opts.projectType === 'agent' &&
+    opts.exposure === 'api' &&
+    backend?.framework === 'fastapi' &&
+    ai?.framework === 'strands' &&
+    language === 'python';
   const files = { ...base.files };
   let entry: string;
   if (integrated) {
@@ -472,16 +479,44 @@ export function composeServiceProject(
     files['service-cli.cjs'] = integratedCli;
     entry = 'service-cli.cjs';
   } else if (language === 'python') {
-    if (!agentos) files['src/agent_app/service_transport.py'] = pythonTransport;
+    if (!agentos && !a2a)
+      files['src/agent_app/service_transport.py'] = pythonTransport;
+    if (a2a) {
+      files['src/agent_app/a2a_executor.py'] = a2aExecutor;
+      files['src/agent_app/config.py'] = files[
+        'src/agent_app/config.py'
+      ].replace(
+        'Path(__file__).resolve().parents[2] / ".env"',
+        'Path.cwd() / ".env"',
+      );
+    }
     if (!agentos)
-      files['src/agent_app/service_api.py'] =
-        capability?.adapter === 'litestar' ? litestarApi : pythonApi;
+      files['src/agent_app/service_api.py'] = a2a
+        ? a2aApi
+        : capability?.adapter === 'litestar'
+          ? litestarApi
+          : pythonApi;
     files['src/agent_app/service_cli.py'] = agentos
       ? files['src/agent_app/agent.py']
-      : pythonCli;
+      : a2a
+        ? pythonCli
+            .replace(
+              'from agent_app.service_transport import load_service_config',
+              'from agent_app.config import load_project_config as load_service_config',
+            )
+            .replace(
+              'uvicorn.run("agent_app.service_api:app", host=args.host, port=args.port)',
+              'from agent_app.service_api import create_app\n            uvicorn.run(create_app(args.port), host=args.host, port=args.port, proxy_headers=False, access_log=False, log_level="critical")',
+            )
+        : pythonCli;
     const manifest = TOML.parse(files['pyproject.toml']) as {
       project: Record<string, unknown>;
     };
+    if (a2a)
+      manifest.project.dependencies = [
+        ...(manifest.project.dependencies as string[]),
+        'a2a-sdk[http-server]==1.2.3',
+      ];
     manifest.project.scripts = {
       ...(manifest.project.scripts as Record<string, string>),
       service: 'agent_app.service_cli:main',
@@ -527,11 +562,17 @@ export function composeServiceProject(
   files['service.authoring.json'] = json({
     version: 1,
     ...opts,
-    transport: agentos ? 'agno-agentos' : 'server-side-endpoint-client',
+    transport: agentos
+      ? 'agno-agentos'
+      : a2a
+        ? 'a2a-strands'
+        : 'server-side-endpoint-client',
     main_source: integrated
       ? 'app/page.tsx'
       : language === 'python'
-        ? 'src/agent_app/service_api.py'
+        ? a2a
+          ? 'src/agent_app/agent.py'
+          : 'src/agent_app/service_api.py'
         : 'src/service-api.ts',
     install_verified: false,
     build_verified: false,
@@ -544,9 +585,11 @@ export function composeServiceProject(
   files['README.md'] =
     (files['README.md'] ?? '') +
     '\n\n## Composed service (explicit launch)\n' +
-    (agentos
-      ? 'POST /api/chat executes Agno Agent.arun with OpenAILike inside AgentOS, returns {"reply":"..."}. Native routes are blocked by LocalSurface.\n'
-      : 'POST /api/chat accepts {"message":"..."}, returns {"reply":"..."}, and calls the Scaleway HTTPS endpoint server-side. SDK sources remain for authoring; this route uses an independent endpoint transport.\n') +
+    (a2a
+      ? a2aReadme
+      : agentos
+        ? 'POST /api/chat executes Agno Agent.arun with OpenAILike inside AgentOS, returns {"reply":"..."}. Native routes are blocked by LocalSurface.\n'
+        : 'POST /api/chat accepts {"message":"..."}, returns {"reply":"..."}, and calls the Scaleway HTTPS endpoint server-side. SDK sources remain for authoring; this route uses an independent endpoint transport.\n') +
     'Create only root .env with SCW_INFERENCE_BASE_URL, SCW_INFERENCE_MODEL_ID and SCW_API_KEY. Never use NEXT_PUBLIC_ or VITE_ credentials. No caller-provided endpoint URLs.\n' +
     (integrated
       ? 'Install: bun install. Build: bun run build. Explicit run: node service-cli.cjs --serve (dev), or bun run start after build. Edit app/page.tsx and app/api/chat/route.ts.\n'
@@ -556,8 +599,10 @@ export function composeServiceProject(
     (opts.projectType === 'webapp' && !integrated
       ? 'Frontend: cd frontend && bun install && bun run build; bun run dev starts explicitly. /api/chat proxy expects backend 127.0.0.1:3001. Next production uses rewrites; Vite proxy is dev-only (production needs a reverse proxy).\n'
       : '') +
-    'Help precedes configuration/dependency imports. No server/inference on import/generation. Only submitted chat requests incur inference. Agent launch stays not-ready: review/run manually; agent runner does not manage servers.\n' +
-    'Limits: 8000 message characters / 32768 request bytes, 30s endpoint timeout, 65536 response bytes. Fixed errors never return endpoint bodies/secrets. Loopback only: add authentication, CSRF/rate limiting and deployment review before external exposure.\n' +
+    'Help precedes configuration/dependency imports. No server/inference on import/generation. Only submitted requests incur inference. Agent launch stays not-ready: review/run manually; agent runner does not manage servers.\n' +
+    (a2a
+      ? 'A2A limits are documented above; review before any external exposure.\n'
+      : 'Limits: 8000 message characters / 32768 request bytes, 30s endpoint timeout, 65536 response bytes. Fixed errors never return endpoint bodies/secrets. Loopback only: add authentication, CSRF/rate limiting and deployment review before external exposure.\n') +
     'Next ^15.5, React ^19.1, Vite ^7.1 are starter ranges, not locks or locally verified compatibility/security claims. Node >=22.12 / current Bun required. No installs, framework builds or browser checks performed.\n';
   return parseTemplate({
     ...base,

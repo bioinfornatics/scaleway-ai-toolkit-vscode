@@ -1977,7 +1977,7 @@ test('Given external destination, When an agent is confirmed, Then real exclusiv
   assert.deepEqual(state.openedEntries, [project]);
   assert.equal(
     state.shows[0].uri.fsPath,
-    path.join(project, 'src/agent_app/service_api.py'),
+    path.join(project, 'src/agent_app/agent.py'),
   );
   assert.deepEqual(state.showOptions, { preview: false });
   assert.deepEqual(state.creationOrder, [

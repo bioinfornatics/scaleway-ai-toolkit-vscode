@@ -579,3 +579,36 @@ test('AgentOS service opens only pinned canonical runtime source and never start
   await runner.openEntry(directory, () => true);
   assert.equal(state.shows.length, 1);
 });
+
+test('A2A service opens authored agent builder only for pinned A2A transport, never launches', async (t) => {
+  const { directory, state, api, runner } = await fixture(t);
+  const service = 'src/agent_app/agent.py';
+  await fsp.mkdir(path.join(directory, 'src/agent_app'), { recursive: true });
+  await fsp.writeFile(
+    path.join(directory, service),
+    '# authored reusable builder',
+  );
+  const note = path.join(directory, 'service.authoring.json');
+  await fsp.writeFile(
+    note,
+    JSON.stringify({
+      version: 1,
+      transport: 'a2a-strands',
+      main_source: service,
+    }),
+  );
+  api.workspace.openTextDocument = async (uri) => ({ uri, isClosed: false });
+  await runner.openEntry(directory, () => true);
+  assert.equal(state.shows[0].uri.fsPath, path.join(directory, service));
+  assert.equal(state.tasks.length, 0);
+  await fsp.writeFile(
+    note,
+    JSON.stringify({
+      version: 1,
+      transport: 'server-side-endpoint-client',
+      main_source: service,
+    }),
+  );
+  await runner.openEntry(directory, () => true);
+  assert.equal(state.shows.length, 1);
+});

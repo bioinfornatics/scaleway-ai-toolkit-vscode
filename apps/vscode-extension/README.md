@@ -522,3 +522,17 @@ avec un SDK préserve ce seul écart de tsconfig et refuse les autres conflits.
 ### Agno + AgentOS dédié (5qk)
 
 AgentOS est une API Python distincte avec Agno intégré, verrouillé dans le formulaire. Les combinaisons Strands/LangChain, Next intégré et agent CLI sont refusées, jamais converties silencieusement. Le runtime sert AgentOS derrière un gate ASGI fermant les routes natives ; /api/chat appelle Agent.arun. Sources, contrat de sécurité, commandes et limites : specifications/agentos-runtime.md dans le dépôt et README du template AgentOS livré. Runtime SDK installé/live, build frontend et visuel NOT RUN ; les mocks et wheels offline --no-deps ne les remplacent pas.
+
+## Agent API FastAPI + Strands (A2A)
+
+La composition **Agent → API → Python + FastAPI + Strands** utilise A2A SDK `1.2.3` (protocole 1.0), et non le chat modèle. La webapp conserve `/api/chat` ; le CLI Strands conserve son invocation synchrone sans serveur. Modifiez les instructions dans `src/agent_app/agent.py` : l’executor A2A utilise réellement son constructeur `build_agent` avec un agent et un client HTTP borné par requête.
+
+Depuis la racine du projet généré : `uv run python -m agent_app.service_cli --check`, puis lancement explicite avec `--serve`. Le fichier `.env` reste à la racine (répertoire de travail), aussi avec un wheel installé. GET `/.well-known/agent-card.json`, POST `/a2a` (`Content-Type: application/json`, `A2A-Version: 1.0`) :
+
+```json
+{"jsonrpc":"2.0","id":"1","method":"SendMessage","params":{"message":{"messageId":"input-1","role":"ROLE_USER","parts":[{"text":"Hello"}]}}}
+```
+
+Réponse immédiate `result.message` uniquement : ni streaming, outils, fichiers, métadonnées, tâches durables, reprise, annulation ou push. Seul le protocole 1.0 est pris en charge : en-tête A2A-Version absent, dupliqué ou non pris en charge rejeté avant parsing/exécution. Chaque requête immédiate utilise un handler SDK V2 isolé, drainé via son API publique aclose() dans un finally (erreurs/annulation incluses), sans transformer une erreur en succès. Les méthodes non prises en charge sont rejetées avant exécution. Loopback numérique uniquement, sans Origin ni forwarding ; ce n’est pas une authentification de production. Limites : 4 requêtes concurrentes, corps 32768 octets/10 s, entrée 8000 caractères, réponse 32000 caractères, appel modèle 30 s/1024 tokens/65536 octets. URL upstream exacte, sans retries/proxies/redirections. Secrets et erreurs upstream ne sont pas renvoyés.
+
+Preuve locale : génération, mocks de structs/parsing SDK et méthodes de teardown extraites du tag public (pas une preuve SDK installé), transport HTTPX réel avec upstream simulé, build/tests et VSIX. Inspection du cache Strands `1.61.1` et des sources A2A `1.2.3` ; pas d’installation complète du SDK, d’inférence réelle, d’exposition externe ou de validation d’interface installée. La relecture indépendante reste requise.

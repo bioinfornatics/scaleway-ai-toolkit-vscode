@@ -361,7 +361,7 @@ export function buildCreationView(v: BuildView): string {
     (!cli
       ? agentos
         ? '<span>Agno orchestre les requêtes ; AgentOS sert /api/chat sur loopback. Routes natives fermées.</span>'
-        : '<span class="scope-note">Route IA : client endpoint côté serveur ; SDK IA conservé pour intégration.</span>'
+        : '<span class="scope-note">Agent API FastAPI + Strands : A2A texte immédiat. Webapp : chat modèle côté serveur ; autres piles : client endpoint.</span>'
       : '') +
     '</section>';
   const ready =

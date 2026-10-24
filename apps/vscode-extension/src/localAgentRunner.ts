@@ -582,11 +582,15 @@ export async function openLocalAgentEntry(
       );
       if (
         note?.version !== 1 ||
-        ![
-          'app/page.tsx',
-          'src/agent_app/service_api.py',
-          'src/service-api.ts',
-        ].includes(note.main_source)
+        !(
+          [
+            'app/page.tsx',
+            'src/agent_app/service_api.py',
+            'src/service-api.ts',
+          ].includes(note.main_source) ||
+          (note.transport === 'a2a-strands' &&
+            note.main_source === 'src/agent_app/agent.py')
+        )
       )
         throw new Error('invalid_service_entry');
       const bytes = await read(directory, note.main_source, LIMIT);
